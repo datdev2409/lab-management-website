@@ -1,0 +1,58 @@
+package pages
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/db"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
+
+templ PhieuXetNghiemPage() {
+	@partials.Base() {
+		<div class="d-flex align-items-center justify-content-between">
+			<h3 class="pt-3">Phiếu xét nghiệm</h3>
+			<button
+				class="btn btn-primary"
+				hx-trigger="click"
+				data-bs-toggle="modal"
+				data-bs-target="#modals-here"
+			>
+				Thêm bệnh nhân
+			</button>
+		</div>
+		<div
+			id="modals-here"
+			class="modal modal-blur fade"
+			style="display: none"
+			aria-hidden="false"
+			tabindex="-1"
+		>
+			<div class="modal-dialog modal-lg modal-dialog-centered px-5 py-2" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title">Thêm bệnh nhân</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="pe-5 ps-4">
+						@partials.CreateUserForm()
+					</div>
+				</div>
+			</div>
+		</div>
+		// User form
+		@partials.SelectUserForm(db.Patient{}, true)
+		// Test table
+		@partials.TestTable()
+		<div>
+			<div style="height: 80px; width: 100%"></div>
+			<div
+				class="row position-absolute bottom-0 start-2"
+				style="width: 100%"
+			>
+				<button class="btn btn-outline-secondary col">1. Thêm</button>
+				<button class="btn btn-outline-secondary col">2. Sửa</button>
+				<button class="btn btn-outline-secondary col">3. Xoá</button>
+				<button class="btn btn-outline-secondary col">4. Xem phiếu thu</button>
+				<button class="btn btn-outline-secondary col">5. In phiếu thu</button>
+			</div>
+		</div>
+	}
+}

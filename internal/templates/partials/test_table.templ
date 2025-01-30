@@ -1,0 +1,40 @@
+package partials
+
+templ TestRow() {
+	<tr>
+		<th>Gluseco</th>
+		<td contenteditable="true" style="width: 180px">20.000</td>
+		<td contenteditable="true" style="width: 200px">3.9 - 7.0</td>
+		<td contenteditable="true" style="width: 140px">mmol/L</td>
+		<td contenteditable="true" style="width: 120px"></td>
+		<td contenteditable="true" style="width: 180px"></td>
+		<td contenteditable="true" style="width: 30px">
+			<input type="checkbox"/>
+		</td>
+	</tr>
+}
+
+templ TestTableHeader() {
+	<thead class="position-sticky top-0">
+		<tr>
+			<th scope="col">Tên xét nghiệm</th>
+			<th style="width: 180px" scope="col">Đơn giá</th>
+			<th style="width: 200px" scope="col">GT bình thường</th>
+			<th style="width: 140px" scope="col">Đơn vị</th>
+			<th style="width: 120px" scope="col">Kết quả</th>
+			<th style="width: 180px" scope="col">Kết quả (text)</th>
+			<th style="width: 30px" scope="col">Bất thường</th>
+		</tr>
+	</thead>
+}
+
+templ TestTable() {
+	<table class="table table-bordered table-hover">
+		@TestTableHeader()
+		<tbody>
+			@TestRow()
+			@TestRow()
+			@TestRow()
+		</tbody>
+	</table>
+}

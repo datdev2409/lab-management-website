@@ -1,0 +1,66 @@
+package partials
+
+import "github.com/datdev2409/lab-admin-go/internal/db"
+
+templ PatientRow(p db.Patient) {
+	<tr id={ "pr" + p.ID } x-data="{editable: false}">
+		<form hx-put={ "/api/patients/" + p.ID } hx-target={ "#pr" + p.ID } hx-swap="outerHTML">
+			<td class="text-truncate" style="max-width: 300px">
+				<p x-show="!editable">{ p.Name }</p>
+				<input x-show="editable" name="patient_name" class="form-control" value={ p.Name }/>
+			</td>
+			<td class="text-truncate" style="max-width: 300px">
+				<p x-show="!editable">{ p.Address }</p>
+				<input x-show="editable" name="patient_address" class="form-control" value={ p.Address }/>
+			</td>
+			<td class="text-truncate" style="max-width: 150px">
+				<p x-show="!editable">{ p.Phone }</p>
+				<input x-show="editable" name="patient_phone" class="form-control" value={ p.Phone }/>
+			</td>
+			<td class="text-truncate" style="max-width: 120px">
+				<p x-show="!editable">{ p.YOB }</p>
+				<input x-show="editable" name="patient_yob" class="form-control" value={ p.YOB }/>
+			</td>
+			<td class="text-truncate" style="max-width: 100px">
+				<p x-show="!editable">{ p.Gender }</p>
+				<input x-show="editable" name="patient_gender" class="form-control" value={ p.Gender }/>
+			</td>
+			<td class="text-truncate" style="max-width: 100px">
+				<div class="d-flex align-items-start">
+					<div x-show="editable">
+						<button type="button" @click="editable=false" class="btn btn-secondary">Huỷ</button>
+						<button type="submit" @click="editable=false" class="btn btn-primary">Lưu</button>
+					</div>
+					<div x-show="!editable">
+						<button type="button" @click="editable=true" id="edit-btn" class="btn btn-secondary">Sửa</button>
+						<button type="button" class="btn btn-danger" hx-confirm={ "Bạn có chắc chắn muốn xoá bệnh nhân: " + p.Name } hx-delete={ "/api/patients/" + p.ID } hx-target={ "#pr" + p.ID }>Xoá</button>
+					</div>
+				</div>
+			</td>
+		</form>
+	</tr>
+}
+
+templ PatientTableHeader() {
+	<thead class="position-sticky top-0">
+		<tr>
+			<th style="max-width: 300px" scope="col">Tên</th>
+			<th style="max-width: 300px" scope="col">Địa chỉ</th>
+			<th style="max-width: 150px" scope="col">Điện thoại</th>
+			<th style="max-width: 120px" scope="col">Năm sinh</th>
+			<th style="max-width: 100px" scope="col">Giới tính</th>
+			<th style="max-width: 150px" scope="col"></th>
+		</tr>
+	</thead>
+}
+
+templ PatientTable(patients []db.Patient) {
+	<table id="patient-table" class="table table-bordered table-hover">
+		@PatientTableHeader()
+		<tbody>
+			for _, p := range patients {
+				@PatientRow(p)
+			}
+		</tbody>
+	</table>
+}

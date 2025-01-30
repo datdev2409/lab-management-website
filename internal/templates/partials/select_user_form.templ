@@ -1,0 +1,142 @@
+package partials
+
+import "github.com/datdev2409/lab-admin-go/internal/db"
+
+templ GenderInput(id string, checked bool) {
+	if checked {
+		<input
+			class="form-check-input"
+			type="radio"
+			name="patient_gender"
+			id={ id }
+			checked
+		/>
+	} else {
+		<input
+			class="form-check-input"
+			type="radio"
+			name="patient_gender"
+			id={ id }
+		/>
+	}
+}
+
+templ PatientSuggestionList(patients []db.Patient) {
+	<div id="patient-suggestion-list" class="shadow bordered">
+		for _, patient := range patients {
+			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID } hx-swap="outerHTML" hx-target="closest form">
+				{ patient.Name } - { patient.Phone }
+			</div>
+		}
+	</div>
+}
+
+templ SelectUserForm(patient db.Patient, scriptInclude bool) {
+	<style>
+		#patient-suggestion-list {
+			width: 100%;
+			position: absolute;
+			display: flex;
+			flex-direction: column;
+			background-color: #fff;
+		}
+		.patient-option {
+			padding: 6px 12px;
+			cursor: pointer;
+			color: black;
+			z-index: 100;
+		}
+
+		.patient-option:hover {
+			background-color: #f1f1f1;
+		}
+	</style>
+	<form id="user_create_form" style="height: 150px" class="pt-3">
+		<div class="row g-3 align-items-center">
+			<div class="d-flex col-6 align-items-center">
+				<label
+					style="min-width: 120px"
+					for="benh_nhan"
+					class="form-label"
+				>Bệnh nhân</label>
+				<div class="position-relative flex-grow-1">
+					<input value={ patient.Name } id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get="/api/patients?limit=5" hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
+					@PatientSuggestionList([]db.Patient{})
+				</div>
+				<button class="ms-2 btn btn-primary">Tìm</button>
+			</div>
+			<div class="d-flex col-4 align-items-center">
+				<label
+					style="min-width: 120px"
+					for="nam_sinh"
+					class="form-label"
+				>Năm sinh</label>
+				<input value={ patient.YOB } disabled id="nam_sinh" class="form-control" name="patient_dob"/>
+			</div>
+			<div class="d-flex col-2 align-items-center g-3">
+				<div class="form-check me-4">
+					@GenderInput("male", patient.Gender == "Nam")
+					<label class="form-check-label" for="male">Nam</label>
+				</div>
+				<div class="form-check">
+					@GenderInput("female", patient.Gender != "Nam")
+					<label class="form-check-label" for="female">Nữ</label>
+				</div>
+			</div>
+		</div>
+		<div class="row g-3 align-items-center">
+			<div class="d-flex col-6 align-items-center">
+				<label style="min-width: 120px" for="dia_chi" class="form-label">Địa chỉ</label>
+				<input
+					id="dia_chi"
+					class="form-control"
+					name="patient_address"
+					value={ patient.Address }
+					disabled
+				/>
+			</div>
+			<div class="d-flex col-6 align-items-center">
+				<label
+					style="min-width: 120px"
+					for="dien_thoai"
+					class="form-label"
+				>Điện thoại</label>
+				<input
+					id="dien_thoai"
+					class="form-control"
+					name="patient_phone"
+					value={ patient.Phone }
+					disabled
+				/>
+			</div>
+		</div>
+		<div class="row g-3 align-items-center">
+			<div class="d-flex col-6 align-items-center">
+				<label style="min-width: 120px" for="doctor" class="form-label">Gói xét nghiệm</label>
+				<input id="doctor" class="form-control" name="doctor"/>
+			</div>
+			<div class="d-flex col-6 align-items-center">
+				<label style="min-width: 120px" for="doctor" class="form-label">Bác sĩ</label>
+				<input id="doctor" class="form-control" name="doctor"/>
+			</div>
+		</div>
+	</form>
+	if scriptInclude {
+		<script>
+		const datalist = document.getElementById("patient-suggestion-list");
+		const input = document.getElementById("patient-search");
+
+		input.addEventListener("focus", () => {
+			datalist.style.display = "block";
+			datalist.style.height = "auto";
+		})
+
+		input.addEventListener("blur", () => {
+			setTimeout(() => {
+				datalist.style.display = "none";
+				datalist.style.height = "0";
+			}, 200)
+		})
+	</script>
+	}
+}

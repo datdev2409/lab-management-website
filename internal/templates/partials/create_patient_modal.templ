@@ -1,0 +1,31 @@
+package partials
+
+templ CreatePatientModal() {
+	<button
+		class="btn btn-primary"
+		hx-trigger="click"
+		data-bs-toggle="modal"
+		data-bs-target="#modals-here"
+	>
+		Thêm bệnh nhân
+	</button>
+	<div
+		id="modals-here"
+		class="modal modal-blur fade"
+		style="display: none"
+		aria-hidden="false"
+		tabindex="-1"
+	>
+		<div class="modal-dialog modal-lg modal-dialog-centered px-5 py-2" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Thêm bệnh nhân</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="pe-5 ps-4">
+					@CreateUserForm()
+				</div>
+			</div>
+		</div>
+	</div>
+}
