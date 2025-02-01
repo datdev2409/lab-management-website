@@ -1,18 +1,21 @@
 package pages
 
 import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
+import "github.com/datdev2409/lab-admin-go/internal/models"
 
-templ TestPage() {
-	@partials.Base() {
+templ TestPage(tests []models.Test, message string) {
+	@partials.Base(message) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục xét nghiệm</h3>
 			<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#test-create-modal">Thêm xét nghiệm</button>
 		</div>
 		@TestCreateForm()
 		<div class="mb-2 d-flex align-items-center">
-			<input style="max-width: 200px;" class="form-control" name="patient_name" id="patient-search"/>
-			<button class="ms-2 btn btn-primary" hx-get="/api/patients" hx-target="#patient-table" hx-include="#patient-search">Tìm</button>
+			<input style="max-width: 200px;" class="form-control" name="test_name" id="test-search"/>
+			<button type="button" class="ms-2 btn btn-primary" hx-get="/api/tests" hx-target="#test-table" hx-include="#test-search">Tìm</button>
 		</div>
+
+		@partials.TestTable(tests, "test-page")
 	}
 }
 
@@ -25,7 +28,7 @@ templ TestCreateForm() {
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<form hx-post="/api/tests" hx-target="div.modal-body" hx-swap="outerHTML">
+					<form hx-post="/api/tests">
 						<div class="mb-3 d-flex align-items-center">
 							<label style="min-width: 160px;" for="test_name" class="form-label">Tên xét nghiệm</label>
 							<input class="form-control" id="test_name" name="test_name"/>

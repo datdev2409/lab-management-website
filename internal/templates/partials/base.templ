@@ -1,6 +1,24 @@
 package partials
 
-templ Base() {
+templ Notification(message string) {
+	if message != "" {
+		<div id="alert" class="position-absolute bottom-0 end-0 alert alert-success alert-dismissible fade show" role="alert">
+            {message}
+		</div>
+	}
+	<script>
+	    setTimeout(function () {
+            let alert = document.getElementById('alert');
+                if (alert) {
+                    alert.classList.remove('show'); // Hides the alert smoothly
+                    alert.classList.add('fade'); // Ensure the fade transition
+                    setTimeout(() => alert.remove(), 500); // Removes it from DOM after fade out
+                }
+            }, 3000);
+	</script>
+}
+
+templ Base(message string) {
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
@@ -23,6 +41,7 @@ templ Base() {
 						style="height: 100vh; overflow-y: hidden"
 						class="col-10 position-relative"
 					>
+						@Notification(message)
 						{ children... }
 					</div>
 				</div>

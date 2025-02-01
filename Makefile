@@ -2,12 +2,12 @@
 # re-create _templ.txt files on change, then send reload event to browser. 
 # Default url: http://localhost:7331
 live/templ:
-	templ generate --watch --proxy="http://localhost:8080" --open-browser=false -v
+	templ generate -lazy --watch --proxy="http://localhost:8081" --open-browser=false -v
 
 # run air to detect any go file changes to re-build and re-run the server.
 live/server:
 	@air \
-	--build.cmd "go build -o tmp/bin/main" --build.bin "tmp/bin/main" --build.delay "100" \
+	--build.cmd "go build -o tmp/bin/main cmd/api/*.go" --build.bin "tmp/bin/main" --build.delay "100" \
 	--build.exclude_dir "node_modules" \
 	--build.include_ext "go" \
 	--build.stop_on_error "false" \
@@ -16,7 +16,7 @@ live/server:
 # watch for any js or css change in the assets/ folder, then reload the browser via templ proxy.
 live/sync_assets:
 	@air \
-	--build.cmd "templ generate --proxy="http://localhost:8080"  --notify-proxy" \
+	--build.cmd "templ generate -lazy --watch --proxy="http://localhost:8081" --notify-proxy" \
 	--build.bin "true" \
 	--build.delay "100" \
 	--build.exclude_dir "" \
@@ -25,4 +25,4 @@ live/sync_assets:
 
 # start all 5 watch processes in parallel.
 live: 
-	make -j2 live/templ live/server 
+	make -j2 live/server live/templ

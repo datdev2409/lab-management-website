@@ -1,12 +1,12 @@
 package pages
 
 import (
-	"github.com/datdev2409/lab-admin-go/internal/db"
+	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 )
 
-templ PhieuXetNghiemPage() {
-	@partials.Base() {
+templ RecordPage(message string) {
+	@partials.Base(message) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<button
@@ -38,21 +38,10 @@ templ PhieuXetNghiemPage() {
 			</div>
 		</div>
 		// User form
-		@partials.SelectUserForm(db.Patient{}, true)
-		// Test table
-		@partials.TestTable()
-		<div>
-			<div style="height: 80px; width: 100%"></div>
-			<div
-				class="row position-absolute bottom-0 start-2"
-				style="width: 100%"
-			>
-				<button class="btn btn-outline-secondary col">1. Thêm</button>
-				<button class="btn btn-outline-secondary col">2. Sửa</button>
-				<button class="btn btn-outline-secondary col">3. Xoá</button>
-				<button class="btn btn-outline-secondary col">4. Xem phiếu thu</button>
-				<button class="btn btn-outline-secondary col">5. In phiếu thu</button>
-			</div>
+		<div id="select-user-form">
+            @partials.SelectUserForm(models.Patient{}, true)
 		</div>
+		// Test table
+		@partials.TestTable([]models.Test{}, "record-page")
 	}
 }

@@ -1,6 +1,6 @@
 package partials
 
-import "github.com/datdev2409/lab-admin-go/internal/db"
+import "github.com/datdev2409/lab-admin-go/internal/models"
 
 templ GenderInput(id string, checked bool) {
 	if checked {
@@ -21,17 +21,17 @@ templ GenderInput(id string, checked bool) {
 	}
 }
 
-templ PatientSuggestionList(patients []db.Patient) {
+templ PatientSuggestionList(patients []models.Patient) {
 	<div id="patient-suggestion-list" class="shadow bordered">
 		for _, patient := range patients {
-			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID } hx-swap="outerHTML" hx-target="closest form">
+			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID } hx-target="#select-user-form">
 				{ patient.Name } - { patient.Phone }
 			</div>
 		}
 	</div>
 }
 
-templ SelectUserForm(patient db.Patient, scriptInclude bool) {
+templ SelectUserForm(patient models.Patient, scriptInclude bool) {
 	<style>
 		#patient-suggestion-list {
 			width: 100%;
@@ -61,9 +61,8 @@ templ SelectUserForm(patient db.Patient, scriptInclude bool) {
 				>Bệnh nhân</label>
 				<div class="position-relative flex-grow-1">
 					<input value={ patient.Name } id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get="/api/patients?limit=5" hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
-					@PatientSuggestionList([]db.Patient{})
+					@PatientSuggestionList([]models.Patient{})
 				</div>
-				<button class="ms-2 btn btn-primary">Tìm</button>
 			</div>
 			<div class="d-flex col-4 align-items-center">
 				<label

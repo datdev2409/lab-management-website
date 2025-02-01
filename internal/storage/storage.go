@@ -1,0 +1,66 @@
+package storage
+
+import (
+	"context"
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+)
+
+type PatientStorage interface {
+	Insert(patient *models.Patient) error
+	GetById(id string) (*models.Patient, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Patient, error)
+	UpdateById(ctx context.Context, id string, patient *models.Patient) error
+	Delete(id string) error
+}
+
+type TestStorage interface {
+	Insert(test *models.Test) error
+	GetById(id string) (*models.Test, error)
+	GetAll() ([]*models.Test, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error)
+	Update(test *models.Test) error
+	Delete(id string) error
+}
+
+type ComboStorage interface {
+	Insert(combo *models.Combo) error
+}
+
+type AppStorage interface {
+	Patients() PatientStorage
+	Tests() TestStorage
+	Combos() ComboStorage
+}
+
+func NewMongoStorage(client *mongo.Client) *MongoStorage {
+	return &MongoStorage{db: client.Database("labadmin")}
+}
+
+type MongoStorage struct {
+	db *mongo.Database
+}
+
+func (m *MongoStorage) Patients() PatientStorage {
+	return &MongoPatientStorage{col: m.db.Collection("patients")}
+}
+
+func (m *MongoStorage) Tests() TestStorage {
+	return &MongoTestStorage{col: m.db.Collection("tests")}
+}
+
+func (m *MongoStorage) Combos() ComboStorage {
+	return &MongoComboStorage{col: m.db.Collection("combos")}
+}
+
+type MongoPatientStorage struct {
+	col *mongo.Collection
+}
+
+type MongoTestStorage struct {
+	col *mongo.Collection
+}
+
+type MongoComboStorage struct {
+	col *mongo.Collection
+}
