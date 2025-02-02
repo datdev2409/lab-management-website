@@ -1,0 +1,163 @@
+package pages
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
+
+templ PatientCreateModal() {
+	<button
+		class="btn btn-primary"
+		hx-trigger="click"
+		data-bs-toggle="modal"
+		data-bs-target="#modals-here"
+	>
+		Thêm bệnh nhân
+	</button>
+	<div
+		id="modals-here"
+		class="modal modal-blur fade"
+		style="display: none"
+		aria-hidden="false"
+		tabindex="-1"
+	>
+		<div class="modal-dialog modal-lg modal-dialog-centered px-5 py-2" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Thêm bệnh nhân</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="pe-5 ps-4">
+					@partials.CreateUserForm()
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ PatientSuggestionList(patients []models.Patient, recordId string) {
+	<style>
+		#patient-suggestion-list {
+			width: 100%;
+			position: absolute;
+			display: flex;
+			flex-direction: column;
+			background-color: #fff;
+		}
+
+		.patient-option {
+			padding: 6px 12px;
+			cursor: pointer;
+			color: black;
+			z-index: 100;
+		}
+
+		.patient-option:hover {
+			background-color: #f1f1f1;
+		}
+	</style>
+	<div x-show="open" @click.outside="open=false" id="patient-suggestion-list" class="shadow bordered position-absolute">
+		for _, patient := range patients {
+			<input type="hidden" name="patient_id" value={ patient.ID }/>
+			<div x-init="htmx.process(htmx.find('.patient-option'))" hx-trigger="click" class="patient-option" hx-patch={ "/api/records/" + recordId } hx-target="#patient-info" hx-include="input[name=patient_id]" @click="open=false">
+				{ patient.Name } - { patient.Phone }
+			</div>
+		}
+	</div>
+}
+
+templ PatientInfo(patient models.Patient) {
+	if patient.ID != "" {
+		<div class="mb-2">Thông tin bệnh nhân</div>
+		<table class="table table-bordered">
+			<tr>
+				<td>Tên</td>
+				<td>{ patient.Name }</td>
+			</tr>
+			<tr>
+				<td>Giới tính</td>
+				<td>{ patient.Gender }</td>
+			</tr>
+			<tr>
+				<td>Năm sinh</td>
+				<td>{ patient.YOB }</td>
+			</tr>
+			<tr>
+				<td>Điện thoại</td>
+				<td>{ patient.Phone }</td>
+			</tr>
+			<tr>
+				<td>Địa chỉ</td>
+				<td>{ patient.Address }</td>
+			</tr>
+		</table>
+	}
+}
+
+templ PatientSelect(record models.Record) {
+	<div>
+		<label for="benh_nhan" class="form-label">Bệnh nhân</label>
+		<div x-data="{open: false}" class="position-relative mb-3">
+			<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + record.ID } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
+			@PatientSuggestionList([]models.Patient{}, record.ID)
+		</div>
+		if record.PatientID != "" {
+			<div hx-trigger="load" hx-get={ "/api/patients/" + record.PatientID } hx-target="#patient-info" id="patient-info" class="mb-3">
+				@PatientInfo(models.Patient{})
+			</div>
+		} else {
+			<div id="patient-info"></div>
+		}
+	</div>
+}
+
+templ ComboSuggestionList(combos []models.Combo, recordId string) {
+	<div x-show="open" @click.outside="open = false" class="shadow bordered position-absolute start-0 end-0 bg-light" style="z-index: 100; background-color: white">
+		<div id="combo-search-result">
+			for _, combo := range combos {
+				<div>
+					<input type="hidden" id={ "combo_id" + combo.ID } name="combo_id" value={ combo.ID }/>
+					<div class="combo-option" hx-patch={ "/api/records/" + recordId } hx-include={ "#combo_id" + combo.ID } hx-trigger="click" hx-target="#test-table" hx-swap="outerHTML" @click={ "keyword='" + combo.Name + "';open=false" } style="cursor:pointer; padding: 12px; border-bottom: 1px solid gray;">{ combo.Name }</div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ ComboSelect(record models.Record) {
+	<div class="mb-3">
+		<label for="combo" class="form-label">Gói xét nghiệm</label>
+		<div x-data="{open: false, keyword: ''}" class="position-relative flex-grow-1">
+			<input x-model="keyword" @keyup="open=true" autocomplete="off" id="combo" class="form-control" name="combo_name" hx-get={ "/api/combos?record_id=" + record.ID } hx-trigger="keyup changed delay:500ms" hx-target="#combo-search-result" hx-swap="outerHTML"/>
+			@ComboSuggestionList([]models.Combo{}, record.ID)
+		</div>
+	</div>
+}
+
+templ RecordDetailPage(record models.Record, message string) {
+	@partials.Base(message) {
+		<div class="d-flex align-items-center justify-content-between">
+			<h3 class="pt-3">Phiếu xét nghiệm</h3>
+			@PatientCreateModal()
+		</div>
+		// User form
+		@PatientSelect(record)
+		@ComboSelect(record)
+		// Test select input
+		<div x-data="{open: false}" class="mb-3 position-relative">
+			<label>Tìm xét nghiệm theo tên</label>
+			<input @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-record-page" hx-swap="outerHTML"/>
+			<div x-show="open" @click.outside="open = false">
+				@TestSearchAutocomplete([]models.Test{}, "record-page")
+			</div>
+		</div>
+		// Test table
+		<div hx-trigger="record-combo-updated" hx-get={ "/api/records/" + record.ID + "/tests" } hx-target="#test-table" hx-swap="outerHTML">
+			@partials.TestTable([]models.Test{}, "record-page")
+		</div>
+		<div>
+			<a class="btn btn-secondary" href="/phieu-xet-nghiem" role="button">Trở về</a>
+			<button class="btn btn-primary">Xuất phiếu thu</button>
+		</div>
+	}
+}

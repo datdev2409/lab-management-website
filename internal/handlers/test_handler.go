@@ -1,14 +1,15 @@
 package handlers
 
 import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-	"github.com/google/uuid"
 	"log"
 	"math"
 	"net/http"
 	"strconv"
+
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+	"github.com/google/uuid"
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
@@ -76,8 +77,10 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	switch target {
 	case "test-table":
 		return Render(r.Context(), w, partials.TestTable(*tests, "test-page"))
-	case "test-search-result":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests))
+	case "test-search-result-combo-page":
+		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "combo-page"))
+	case "test-search-result-record-page":
+		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "record-page"))
 	}
 	return nil
 }

@@ -1,37 +1,42 @@
 package partials
 
-import "github.com/datdev2409/lab-admin-go/internal/models"
-import "strconv"
-import "fmt"
+import (
+	"fmt"
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"strconv"
+)
 
 templ TestRow(test models.Test, page string) {
 	<tr>
-		<th>{test.Name}</th>
-		<td style="width: 180px">{strconv.Itoa(test.Price)}</td>
-		<td style="width: 200px">{test.NormalValue}</td>
-		<td style="width: 140px">{test. Unit}</td>
-        switch page {
-            case "test-page":
-                <td style="width: 120px">{fmt.Sprintf("%.2f", test.LowerBound)}</td>
-                <td style="width: 120px">{fmt.Sprintf("%.2f", test.UpperBound)}</td>
-                <td style="width: 120px">
-                    <button class="btn btn-sm btn-secondary">Sửa</button>
-                    <button class="btn btn-sm btn-danger">Xoá</button>
-                </td>
-            case "combo-page":
-                <td style="width: 120px">{fmt.Sprintf("%.2f", test.LowerBound)}</td>
-                <td style="width: 120px">{fmt.Sprintf("%.2f", test.UpperBound)}</td>
-                <td style="width: 120px">
-                    <button class="btn btn-sm btn-secondary">Thêm xét nghiệm</button>
-                </td>
-
-            case "record-page":
-                <td contenteditable="true" style="width: 120px">{fmt.Sprintf("%.2f", test.LowerBound)}</td>
-                <td contenteditable="true" style="width: 180px">{fmt.Sprintf("%.2f", test.UpperBound)}</td>
-                <td contenteditable="true" style="width: 30px">
-                    <input type="checkbox"/>
-                </td>
-        }
+		<td>{ test.Name }</td>
+		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
+		<td style="width: 200px">{ test.NormalValue }</td>
+		<td style="width: 140px">{ test. Unit }</td>
+		switch page {
+			case "test-page":
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
+				<td style="width: 120px">
+					<button class="btn btn-sm btn-secondary">Sửa</button>
+					<button class="btn btn-sm btn-danger">Xoá</button>
+				</td>
+			case "combo-page":
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
+				<td style="width: 120px">
+					<button class="btn btn-sm btn-secondary">Thêm xét nghiệm</button>
+				</td>
+			case "record-page":
+				<td contenteditable="true" style="width: 120px">
+					<input/>
+				</td>
+				<td contenteditable="true" style="width: 180px">
+					<input/>
+				</td>
+				<td contenteditable="true" style="width: 30px">
+					<input type="checkbox"/>
+				</td>
+		}
 	</tr>
 }
 
@@ -43,26 +48,28 @@ templ TestTableHeader(page string) {
 			<th style="width: 200px" scope="col">GT bình thường</th>
 			<th style="width: 140px" scope="col">Đơn vị</th>
 			switch page {
-			    case "test-page":
-                    <th style="width: 120px" scope="col">Cận dưới</th>
-                    <th style="width: 120px" scope="col">Cận trên</th>
-                    <th style="width: 120px" scope="col"></th>
-			    case "record-page":
-                    <th style="width: 120px" scope="col">Kết quả</th>
-                    <th style="width: 180px" scope="col">Kết quả (text)</th>
-                    <th style="width: 30px" scope="col">Bất thường</th>
+				case "test-page":
+					<th style="width: 120px" scope="col">Cận dưới</th>
+					<th style="width: 120px" scope="col">Cận trên</th>
+					<th style="width: 120px" scope="col"></th>
+				case "record-page":
+					<th style="width: 120px" scope="col">Kết quả</th>
+					<th style="width: 180px" scope="col">Kết quả (text)</th>
+					<th style="width: 30px" scope="col">Bất thường</th>
 			}
 		</tr>
 	</thead>
 }
 
 templ TestTable(tests []models.Test, page string) {
-	<table id="test-table" class="table table-bordered table-hover">
-		@TestTableHeader(page)
-		<tbody>
-		    for _, test := range tests {
-                @TestRow(test, page)
-		    }
-		</tbody>
-	</table>
+	<div id="test-table">
+		<table class="table table-bordered table-hover">
+			@TestTableHeader(page)
+			<tbody>
+				for _, test := range tests {
+					@TestRow(test, page)
+				}
+			</tbody>
+		</table>
+	</div>
 }

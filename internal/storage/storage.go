@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -17,7 +18,7 @@ type PatientStorage interface {
 type TestStorage interface {
 	Insert(test *models.Test) error
 	GetById(id string) (*models.Test, error)
-	GetAll() ([]*models.Test, error)
+	GetByIds(ctx context.Context, ids []string) (*[]models.Test, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error)
 	Update(test *models.Test) error
 	Delete(id string) error
@@ -25,12 +26,22 @@ type TestStorage interface {
 
 type ComboStorage interface {
 	Insert(combo *models.Combo) error
+	GetById(ctx context.Context, id string) (*models.Combo, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Combo, error)
+}
+
+type RecordStorage interface {
+	Insert(ctx context.Context, record *models.Record) error
+	GetById(ctx context.Context, id string) (*models.Record, error)
+	UpdatePatient(ctx context.Context, recordId string, patientId string) error
+	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
 }
 
 type AppStorage interface {
 	Patients() PatientStorage
 	Tests() TestStorage
 	Combos() ComboStorage
+	Records() RecordStorage
 }
 
 func NewMongoStorage(client *mongo.Client) *MongoStorage {
@@ -53,6 +64,10 @@ func (m *MongoStorage) Combos() ComboStorage {
 	return &MongoComboStorage{col: m.db.Collection("combos")}
 }
 
+func (m *MongoStorage) Records() RecordStorage {
+	return &MongoRecordStorage{col: m.db.Collection("records")}
+}
+
 type MongoPatientStorage struct {
 	col *mongo.Collection
 }
@@ -62,5 +77,9 @@ type MongoTestStorage struct {
 }
 
 type MongoComboStorage struct {
+	col *mongo.Collection
+}
+
+type MongoRecordStorage struct {
 	col *mongo.Collection
 }

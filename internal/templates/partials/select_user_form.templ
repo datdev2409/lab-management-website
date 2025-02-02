@@ -110,9 +110,14 @@ templ SelectUserForm(patient models.Patient, scriptInclude bool) {
 			</div>
 		</div>
 		<div class="row g-3 align-items-center">
-			<div class="d-flex col-6 align-items-center">
-				<label style="min-width: 120px" for="doctor" class="form-label">Gói xét nghiệm</label>
-				<input id="doctor" class="form-control" name="doctor"/>
+			<div class="d-flex col-6 align-items-center position-relative">
+				<label style="min-width: 120px" for="combo" class="form-label">Gói xét nghiệm</label>
+				<div x-data="{open: false, keyword: ''}" class="position-relative flex-grow-1">
+					<input x-model="keyword" @keyup="open=true" autocomplete="off" id="combo" class="form-control" name="combo_name" hx-get="/api/combos" hx-trigger="keyup changed delay:500ms" hx-target="#combo-search-result" hx-swap="outerHTML"/>
+					<div x-show="open" @click.outside="open = false" class="shadow bordered position-absolute start-0 end-0 bg-light" style="z-index: 100; background-color: white">
+						@ComboSearchAutocomplete([]models.Combo{})
+					</div>
+				</div>
 			</div>
 			<div class="d-flex col-6 align-items-center">
 				<label style="min-width: 120px" for="doctor" class="form-label">Bác sĩ</label>
@@ -138,4 +143,12 @@ templ SelectUserForm(patient models.Patient, scriptInclude bool) {
 		})
 	</script>
 	}
+}
+
+templ ComboSearchAutocomplete(combos []models.Combo) {
+	<div id="combo-search-result">
+		for _, combo := range combos {
+			<div hx-get={ "/api/combos/" + combo.ID } hx-trigger="click" hx-target="#test-table" hx-swap="outerHTML" @click={ "keyword='" + combo.Name + "';open=false" } style="cursor:pointer; padding: 12px; border-bottom: 1px solid gray;">{ combo.Name }</div>
+		}
+	</div>
 }

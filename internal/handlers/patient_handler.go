@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"log"
+	"net/http"
+
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
-	"log"
-	"net/http"
 )
 
 func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
@@ -57,7 +58,9 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 	case "patient-table":
 		return Render(r.Context(), w, partials.PatientTable(*patients))
 	case "patient-suggestion-list":
-		return Render(r.Context(), w, partials.PatientSuggestionList(*patients))
+		recordId := r.URL.Query().Get("record_id")
+		log.Println(recordId)
+		return Render(r.Context(), w, pages.PatientSuggestionList(*patients, recordId))
 	}
 	return nil
 }
@@ -67,10 +70,10 @@ func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	patient, err := h.Store.Patients().GetById(id)
 	if err != nil {
 		log.Println(err)
-		return Render(r.Context(), w, partials.SelectUserForm(models.Patient{}, false))
+		return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
 	}
 
-	return Render(r.Context(), w, partials.SelectUserForm(*patient, false))
+	return Render(r.Context(), w, pages.PatientInfo(*patient))
 }
 
 func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {

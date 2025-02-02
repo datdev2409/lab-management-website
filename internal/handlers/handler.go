@@ -1,32 +1,16 @@
 package handlers
 
 import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
+	"net/http"
+
 	"github.com/datdev2409/lab-admin-go/internal/storage"
-	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/google/uuid"
-	"net/http"
-	"strings"
 )
 
 type Handler struct {
 	Router http.Handler
 	Store  storage.AppStorage
-}
-
-func (h *Handler) HandleComboPage(w http.ResponseWriter, r *http.Request) error {
-	return Render(r.Context(), w, pages.ComboPage(""))
-}
-
-func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
-	combo := &models.Combo{
-		ID:    "c" + uuid.NewString(),
-		Name:  r.FormValue("combo_name"),
-		Tests: strings.Split(r.FormValue("test_ids"), ","),
-	}
-	return h.Store.Combos().Insert(combo)
 }
 
 func NewHandler(store storage.AppStorage) *Handler {
@@ -37,8 +21,10 @@ func NewHandler(store storage.AppStorage) *Handler {
 
 	// Handle pages
 	r.Route("/", func(r chi.Router) {
-		r.Get("/", Make(HandleRecordPage))
-		r.Get("/phieu-xet-nghiem", Make(HandleRecordPage))
+		r.Get("/", Make(h.HandleRecordPage))
+		r.Get("/phieu-xet-nghiem", Make(h.HandleRecordPage))
+		r.Get("/phieu-xet-nghiem/new", Make(h.HandleCreateNewRecord))
+		r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
@@ -62,6 +48,13 @@ func NewHandler(store storage.AppStorage) *Handler {
 
 	r.Route("/api/combos", func(r chi.Router) {
 		r.Post("/", Make(h.CreateCombo))
+		r.Get("/", Make(h.SearchCombosByKeyword))
+		r.Get("/{id}", Make(h.GetCombo))
+	})
+
+	r.Route("/api/records", func(r chi.Router) {
+		r.Patch("/{id}", Make(h.UpdateRecordPatient))
+		r.Get("/{id}/tests", Make(h.GetRecordTests))
 	})
 
 	return h

@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
+	"strconv"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 )
@@ -20,33 +21,31 @@ func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
 	return &test, err
 }
 
-func (t *MongoTestStorage) GetAll() ([]*models.Test, error) {
-	var tests []*models.Test
-	cursor, err := t.col.Find(context.Background(), map[string]string{})
+func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) (*[]models.Test, error) {
+	tests := []models.Test{}
+	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: ids}}}}
+	cursor, err := t.col.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 
-	for cursor.Next(context.Background()) {
-		var test models.Test
-		err := cursor.Decode(&test)
-		if err != nil {
-			return nil, err
-		}
-
-		tests = append(tests, &test)
+	if err = cursor.All(ctx, &tests); err != nil {
+		return &tests, err
 	}
 
-	return tests, nil
+	return &tests, nil
 }
 
 func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error) {
 	tests := []models.Test{}
 
-	filters := bson.D{{}}
-	if keyword != "" {
-		filters = bson.D{{Key: "name", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}}
-	}
+	filters := BuildMongoFilter(map[string]FilterCondition{
+		"name": {
+			Operator: "$regex",
+			Value:    keyword,
+			Option:   "i",
+		},
+	})
 
 	findOpts := options.Find()
 	if val, ok := opts["limit"]; ok {

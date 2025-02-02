@@ -1,47 +1,12 @@
 package pages
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-)
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
-templ RecordPage(message string) {
-	@partials.Base(message) {
+templ RecordPage() {
+	@partials.Base("") {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
-			<button
-				class="btn btn-primary"
-				hx-trigger="click"
-				data-bs-toggle="modal"
-				data-bs-target="#modals-here"
-			>
-				Thêm bệnh nhân
-			</button>
+			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
 		</div>
-		<div
-			id="modals-here"
-			class="modal modal-blur fade"
-			style="display: none"
-			aria-hidden="false"
-			tabindex="-1"
-		>
-			<div class="modal-dialog modal-lg modal-dialog-centered px-5 py-2" role="document">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title">Thêm bệnh nhân</h5>
-						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-					</div>
-					<div class="pe-5 ps-4">
-						@partials.CreateUserForm()
-					</div>
-				</div>
-			</div>
-		</div>
-		// User form
-		<div id="select-user-form">
-            @partials.SelectUserForm(models.Patient{}, true)
-		</div>
-		// Test table
-		@partials.TestTable([]models.Test{}, "record-page")
 	}
 }

@@ -20,13 +20,13 @@ templ ComboPage(message string) {
 				</div>
 				<div class="mb-3 position-relative">
 					<label>Tìm xét nghiệm theo tên</label>
-					<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result" hx-swap="outerHTML"/>
+					<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-combo-page" hx-swap="outerHTML"/>
 					<div x-show="open" @click.outside="open = false">
-						@TestSearchAutocomplete([]models.Test{})
+						@TestSearchAutocomplete([]models.Test{}, "combo-page")
 					</div>
 				</div>
 				<div class="mb-3">
-				    <input style="display: none" name="test_ids" x-bind:value="chosenTests.map(t => t.id)" />
+					<input style="display: none" name="test_ids" x-bind:value="chosenTests.map(t => t.id)"/>
 					<table id="test-table" class="table table-bordered">
 						@partials.TestTableHeader("test-page")
 						<tbody id="test-table-body">
@@ -52,12 +52,23 @@ templ ComboPage(message string) {
 	}
 }
 
-
-templ TestSearchAutocomplete(tests []models.Test) {
-	<div id="test-search-result" style="z-index: 100; background-color: white" class="position-absolute shadow bordered start-0 end-0 bg-light">
+templ TestSearchAutocomplete(tests []models.Test, page string) {
+	<style>
+		.test-option {
+			cursor: pointer;
+			padding: 12px;
+			border-bottom: 1px solid gray;
+		}
+	</style>
+	<div id={ "test-search-result-" + page } style="z-index: 100; background-color: white" class="position-absolute shadow bordered start-0 end-0 bg-light">
 		for _, test := range tests {
-			{{ b, _ := json.Marshal(test) }}
-			<div x-on:click={ "addTest(JSON.parse('" + string(b) + "'))" } style="cursor:pointer; padding: 12px; border-bottom: 1px solid gray;">{ test.Name }</div>
+			switch page {
+				case "record-page":
+					<div class="test-option">{ test.Name }</div>
+				case "combo-page":
+					{{ b, _ := json.Marshal(test) }}
+					<div x-on:click={ "addTest(JSON.parse('" + string(b) + "'))" } class="test-option">{ test.Name }</div>
+			}
 		}
 	</div>
 }
