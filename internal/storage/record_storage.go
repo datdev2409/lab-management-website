@@ -26,9 +26,11 @@ func (m *MongoRecordStorage) UpdateCombo(ctx context.Context, recordId string, c
 	return err
 }
 
-func (m *MongoRecordStorage) UpdatePatient(ctx context.Context, recordId string, patientId string) error {
+func (m *MongoRecordStorage) UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error {
 	filter := bson.D{{Key: "_id", Value: recordId}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "patient_id", Value: patientId}}}}
+
+	patientDoc := bson.D{{Key: "id", Value: patient.ID}, {Key: "name", Value: patient.Name}, {Key: "phone", Value: patient.Phone}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "patient", Value: patientDoc}}}}
 	_, err := m.col.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {

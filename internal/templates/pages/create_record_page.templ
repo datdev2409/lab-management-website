@@ -101,8 +101,8 @@ templ PatientSelect(record models.Record) {
 			<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + record.ID } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
 			@PatientSuggestionList([]models.Patient{}, record.ID)
 		</div>
-		if record.PatientID != "" {
-			<div hx-trigger="load" hx-get={ "/api/patients/" + record.PatientID } hx-target="#patient-info" id="patient-info" class="mb-3">
+		if record.Patient.ID != "" {
+			<div hx-trigger="load" hx-get={ "/api/patients/" + record.Patient.ID } hx-target="#patient-info" id="patient-info" class="mb-3">
 				@PatientInfo(models.Patient{})
 			</div>
 		} else {

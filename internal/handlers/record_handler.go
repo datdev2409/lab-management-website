@@ -49,7 +49,14 @@ func (h *Handler) UpdateRecordPatient(w http.ResponseWriter, r *http.Request) er
 
 	if strings.TrimSpace(patientId) != "" {
 		log.Println("Updating record with patient", patientId)
-		h.Store.Records().UpdatePatient(r.Context(), recordId, patientId)
+		patient, err := h.Store.Patients().GetById(patientId)
+		if err != nil {
+			log.Println(err)
+		}
+		err = h.Store.Records().UpdatePatient(r.Context(), recordId, *patient)
+		if err != nil {
+			log.Println(err)
+		}
 		http.Redirect(w, r, "/api/patients/"+patientId, http.StatusSeeOther)
 		return nil
 	}

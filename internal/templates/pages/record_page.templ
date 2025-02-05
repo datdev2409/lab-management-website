@@ -1,12 +1,38 @@
 package pages
 
-import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
 
 templ RecordPage() {
 	@partials.Base("") {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
+		</div>
+		<div class="mb-3">
+			<input class="form-control" name="keyword" hx-trigger="keyup changed delay:500ms" hx-get="/api/records" hx-target="#record-list"/>
+		</div>
+		<div id="record-list" hx-trigger="load" hx-get="/api/records">
+			@RecordList([]models.Record{})
+		</div>
+	}
+}
+
+templ RecordList(records []models.Record) {
+	for _, record := range records {
+		<div class="card" style="width: 18rem;">
+			<div class="card-header">
+				<span class="badge text-bg-secondary">{ record.Status }</span>
+				{ record.ComboName }
+			</div>
+			<div class="card-body">
+				<h5 class="card-title">{ record.Patient.Name }</h5>
+				<h6 class="card-subtitle mb-2 text-body-secondary">{ record.Patient.Phone }</h6>
+				<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID) } class="card-link">Chỉnh sửa</a>
+				<a href="#" class="card-link">Đã thanh toán</a>
+			</div>
 		</div>
 	}
 }

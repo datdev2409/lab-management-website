@@ -2,9 +2,12 @@ package storage
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type PatientStorage interface {
@@ -33,7 +36,8 @@ type ComboStorage interface {
 type RecordStorage interface {
 	Insert(ctx context.Context, record *models.Record) error
 	GetById(ctx context.Context, id string) (*models.Record, error)
-	UpdatePatient(ctx context.Context, recordId string, patientId string) error
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error)
+	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
 }
 
@@ -82,4 +86,37 @@ type MongoComboStorage struct {
 
 type MongoRecordStorage struct {
 	col *mongo.Collection
+}
+
+// SearchByKeyword implements RecordStorage.
+func (m *MongoRecordStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error) {
+	records := []models.Record{}
+
+	// Support filter by patient name and phone
+	filters := bson.D{
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}},
+			bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}},
+		}},
+	}
+
+	findOpts := options.Find()
+	if val, ok := opts["limit"]; ok {
+		limit, err := strconv.Atoi(val)
+		if err != nil {
+			limit = 5
+		}
+		findOpts.SetLimit(int64(limit))
+	}
+
+	cursor, err := m.col.Find(ctx, filters, findOpts)
+	if err != nil {
+		return &records, err
+	}
+
+	if err = cursor.All(ctx, &records); err != nil {
+		return &records, err
+	}
+
+	return &records, nil
 }
