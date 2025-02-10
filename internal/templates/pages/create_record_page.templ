@@ -66,34 +66,6 @@ templ PatientSuggestionList(patients []models.Patient, recordId string) {
 	</div>
 }
 
-templ PatientInfo(patient models.Patient) {
-	if patient.ID != "" {
-		<div class="mb-2">Thông tin bệnh nhân</div>
-		<table class="table table-bordered">
-			<tr>
-				<td>Tên</td>
-				<td>{ patient.Name }</td>
-			</tr>
-			<tr>
-				<td>Giới tính</td>
-				<td>{ patient.Gender }</td>
-			</tr>
-			<tr>
-				<td>Năm sinh</td>
-				<td>{ patient.YOB }</td>
-			</tr>
-			<tr>
-				<td>Điện thoại</td>
-				<td>{ patient.Phone }</td>
-			</tr>
-			<tr>
-				<td>Địa chỉ</td>
-				<td>{ patient.Address }</td>
-			</tr>
-		</table>
-	}
-}
-
 templ PatientSelect(record models.Record) {
 	<div>
 		<label for="benh_nhan" class="form-label">Bệnh nhân</label>
@@ -101,13 +73,6 @@ templ PatientSelect(record models.Record) {
 			<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + record.ID } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
 			@PatientSuggestionList([]models.Patient{}, record.ID)
 		</div>
-		if record.Patient.ID != "" {
-			<div hx-trigger="load" hx-get={ "/api/patients/" + record.Patient.ID } hx-target="#patient-info" id="patient-info" class="mb-3">
-				@PatientInfo(models.Patient{})
-			</div>
-		} else {
-			<div id="patient-info"></div>
-		}
 	</div>
 }
 
@@ -125,11 +90,47 @@ templ ComboSuggestionList(combos []models.Combo, recordId string) {
 }
 
 templ ComboSelect(record models.Record) {
-	<div class="mb-3">
-		<label for="combo" class="form-label">Gói xét nghiệm</label>
+	<div style="display: flex; align-items: center;">
+		<label style="min-width: 130px;" for="combo" class="form-label">Gói xét nghiệm</label>
 		<div x-data="{open: false, keyword: ''}" class="position-relative flex-grow-1">
 			<input x-model="keyword" @keyup="open=true" autocomplete="off" id="combo" class="form-control" name="combo_name" hx-get={ "/api/combos?record_id=" + record.ID } hx-trigger="keyup changed delay:500ms" hx-target="#combo-search-result" hx-swap="outerHTML"/>
 			@ComboSuggestionList([]models.Combo{}, record.ID)
+		</div>
+		<div></div>
+	</div>
+}
+
+templ InputWithLabel(label string, name string, value string) {
+	<div style="display: flex; align-items: center;">
+		<label style="min-width: 130px;" class="form-label">{ label }</label>
+		<input class="form-control" name={ name } value={ value }/>
+	</div>
+}
+
+templ PatientSelectForm(recordId string, patient models.Patient) {
+	<div>
+		<div style="display: flex; align-items: center;">
+			<label for="benh_nhan" style="min-width: 130px;" class="form-label">Bệnh nhân</label>
+			<div x-data="{open: false}" class="position-relative" style="width: 100%">
+				<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + recordId } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
+				@PatientSuggestionList([]models.Patient{}, recordId)
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				@InputWithLabel("Điện thoại", "phone", "")
+			</div>
+			<div class="col">
+				@InputWithLabel("Địa chỉ", "address", "")
+			</div>
+		</div>
+		<div class="row">
+			<div class="col">
+				@InputWithLabel("Ngày sinh", "dob", "")
+			</div>
+			<div class="col">
+				@InputWithLabel("Giới tính", "gender", "")
+			</div>
 		</div>
 	</div>
 }
@@ -141,18 +142,28 @@ templ RecordDetailPage(record models.Record, message string) {
 			@PatientCreateModal()
 		</div>
 		// User form
-		@PatientSelect(record)
+		@PatientSelectForm(record.ID, models.Patient{})
+		// @PatientSelect(record)
 		@ComboSelect(record)
+		@InputWithLabel("Thêm xét nghiệm", "test_name", "")
 		// Test select input
-		<div x-data="{open: false}" class="mb-3 position-relative">
-			<label>Tìm xét nghiệm theo tên</label>
-			<input @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-record-page" hx-swap="outerHTML"/>
-			<div x-show="open" @click.outside="open = false">
-				@TestSearchAutocomplete([]models.Test{}, "record-page")
-			</div>
-		</div>
+		// <div x-data="{open: false}" class="mb-3 position-relative">
+		// 	<label>Tìm xét nghiệm theo tên</label>
+		// 	<input @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-record-page" hx-swap="outerHTML"/>
+		// 	<div x-show="open" @click.outside="open = false">
+		// 		@TestSearchAutocomplete([]models.Test{}, "record-page")
+		// 	</div>
+		// </div>
 		// Test table
-		<div hx-trigger="record-combo-updated" hx-get={ "/api/records/" + record.ID + "/tests" } hx-target="#test-table" hx-swap="outerHTML">
+		// if record.Patient.ID != "" {
+		// 	<div hx-trigger="load" hx-get={ "/api/patients/" + record.Patient.ID } hx-target="#patient-info" id="patient-info" class="mb-3">
+		// 		@PatientInfo(models.Patient{})
+		// 	</div>
+		// } else {
+		// 	<div id="patient-info"></div>
+		// }
+		// @ComboInfo(record.ComboName)
+		<div class="mt-3" hx-trigger="load record-combo-updated" hx-get={ "/api/records/" + record.ID + "/tests" } hx-target="#test-table" hx-swap="outerHTML">
 			@partials.TestTable([]models.Test{}, "record-page")
 		</div>
 		<div>
