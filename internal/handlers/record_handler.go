@@ -34,6 +34,7 @@ func (h *Handler) HandleCreateNewRecord(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
+	h.Store.Records().GetAllInformation(r.Context(), recordId)
 	record, err := h.Store.Records().GetById(r.Context(), recordId)
 	if err != nil {
 		log.Println(err)
@@ -57,8 +58,7 @@ func (h *Handler) UpdateRecordPatient(w http.ResponseWriter, r *http.Request) er
 		if err != nil {
 			log.Println(err)
 		}
-		http.Redirect(w, r, "/api/patients/"+patientId, http.StatusSeeOther)
-		return nil
+		return Render(r.Context(), w, pages.PatientSelectForm(recordId, *patient))
 	}
 	if comboId != "" {
 		log.Println("Updating record with combo", comboId)

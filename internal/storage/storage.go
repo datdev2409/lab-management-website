@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -36,6 +37,7 @@ type ComboStorage interface {
 type RecordStorage interface {
 	Insert(ctx context.Context, record *models.Record) error
 	GetById(ctx context.Context, id string) (*models.Record, error)
+	GetAllInformation(ctx context.Context, id string) (*models.Record, *models.Patient, *[]models.Test, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error)
 	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
@@ -69,7 +71,7 @@ func (m *MongoStorage) Combos() ComboStorage {
 }
 
 func (m *MongoStorage) Records() RecordStorage {
-	return &MongoRecordStorage{col: m.db.Collection("records")}
+	return &MongoRecordStorage{storage: m, col: m.db.Collection("records")}
 }
 
 type MongoPatientStorage struct {
@@ -85,7 +87,8 @@ type MongoComboStorage struct {
 }
 
 type MongoRecordStorage struct {
-	col *mongo.Collection
+	storage *MongoStorage
+	col     *mongo.Collection
 }
 
 // SearchByKeyword implements RecordStorage.
@@ -119,4 +122,48 @@ func (m *MongoRecordStorage) SearchByKeyword(ctx context.Context, keyword string
 	}
 
 	return &records, nil
+}
+
+func (m *MongoRecordStorage) GetAllInformation(ctx context.Context, id string) (*models.Record, *models.Patient, *[]models.Test, error) {
+	lookupPipeline := bson.A{
+		bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: id}}}},
+		bson.D{{Key: "$lookup", Value: bson.D{
+			{Key: "from", Value: "patients"},
+			{Key: "localField", Value: "patient.id"},
+			{Key: "foreignField", Value: "_id"},
+			{Key: "as", Value: "patient"},
+		}},
+		},
+	}
+
+	// m.storage.db.Aggregate(ctx, lookupPipeline)
+	cursor, err := m.col.Aggregate(ctx, lookupPipeline)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	var results []bson.M
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		panic(err)
+	}
+	for _, result := range results {
+		fmt.Println(result)
+	}
+	return nil, nil, nil, nil
+	// record, err := m.GetById(ctx, id)
+	// if err != nil {
+	// 	return nil, nil, nil, err
+	// }
+
+	// patient, err := m.getPatient(ctx, record.PatientID)
+	// if err != nil {
+	// 	return nil, nil, nil, err
+	// }
+
+	// tests, err := m.getTests(ctx, record.TestIDs)
+	// if err != nil {
+	// 	return nil, nil, nil, err
+	// }
+
+	// return record, patient, tests, nil
 }

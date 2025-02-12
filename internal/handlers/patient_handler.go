@@ -67,13 +67,15 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	patient, err := h.Store.Patients().GetById(id)
+	_, err := h.Store.Patients().GetById(id)
 	if err != nil {
 		log.Println(err)
-		return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
+		// return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
+		return nil
 	}
 
-	return Render(r.Context(), w, pages.PatientInfo(*patient))
+	// return Render(r.Context(), w, pages.PatientInfo(*patient))
+	return nil
 }
 
 func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {

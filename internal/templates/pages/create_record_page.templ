@@ -56,26 +56,29 @@ templ PatientSuggestionList(patients []models.Patient, recordId string) {
 			background-color: #f1f1f1;
 		}
 	</style>
-	<div x-show="open" @click.outside="open=false" id="patient-suggestion-list" class="shadow bordered position-absolute">
+	<div id="patient-suggestion-list" class="shadow bordered position-absolute">
 		for _, patient := range patients {
-			<input type="hidden" name="patient_id" value={ patient.ID }/>
-			<div x-init="htmx.process(htmx.find('.patient-option'))" hx-trigger="click" class="patient-option" hx-patch={ "/api/records/" + recordId } hx-target="#patient-info" hx-include="input[name=patient_id]" @click="open=false">
-				{ patient.Name } - { patient.Phone }
+			<div hx-trigger="click" class="patient-option" hx-patch={ "/api/records/" + recordId } hx-target="#patient-select-form" hx-include={ "#patient-option-" + patient.ID }>
+				<input type="hidden" name="patient_id" id={ "patient-option-" + patient.ID } value={ patient.ID }/>
+				<div>
+					{ patient.Name } - { patient.Phone }
+				</div>
 			</div>
 		}
 	</div>
 }
 
-templ PatientSelect(record models.Record) {
-	<div>
-		<label for="benh_nhan" class="form-label">Bệnh nhân</label>
-		<div x-data="{open: false}" class="position-relative mb-3">
-			<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + record.ID } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
-			@PatientSuggestionList([]models.Patient{}, record.ID)
-		</div>
-	</div>
-}
-
+// templ PatientSelect(record models.Record) {
+// 	<div>
+// 		<label for="benh_nhan" class="form-label">Bệnh nhân</label>
+// 		<div x-data="{open: false}" class="position-relative mb-3">
+// 			<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + record.ID } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
+// 			<div x-show="open" @click.outside="open=false">
+// 				@PatientSuggestionList([]models.Patient{}, record.ID)
+// 			</div>
+// 		</div>
+// 	</div>
+// }
 templ ComboSuggestionList(combos []models.Combo, recordId string) {
 	<div x-show="open" @click.outside="open = false" class="shadow bordered position-absolute start-0 end-0 bg-light" style="z-index: 100; background-color: white">
 		<div id="combo-search-result">
@@ -112,24 +115,24 @@ templ PatientSelectForm(recordId string, patient models.Patient) {
 		<div style="display: flex; align-items: center;">
 			<label for="benh_nhan" style="min-width: 130px;" class="form-label">Bệnh nhân</label>
 			<div x-data="{open: false}" class="position-relative" style="width: 100%">
-				<input @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + recordId } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
+				<input value={ patient.Name } @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + recordId } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
 				@PatientSuggestionList([]models.Patient{}, recordId)
 			</div>
 		</div>
 		<div class="row">
 			<div class="col">
-				@InputWithLabel("Điện thoại", "phone", "")
+				@InputWithLabel("Điện thoại", "phone", patient.Phone)
 			</div>
 			<div class="col">
-				@InputWithLabel("Địa chỉ", "address", "")
+				@InputWithLabel("Địa chỉ", "address", patient.Address)
 			</div>
 		</div>
 		<div class="row">
 			<div class="col">
-				@InputWithLabel("Ngày sinh", "dob", "")
+				@InputWithLabel("Năm sinh", "dob", patient.YOB)
 			</div>
 			<div class="col">
-				@InputWithLabel("Giới tính", "gender", "")
+				@InputWithLabel("Giới tính", "gender", patient.Gender)
 			</div>
 		</div>
 	</div>
@@ -142,7 +145,9 @@ templ RecordDetailPage(record models.Record, message string) {
 			@PatientCreateModal()
 		</div>
 		// User form
-		@PatientSelectForm(record.ID, models.Patient{})
+		<div id="patient-select-form">
+			@PatientSelectForm(record.ID, models.Patient{})
+		</div>
 		// @PatientSelect(record)
 		@ComboSelect(record)
 		@InputWithLabel("Thêm xét nghiệm", "test_name", "")

@@ -57,6 +57,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/", Make(h.SearchRecordsByPatientNameOrPhone))
 		r.Patch("/{id}", Make(h.UpdateRecordPatient))
 		r.Get("/{id}/tests", Make(h.GetRecordTests))
+		r.Get("/{id}/patient", Make(h.GetRecordPatient))
 	})
 
 	return h
@@ -71,4 +72,20 @@ func (h *Handler) SearchRecordsByPatientNameOrPhone(w http.ResponseWriter, r *ht
 	}
 
 	return Render(r.Context(), w, pages.RecordList(*records))
+}
+
+func (h *Handler) GetRecordPatient(w http.ResponseWriter, r *http.Request) error {
+	// id := chi.URLParam(r, "id")
+	// record, err := h.Store.Records().Get(r.Context(), id)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// patient, err := h.Store.Patients().Get(r.Context(), record.PatientID)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// return Render(r.Context(), w, pages.PatientDetail(*patient))
+	return nil
 }
