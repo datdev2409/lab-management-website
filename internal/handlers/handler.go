@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/datdev2409/lab-admin-go/internal/storage"
-	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -56,36 +55,10 @@ func NewHandler(store storage.AppStorage) *Handler {
 	r.Route("/api/records", func(r chi.Router) {
 		r.Get("/", Make(h.SearchRecordsByPatientNameOrPhone))
 		r.Patch("/{id}", Make(h.UpdateRecordPatient))
-		r.Get("/{id}/tests", Make(h.GetRecordTests))
-		r.Get("/{id}/patient", Make(h.GetRecordPatient))
+		r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
+		r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
+		r.Patch("/{id}/tests", Make(h.UpdateRecordTest))
 	})
 
 	return h
-}
-
-func (h *Handler) SearchRecordsByPatientNameOrPhone(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("keyword")
-	records, err := h.Store.Records().SearchByKeyword(r.Context(), keyword, map[string]string{"limit": "20"})
-
-	if err != nil {
-		return err
-	}
-
-	return Render(r.Context(), w, pages.RecordList(*records))
-}
-
-func (h *Handler) GetRecordPatient(w http.ResponseWriter, r *http.Request) error {
-	// id := chi.URLParam(r, "id")
-	// record, err := h.Store.Records().Get(r.Context(), id)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// patient, err := h.Store.Patients().Get(r.Context(), record.PatientID)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// return Render(r.Context(), w, pages.PatientDetail(*patient))
-	return nil
 }

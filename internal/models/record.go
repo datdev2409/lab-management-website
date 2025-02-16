@@ -1,8 +1,17 @@
 package models
 
-import "go.mongodb.org/mongo-driver/v2/bson"
+import (
+	"go.mongodb.org/mongo-driver/v2/bson"
+)
 
 type TestResult struct {
+	TestID     string `json:"test_id" bson:"test_id"`
+	Result     string `json:"result" bson:"result"`
+	ResultText string `json:"result_text" bson:"result_text"`
+}
+
+type TestResultWithDetails struct {
+	Test       Test   `json:"test" bson:"test"`
 	TestID     string `json:"test_id" bson:"test_id"`
 	Result     string `json:"result" bson:"result"`
 	ResultText string `json:"result_text" bson:"result_text"`
@@ -20,6 +29,15 @@ type Record struct {
 	Patient     EmbeddedPatient `json:"patient" bson:"patient"`
 	TestResults []TestResult    `json:"test_results" bson:"test_results"`
 	Status      string          `json:"status" bson:"status"`
+}
+
+type RecordWithDetails struct {
+	ID          string          `json:"id" bson:"_id"`
+	ComboName   string          `json:"combo_name" bson:"combo_name"`
+	Patient     Patient         `json:"patient" bson:"patient"`
+	TestResults []TestResult    `json:"test_results" bson:"test_results"`
+	Status      string          `json:"status" bson:"status"`
+	TestInfoMap map[string]Test `json:"test_info_map" bson:"test_info_map"`
 }
 
 func (r *Record) MarshalBSON() ([]byte, error) {

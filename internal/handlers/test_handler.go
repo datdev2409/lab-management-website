@@ -75,8 +75,11 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	log.Println(r.Header.Get("HX-Target"))
 	target := r.Header.Get("HX-Target")
 	switch target {
+	case "test-autocomplete":
+		recordId := r.URL.Query().Get("record_id")
+		return Render(r.Context(), w, pages.TestAutocomplete(*tests, recordId))
 	case "test-table":
-		return Render(r.Context(), w, partials.TestTable(*tests, "test-page"))
+		return Render(r.Context(), w, partials.TestTable(*tests, "test-page", false))
 	case "test-search-result-combo-page":
 		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "combo-page"))
 	case "test-search-result-record-page":

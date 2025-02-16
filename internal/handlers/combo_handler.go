@@ -54,5 +54,5 @@ func (h *Handler) GetCombo(w http.ResponseWriter, r *http.Request) error {
 
 	log.Println(tests)
 
-	return Render(r.Context(), w, partials.TestTable(*tests, "record-page"))
+	return Render(r.Context(), w, partials.TestTable(*tests, "record-page", false))
 }

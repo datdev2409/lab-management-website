@@ -1,15 +1,27 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
-	"github.com/a-h/templ"
 	"log"
 	"net/http"
+
+	"github.com/a-h/templ"
 )
 
 func Render(ctx context.Context, w http.ResponseWriter, comp templ.Component) error {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	return comp.Render(ctx, w)
+}
+
+func RenderMultiComponents(ctx context.Context, w http.ResponseWriter, comps []templ.Component) error {
+	strBuffer := bytes.NewBufferString("")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	for _, comp := range comps {
+		comp.Render(ctx, strBuffer)
+	}
+	_, err := w.Write(strBuffer.Bytes())
+	return err
 }
 
 type HandlerFuncReturnError = func(w http.ResponseWriter, r *http.Request) error
