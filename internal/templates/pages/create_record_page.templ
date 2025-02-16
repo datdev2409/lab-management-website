@@ -196,7 +196,12 @@ templ RecordDetailPage(record models.RecordWithDetails, message string) {
 		@partials.TestTable(tests, "record-page", false)
 		<div>
 			<a class="btn btn-secondary" href="/phieu-xet-nghiem" role="button">Trở về</a>
-			<button class="btn btn-primary">Xuất phiếu thu</button>
+			<button
+				hx-post={ "/api/records/" + record.ID + "/export/billing" }
+				class="btn btn-primary"
+			>
+				Xuất phiếu thu
+			</button>
 		</div>
 	}
 }
