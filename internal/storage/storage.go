@@ -38,6 +38,7 @@ type RecordStorage interface {
 	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
 	AddTest(ctx context.Context, recordId string, testId string) error
+	SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error
 }
 
 type AppStorage interface {
