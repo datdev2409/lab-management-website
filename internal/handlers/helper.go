@@ -5,6 +5,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/templ"
 )
@@ -61,4 +62,19 @@ func GetAndDeleteFlashCookie(w http.ResponseWriter, r *http.Request) string {
 		})
 	}
 	return value
+}
+
+func ParseInputName(name string, sep string) (string, string) {
+	parts := strings.SplitN(name, sep, 2)
+	if len(parts) != 2 {
+		return "", ""
+	}
+	return parts[0], parts[1]
+}
+
+func SafeAccessSliceIndex(slice []string, index int) string {
+	if index < 0 || index >= len(slice) {
+		return ""
+	}
+	return slice[index]
 }

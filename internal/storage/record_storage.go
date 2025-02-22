@@ -103,7 +103,7 @@ func (m *MongoRecordStorage) GetDetails(ctx context.Context, id string) (*models
 		{Key: "foreignField", Value: "_id"},
 		{Key: "as", Value: "patient"},
 	}}}
-	patientUnwindStage := bson.D{{Key: "$unwind", Value: "$patient"}}
+	patientUnwindStage := bson.D{{Key: "$unwind", Value: bson.D{{Key: "path", Value: "$patient"}, {Key: "preserveNullAndEmptyArrays", Value: true}}}}
 
 	testsLookupStage := bson.D{{Key: "$lookup", Value: bson.D{
 		{Key: "from", Value: "tests"},
@@ -152,4 +152,10 @@ func (m *MongoRecordStorage) GetDetails(ctx context.Context, id string) (*models
 	}
 
 	return &result, nil
+}
+
+func (m *MongoRecordStorage) SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error {
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: testResults}}}}
+	_, err := m.col.UpdateByID(ctx, recordId, update)
+	return err
 }

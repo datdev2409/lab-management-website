@@ -8,7 +8,6 @@ import (
 	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
 )
@@ -63,9 +62,10 @@ func (h *Handler) UpdateRecordCombo(w http.ResponseWriter, r *http.Request) erro
 		log.Println(err)
 	}
 
+	results := make([]models.TestResult, 0, len(*tests))
 	return RenderMultiComponents(r.Context(), w, []templ.Component{
 		pages.ComboSelect(recordId, combo.Name),
-		partials.TestTable(*tests, "record-page", true),
+		pages.RecordPageTestTable(*tests, results, true),
 	})
 }
 
@@ -116,7 +116,7 @@ func (h *Handler) SearchRecordsByPatientNameOrPhone(w http.ResponseWriter, r *ht
 	return Render(r.Context(), w, pages.RecordList(*records))
 }
 
-func (h *Handler) UpdateRecordTest(w http.ResponseWriter, r *http.Request) error {
+func (h *Handler) AddTestToRecord(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
 	testId := r.FormValue("test_id")
 
@@ -134,5 +134,39 @@ func (h *Handler) UpdateRecordTest(w http.ResponseWriter, r *http.Request) error
 	log.Println("Updating record with test", recordId)
 	log.Println("Updating record with test", testId)
 
-	return Render(r.Context(), w, partials.TestRowRecordPage(*test))
+	return Render(r.Context(), w, pages.RecordPageTestRow(*test, models.TestResult{}))
+}
+
+func (h *Handler) UpdateRecordTests(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	log.Println(recordId)
+
+	r.ParseForm()
+
+	tests := map[string]*models.TestResult{}
+
+	for key, values := range r.Form {
+		field, testId := ParseInputName(key, "#")
+
+		_, ok := tests[testId]
+		if !ok {
+			tests[testId] = &models.TestResult{TestID: testId}
+		}
+
+		if field == "result" {
+			tests[testId].Result = SafeAccessSliceIndex(values, 0)
+		}
+
+		if field == "result_text" {
+			tests[testId].ResultText = SafeAccessSliceIndex(values, 0)
+		}
+	}
+
+	testResults := make([]models.TestResult, 0, len(tests))
+	for _, result := range tests {
+		testResults = append(testResults, *result)
+	}
+	h.Store.Records().SaveTestResults(r.Context(), recordId, testResults)
+
+	return nil
 }
