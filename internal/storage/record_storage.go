@@ -24,7 +24,8 @@ func (m *MongoRecordStorage) UpdateCombo(ctx context.Context, recordId string, c
 	}
 
 	updateTest := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: tests}}}}
-	update = append(update, updateComboName, updateTest)
+	updateUpdatedTime := bson.D{{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}}}
+	update = append(update, updateComboName, updateTest, updateUpdatedTime)
 
 	_, err := m.col.UpdateOne(context.TODO(), filter, update)
 	return err
@@ -34,7 +35,10 @@ func (m *MongoRecordStorage) UpdatePatient(ctx context.Context, recordId string,
 	filter := bson.D{{Key: "_id", Value: recordId}}
 
 	patientDoc := bson.D{{Key: "id", Value: patient.ID}, {Key: "name", Value: patient.Name}, {Key: "phone", Value: patient.Phone}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "patient", Value: patientDoc}}}}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{{Key: "patient", Value: patientDoc}}},
+		{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}},
+	}
 	_, err := m.col.UpdateOne(context.TODO(), filter, update)
 
 	if err != nil {
@@ -51,13 +55,19 @@ func (m *MongoRecordStorage) GetById(ctx context.Context, id string) (*models.Re
 }
 
 func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) error {
+	now := GetCurrentTime()
+	record.CreatedAt = now
+	record.UpdatedAt = now
 	_, err := m.col.InsertOne(ctx, record)
 	return err
 }
 
 func (m *MongoRecordStorage) AddTest(ctx context.Context, recordId string, testId string) error {
 	testResult := models.TestResult{TestID: testId, Result: "", ResultText: ""}
-	update := bson.D{{Key: "$push", Value: bson.D{{Key: "test_results", Value: testResult}}}}
+	update := bson.D{
+		{Key: "$push", Value: bson.D{{Key: "test_results", Value: testResult}}},
+		{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}},
+	}
 	_, err := m.col.UpdateByID(ctx, recordId, update)
 	return err
 }
@@ -158,4 +168,20 @@ func (m *MongoRecordStorage) SaveTestResults(ctx context.Context, recordId strin
 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: testResults}}}}
 	_, err := m.col.UpdateByID(ctx, recordId, update)
 	return err
+}
+
+func (m *MongoRecordStorage) ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error) {
+	records := []models.Record{}
+
+	opts := options.Find().SetSort(bson.D{{Key: "created_at", Value: -1}})
+	cursor, err := m.col.Find(ctx, map[string]string{"patient.id": patientId}, opts)
+	if err != nil {
+		return &records, err
+	}
+
+	if err = cursor.All(ctx, &records); err != nil {
+		return &records, err
+	}
+
+	return &records, nil
 }

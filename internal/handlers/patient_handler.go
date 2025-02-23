@@ -7,8 +7,10 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 	"github.com/google/uuid"
+	. "maragu.dev/gomponents"
 )
 
 func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
@@ -47,12 +49,15 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 
 	keyword := r.URL.Query().Get("patient_name")
 
+	log.Println(keyword)
+
 	patients, err := h.Store.Patients().SearchByKeyword(r.Context(), keyword, opts)
 	if err != nil {
 		patients = &[]models.Patient{}
 	}
 
 	target := r.Header.Get("HX-Target")
+	log.Println(target)
 
 	switch target {
 	case "patient-table":
@@ -61,21 +66,28 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 		recordId := r.URL.Query().Get("record_id")
 		log.Println(recordId)
 		return Render(r.Context(), w, pages.PatientSuggestionList(*patients, recordId))
+	case "cp_patient-suggestion-list":
+		return view.PatientSuggestionList(*patients, false).Render(w)
 	}
+
 	return nil
 }
 
 func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	_, err := h.Store.Patients().GetById(id)
+	patient, err := h.Store.Patients().GetById(id)
 	if err != nil {
 		log.Println(err)
 		// return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
 		return nil
 	}
 
-	// return Render(r.Context(), w, pages.PatientInfo(*patient))
-	return nil
+	return RenderOOB(r.Context(), w, []Node{
+		view.PatientSelectInput(patient.Name, patient.ID),
+		view.PatientInfo(patient, true),
+		view.PatientSuggestionList([]models.Patient{}, true),
+	})
+	// return view.PatientInfo(patient, false).Render(w)
 }
 
 func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {

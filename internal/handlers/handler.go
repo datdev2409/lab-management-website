@@ -1,10 +1,14 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
+	"strings"
 
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/storage"
+	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
+	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -32,6 +36,10 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
+		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingPage))
+		r.Get("/so-sanh-ket-qua", func(w http.ResponseWriter, r *http.Request) {
+			view.CompareResultsPage(view.PageProps{}).Render(w)
+		})
 	})
 
 	// Handle patients
@@ -57,7 +65,8 @@ func NewHandler(store storage.AppStorage) *Handler {
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
-		r.Get("/", Make(h.SearchRecordsByPatientNameOrPhone))
+		r.Get("/search", Make(h.SearchRecordsByPatientNameOrPhone))
+		r.Get("/", Make(h.ListRecords))
 		r.Patch("/{id}", Make(h.UpdateRecordPatient))
 		r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
 		r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
@@ -67,7 +76,45 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Post("/{id}/export/results", Make(h.ExportRecordResults))
 	})
 
+	r.Route("/api/tracking", func(r chi.Router) {
+		r.Post("/export", Make(h.ExportTracking))
+	})
+
 	return h
+}
+
+func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) error {
+	return Render(r.Context(), w, pages.TrackingPage(""))
+}
+
+func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
+	r.ParseForm()
+	var compareRecordIds []string
+	for key, values := range r.Form {
+		if strings.HasPrefix(key, "record_id_") {
+			compareRecordIds = append(compareRecordIds, values[0])
+		}
+	}
+	log.Printf("Selected records: %v", compareRecordIds)
+	return nil
+}
+
+func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
+	patientId := r.URL.Query().Get("patient_id")
+	records, err := h.Store.Records().ListByPatientId(r.Context(), patientId)
+	if err != nil {
+		return nil
+	}
+
+	log.Println(patientId)
+	view.RecordList(*records).Render(w)
+	return nil
+	// records, err := h.Store.Records().GetAll(r.Context())
+	// if err != nil {
+	// 	return err
+	// }
+
+	// return view.RecordTable(*records).Render(w)
 }
 
 func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {

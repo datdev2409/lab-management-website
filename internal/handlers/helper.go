@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
+	. "maragu.dev/gomponents"
 )
 
 func Render(ctx context.Context, w http.ResponseWriter, comp templ.Component) error {
@@ -23,6 +24,10 @@ func RenderMultiComponents(ctx context.Context, w http.ResponseWriter, comps []t
 	}
 	_, err := w.Write(strBuffer.Bytes())
 	return err
+}
+
+func RenderOOB(ctx context.Context, w http.ResponseWriter, nodes []Node) error {
+	return Group(nodes).Render(w)
 }
 
 type HandlerFuncReturnError = func(w http.ResponseWriter, r *http.Request) error

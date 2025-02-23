@@ -12,9 +12,9 @@ templ RecordPage() {
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
 		</div>
 		<div class="mb-3">
-			<input class="form-control" name="keyword" hx-trigger="keyup changed delay:500ms" hx-get="/api/records" hx-target="#record-list"/>
+			<input class="form-control" name="keyword" hx-trigger="load, keyup changed delay:500ms" hx-get="/api/records/search" hx-target="#record-list"/>
 		</div>
-		<div id="record-list" hx-trigger="load" hx-get="/api/records">
+		<div id="record-list">
 			@RecordList([]models.Record{})
 		</div>
 	}

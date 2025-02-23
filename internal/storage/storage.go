@@ -34,6 +34,7 @@ type RecordStorage interface {
 	Insert(ctx context.Context, record *models.Record) error
 	GetById(ctx context.Context, id string) (*models.Record, error)
 	GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
+	ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error)
 	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error

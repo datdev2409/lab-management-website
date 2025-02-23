@@ -51,8 +51,13 @@ func (h *Handler) UpdateRecordCombo(w http.ResponseWriter, r *http.Request) erro
 	}
 
 	log.Println("Updating record with combo", comboId)
-	combo, _ := h.Store.Combos().GetById(r.Context(), comboId)
-	err := h.Store.Records().UpdateCombo(r.Context(), recordId, combo)
+	combo, err := h.Store.Combos().GetById(r.Context(), comboId)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = h.Store.Records().UpdateCombo(r.Context(), recordId, combo)
 	if err != nil {
 		log.Println(err)
 	}
@@ -62,7 +67,11 @@ func (h *Handler) UpdateRecordCombo(w http.ResponseWriter, r *http.Request) erro
 		log.Println(err)
 	}
 
-	results := make([]models.TestResult, 0, len(*tests))
+	// results := make([]models.TestResult, 0, len(*tests))
+	var results []models.TestResult
+	for _, test := range *tests {
+		results = append(results, models.TestResult{TestID: test.ID, Result: "", ResultText: ""})
+	}
 	return RenderMultiComponents(r.Context(), w, []templ.Component{
 		pages.ComboSelect(recordId, combo.Name),
 		pages.RecordPageTestTable(*tests, results, true),

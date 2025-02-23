@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -29,6 +31,8 @@ type Record struct {
 	Patient     EmbeddedPatient `json:"patient" bson:"patient"`
 	TestResults []TestResult    `json:"test_results" bson:"test_results"`
 	Status      string          `json:"status" bson:"status"`
+	CreatedAt   time.Time       `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at" bson:"updated_at"`
 }
 
 type RecordWithDetails struct {
@@ -38,6 +42,8 @@ type RecordWithDetails struct {
 	TestResults []TestResult    `json:"test_results" bson:"test_results"`
 	Status      string          `json:"status" bson:"status"`
 	TestInfoMap map[string]Test `json:"test_info_map" bson:"test_info_map"`
+	CreatedAt   time.Time       `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time       `json:"updated_at" bson:"updated_at"`
 }
 
 func (r *Record) MarshalBSON() ([]byte, error) {
