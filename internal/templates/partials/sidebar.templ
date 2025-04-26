@@ -1,32 +1,43 @@
 package partials
 
-templ Sidebar() {
-	<div
-		style="height: 100vh; min-width: 180px; overflow-y: hidden"
-		class="col-2 border shadow-sm"
-	>
-		<ul class="nav flex-column pt-3">
-			<li class="nav-item">
-				<a class="nav-link active" href="/phieu-xet-nghiem">Phiếu xét nghiệm</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/danh-muc-benh-nhan">Danh mục bệnh nhân</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="#">Danh mục bác sĩ</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/danh-muc-xet-nghiem">Danh mục xét nghiệm</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/danh-muc-goi-xet-nghiem">Danh mục gói xét nghiệm</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/danh-muc-so-sanh">Danh mục so sánh</a>
-			</li>
-			<li class="nav-item">
-				<a class="nav-link" href="/so-sanh-ket-qua">Sổ theo dõi kết quả</a>
-			</li>
+import "strings"
+
+type NavItem struct {
+	Title string
+	Href  string
+}
+
+func isActive(currentPath, href string) bool {
+	return strings.HasPrefix(currentPath, href)
+}
+
+var routers = []NavItem{
+	{Title: "Phiếu xét nghiệm", Href: "/phieu-xet-nghiem"},
+	{Title: "Sổ theo dõi kết quả", Href: "/so-sanh-ket-qua"},
+	{Title: "hr", Href: ""},
+	{Title: "Danh mục bệnh nhân", Href: "/danh-muc-benh-nhan"},
+	{Title: "Danh mục bác sĩ", Href: "/danh-muc-bac-si"},
+	{Title: "Danh mục xét nghiệm", Href: "/danh-muc-xet-nghiem"},
+	{Title: "Danh mục gói xét nghiệm", Href: "/danh-muc-goi-xet-nghiem"},
+	{Title: "Danh mục so sánh", Href: "/danh-muc-so-sanh"},
+}
+
+templ Sidebar(currentPath string) {
+	<nav class="navbar bg-body-tertiary border-end border-body flex-column align-items-start justify-content-start p-3" style="height: 100vh;">
+		<h3 class="ps-2">Anh Quan Lab</h3>
+		<hr class="w-100"/>
+		<ul class="navbar-nav">
+			for _, item := range routers {
+				if item.Title == "hr" {
+					<hr class="w-100"/>
+				} else {
+					<li class="nav-item">
+						<a class={ "nav-link", templ.KV("active", isActive(currentPath, item.Href)) } href={ templ.SafeURL(item.Href) }>
+							<span class="ms-2">{ item.Title }</span>
+						</a>
+					</li>
+				}
+			}
 		</ul>
-	</div>
+	</nav>
 }

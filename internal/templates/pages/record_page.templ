@@ -6,7 +6,13 @@ import (
 )
 
 templ RecordPage() {
-	@partials.Base("") {
+	{{
+		var recordPageProps = models.PageProps{
+			Title: "Phiếu xét nghiệm",
+			Path:  "/phieu-xet-nghiem",
+		}
+	}}
+	@partials.Base(recordPageProps) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>

@@ -178,12 +178,16 @@ templ PatientSelectForm(recordId string, patient models.Patient) {
 
 templ RecordDetailPage(record models.RecordWithDetails, message string) {
 	{{
+		var recordDetailPageProps = models.PageProps{
+			Title: "Phiếu xét nghiệm",
+			Path:  "/phieu-xet-nghiem/" + record.ID,
+		}
 		var tests []models.Test
 		for _, testResult := range record.TestResults {
 			tests = append(tests, record.TestInfoMap[testResult.TestID])
 		}
 	}}
-	@partials.Base(message) {
+	@partials.Base(recordDetailPageProps) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			@PatientCreateModal()

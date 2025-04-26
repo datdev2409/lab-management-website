@@ -7,7 +7,13 @@ import (
 )
 
 templ ComboPage(message string) {
-	@partials.Base(message) {
+	{{
+		var comboPageProps = models.PageProps{
+			Title: "Danh mục gói xét nghiệm",
+			Path:  "/danh-muc-goi-xet-nghiem",
+		}
+	}}
+	@partials.Base(comboPageProps) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục gói xét nghiệm</h3>
 		</div>

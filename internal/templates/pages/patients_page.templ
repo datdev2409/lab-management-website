@@ -6,7 +6,13 @@ import (
 )
 
 templ PatientsPage(patients []models.Patient) {
-	@partials.Base("") {
+	{{
+		var patientsPageProps = models.PageProps{
+			Title: "Danh mục bệnh nhân",
+			Path:  "/danh-muc-benh-nhan",
+		}
+	}}
+	@partials.Base(patientsPageProps) {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục bệnh nhân</h3>
 			@partials.CreatePatientModal()

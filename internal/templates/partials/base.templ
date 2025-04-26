@@ -1,13 +1,15 @@
 package partials
 
-templ Notification(message string) {
-	if message != "" {
-		<div id="alert" class="position-absolute bottom-0 end-0 alert alert-success alert-dismissible fade show" role="alert">
-            {message}
+import "github.com/datdev2409/lab-admin-go/internal/models"
+
+templ Notification(props models.NotificationProps) {
+	if props.Message != "" {
+		<div id="alert" class="position-absolute bottom-0 end-0 alert alert-{ props.Type } alert-dismissible fade show" role="alert">
+			{ props.Message }
 		</div>
 	}
 	<script>
-	    setTimeout(function () {
+		setTimeout(function () {
             let alert = document.getElementById('alert');
                 if (alert) {
                     alert.classList.remove('show'); // Hides the alert smoothly
@@ -18,7 +20,7 @@ templ Notification(message string) {
 	</script>
 }
 
-templ Base(message string) {
+templ Base(props models.PageProps) {
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
@@ -34,14 +36,14 @@ templ Base(message string) {
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 		</head>
 		<body>
-			<div class="container-fluid">
+			<div class="container-fluid" style="min-height: 100vh;">
 				<div class="row">
-					@Sidebar()
-					<div
-						style="height: 100vh; overflow-y: hidden"
-						class="col-10 position-relative"
-					>
-						@Notification(message)
+					<div class="col-2 px-0 position-fixed top-0 left-0 bottom-0">
+						@Sidebar(props.Path)
+					</div>
+					<div class="col-2"></div>
+					<div class="col-10 position-relative">
+						@Notification(props.Notification)
 						{ children... }
 					</div>
 				</div>
