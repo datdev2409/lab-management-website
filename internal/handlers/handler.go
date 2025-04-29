@@ -3,11 +3,14 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
+	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
@@ -65,7 +68,6 @@ func NewHandler(store storage.AppStorage) *Handler {
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
-		r.Get("/search", Make(h.SearchRecordsByPatientNameOrPhone))
 		r.Get("/", Make(h.ListRecords))
 		r.Patch("/{id}", Make(h.UpdateRecordPatient))
 		r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
@@ -101,20 +103,47 @@ func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 	patientId := r.URL.Query().Get("patient_id")
-	records, err := h.Store.Records().ListByPatientId(r.Context(), patientId)
+	keyword := r.URL.Query().Get("keyword")
+	status := r.URL.Query().Get("status")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 20
+	}
+
+	sortBy := r.URL.Query().Get("sort_by")
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	sortOrder := r.URL.Query().Get("sort_order")
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	recordsQueryOptions := models.RecordQueryOptions{
+		Keyword:   keyword,
+		Status:    status,
+		PatientID: patientId,
+	}
+
+	genericQueryOptions := models.GenericQueryOptions{
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
+		Page:      page,
+		PageSize:  pageSize,
+	}
+
+	records, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
 	if err != nil {
 		return nil
 	}
 
-	log.Println(patientId)
-	view.RecordList(*records).Render(w)
+	partials.RecordTable(*records).Render(r.Context(), w)
 	return nil
-	// records, err := h.Store.Records().GetAll(r.Context())
-	// if err != nil {
-	// 	return err
-	// }
-
-	// return view.RecordTable(*records).Render(w)
 }
 
 func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {

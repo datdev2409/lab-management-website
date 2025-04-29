@@ -67,14 +67,21 @@ func (h *Handler) UpdateRecordCombo(w http.ResponseWriter, r *http.Request) erro
 		log.Println(err)
 	}
 
-	// results := make([]models.TestResult, 0, len(*tests))
-	var results []models.TestResult
-	for _, test := range *tests {
-		results = append(results, models.TestResult{TestID: test.ID, Result: "", ResultText: ""})
+	log.Println(tests)
+
+	err = h.Store.Records().AddTests(r.Context(), recordId, tests)
+	if err != nil {
+		log.Println(err)
 	}
+
+	// record, err := h.Store.Records().GetById(r.Context(), recordId)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+
 	return RenderMultiComponents(r.Context(), w, []templ.Component{
 		pages.ComboSelect(recordId, combo.Name),
-		pages.RecordPageTestTable(*tests, results, true),
+		// pages.RecordPageTestTable(tests, record.TestResults, true),
 	})
 }
 
@@ -114,27 +121,38 @@ func (h *Handler) UpdateRecordPatient(w http.ResponseWriter, r *http.Request) er
 // 	return Render(r.Context(), w, partials.TestTable(*tests, "record-page"))
 // }
 
-func (h *Handler) SearchRecordsByPatientNameOrPhone(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("keyword")
-	records, err := h.Store.Records().SearchByKeyword(r.Context(), keyword, map[string]string{"limit": "20"})
+// func (h *Handler) SearchRecordsByPatientNameOrPhone(w http.ResponseWriter, r *http.Request) error {
+// 	keyword := r.FormValue("keyword")
+// 	status := r.FormValue("status")
+// 	limit := 20
 
-	if err != nil {
-		return err
-	}
+// 	log.Println(keyword, status, limit)
 
-	return Render(r.Context(), w, pages.RecordList(*records))
-}
+// 	filter := models.RecordSearchFilter{
+// 		Keyword: &keyword,
+// 		Status:  &status,
+// 		Limit:   &limit,
+// 	}
+
+// 	records, err := h.Store.Records().SearchRecords(r.Context(), filter)
+// 	log.Println(records)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return Render(r.Context(), w, partials.RecordTable(*records))
+// }
 
 func (h *Handler) AddTestToRecord(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
 	testId := r.FormValue("test_id")
 
-	err := h.Store.Records().AddTest(r.Context(), recordId, testId)
+	test, err := h.Store.Tests().GetById(testId)
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
-	test, err := h.Store.Tests().GetById(testId)
+	err = h.Store.Records().AddTest(r.Context(), recordId, test)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -143,7 +161,7 @@ func (h *Handler) AddTestToRecord(w http.ResponseWriter, r *http.Request) error 
 	log.Println("Updating record with test", recordId)
 	log.Println("Updating record with test", testId)
 
-	return Render(r.Context(), w, pages.RecordPageTestRow(*test, models.TestResult{}))
+	return Render(r.Context(), w, pages.RecordPageTestRow(test, models.TestResult{}))
 }
 
 func (h *Handler) UpdateRecordTests(w http.ResponseWriter, r *http.Request) error {
@@ -159,7 +177,7 @@ func (h *Handler) UpdateRecordTests(w http.ResponseWriter, r *http.Request) erro
 
 		_, ok := tests[testId]
 		if !ok {
-			tests[testId] = &models.TestResult{TestID: testId}
+			// tests[testId] = &models.TestResult{TestID: testId}
 		}
 
 		if field == "result" {

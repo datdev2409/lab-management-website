@@ -102,12 +102,12 @@ templ TestSelect(recordId string) {
 		<label style="min-width: 130px;" class="form-label">Thêm xét nghiệm</label>
 		<div x-data="{open: false}" class="position-relative flex-grow-1">
 			<input @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get={ "/api/tests?record_id=" + recordId } hx-trigger="keyup changed delay:500ms click" hx-target="#test-autocomplete"/>
-			@TestAutocomplete([]models.Test{}, recordId)
+			@TestAutocomplete([]*models.Test{}, recordId)
 		</div>
 	</div>
 }
 
-templ TestAutocomplete(tests []models.Test, recordId string) {
+templ TestAutocomplete(tests []*models.Test, recordId string) {
 	<style>
 		#test-autocomplete {
 			position: absolute;
@@ -182,9 +182,9 @@ templ RecordDetailPage(record models.RecordWithDetails, message string) {
 			Title: "Phiếu xét nghiệm",
 			Path:  "/phieu-xet-nghiem/" + record.ID,
 		}
-		var tests []models.Test
+		var tests []*models.Test = []*models.Test{}
 		for _, testResult := range record.TestResults {
-			tests = append(tests, record.TestInfoMap[testResult.TestID])
+			tests = append(tests, &testResult.Test)
 		}
 	}}
 	@partials.Base(recordDetailPageProps) {
@@ -220,7 +220,7 @@ templ RecordDetailPage(record models.RecordWithDetails, message string) {
 	}
 }
 
-templ RecordPageTestRow(test models.Test, result models.TestResult) {
+templ RecordPageTestRow(test *models.Test, result models.TestResult) {
 	<tr>
 		<td>{ test.Name }</td>
 		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
@@ -238,7 +238,7 @@ templ RecordPageTestRow(test models.Test, result models.TestResult) {
 	</tr>
 }
 
-templ RecordPageTestTable(tests []models.Test, results []models.TestResult, outOfBand bool) {
+templ RecordPageTestTable(tests []*models.Test, results []models.TestResult, outOfBand bool) {
 	<table
 		id="test-table"
 		class="table table-bordered table-hover"

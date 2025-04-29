@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"log"
-	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -14,20 +13,9 @@ import (
 func (m *MongoRecordStorage) UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error {
 	filter := bson.D{{Key: "_id", Value: recordId}}
 
-	update := bson.A{}
 	updateComboName := bson.D{{Key: "$set", Value: bson.D{{Key: "combo_name", Value: combo.Name}}}}
 
-	tests := bson.A{}
-	for _, testId := range combo.Tests {
-		testDocument := bson.D{{Key: "test_id", Value: testId}, {Key: "result", Value: ""}, {Key: "result_text", Value: ""}}
-		tests = append(tests, testDocument)
-	}
-
-	updateTest := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: tests}}}}
-	updateUpdatedTime := bson.D{{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}}}
-	update = append(update, updateComboName, updateTest, updateUpdatedTime)
-
-	_, err := m.col.UpdateOne(context.TODO(), filter, update)
+	_, err := m.col.UpdateOne(context.TODO(), filter, updateComboName)
 	return err
 }
 
@@ -62,8 +50,8 @@ func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) 
 	return err
 }
 
-func (m *MongoRecordStorage) AddTest(ctx context.Context, recordId string, testId string) error {
-	testResult := models.TestResult{TestID: testId, Result: "", ResultText: ""}
+func (m *MongoRecordStorage) AddTest(ctx context.Context, recordId string, test *models.Test) error {
+	testResult := models.TestResult{Test: *test, Result: "", ResultText: ""}
 	update := bson.D{
 		{Key: "$push", Value: bson.D{{Key: "test_results", Value: testResult}}},
 		{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}},
@@ -72,28 +60,48 @@ func (m *MongoRecordStorage) AddTest(ctx context.Context, recordId string, testI
 	return err
 }
 
-// SearchByKeyword implements RecordStorage.
-func (m *MongoRecordStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error) {
+func (m *MongoRecordStorage) AddTests(ctx context.Context, recordId string, tests []*models.Test) error {
+	update := bson.D{}
+	for _, test := range tests {
+		testResult := models.TestResult{Test: *test, Result: "", ResultText: ""}
+		update = append(update, bson.E{Key: "$push", Value: bson.A{bson.D{{Key: "test_results", Value: testResult}}}})
+	}
+
+	update = append(update, bson.E{Key: "$set", Value: bson.D{{Key: "updated_at", Value: GetCurrentTime()}}})
+	_, err := m.col.UpdateByID(ctx, recordId, update)
+	return err
+}
+
+// SearchRecords implements RecordStorage.
+func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error) {
 	records := []models.Record{}
 
-	// Support filter by patient name and phone
-	filters := bson.D{
-		{Key: "$or", Value: bson.A{
-			bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}},
-			bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}},
-		}},
+	// Build the base filter
+	filters := bson.D{}
+
+	// Add keyword search if provided
+	if filterOpts.Keyword != "" {
+		filters = append(filters, bson.E{
+			Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
+				bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
+			},
+		})
 	}
 
-	findOpts := options.Find()
-	if val, ok := opts["limit"]; ok {
-		limit, err := strconv.Atoi(val)
-		if err != nil {
-			limit = 5
-		}
-		findOpts.SetLimit(int64(limit))
+	if filterOpts.PatientID != "" {
+		filters = append(filters, bson.E{Key: "patient.id", Value: filterOpts.PatientID})
 	}
 
+	if filterOpts.Status != "" {
+		filters = append(filters, bson.E{Key: "status", Value: filterOpts.Status})
+	}
+
+	// TODO: Add date range filters if provided
+	findOpts := BuildMongoSortAndPaginationOptions(opts)
 	cursor, err := m.col.Find(ctx, filters, findOpts)
+
 	if err != nil {
 		return &records, err
 	}

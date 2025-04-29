@@ -27,7 +27,7 @@ templ TrackingPage(message string) {
 					<label>Tìm xét nghiệm theo tên</label>
 					<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-combo-page" hx-swap="outerHTML"/>
 					<div x-show="open" @click.outside="open = false">
-						@TestSearchAutocomplete([]models.Test{}, "combo-page")
+						@TestSearchAutocomplete([]*models.Test{}, "combo-page")
 					</div>
 				</div>
 				<div class="mb-3">

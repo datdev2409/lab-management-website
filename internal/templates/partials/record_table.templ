@@ -1,0 +1,34 @@
+package partials
+
+import "github.com/datdev2409/lab-admin-go/internal/models"
+
+templ RecordTable(records []models.Record) {
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Tên bệnh nhân</th>
+				<th>Số điện thoại</th>
+				<th>Tên gói xét nghiệm</th>
+				<th>Trạng thái</th>
+				<th>Ngày tạo</th>
+				<th>Ngày cập nhật</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, record := range records {
+				<tr>
+					<td>{ record.Patient.Name }</td>
+					<td>{ record.Patient.Phone }</td>
+					<td>{ record.ComboName }</td>
+					<td>{ record.Status }</td>
+					<td>{ record.CreatedAt.Format("2006-01-02 15:04:05") }</td>
+					<td>{ record.UpdatedAt.Format("2006-01-02 15:04:05") }</td>
+					<td>
+						<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID) } class="link-primary">Xem</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}

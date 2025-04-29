@@ -17,11 +17,27 @@ templ RecordPage() {
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
 		</div>
-		<div class="mb-3">
-			<input class="form-control" name="keyword" hx-trigger="load, keyup changed delay:500ms" hx-get="/api/records/search" hx-target="#record-list"/>
+		<div class="mb-3 mt-3">
+			<form class="row" hx-get="/api/records" hx-target="#record-list" hx-trigger="load, submit">
+				<div class="col-md-auto" style="width: 400px;">
+					<input placeholder="Tên hoặc số điện thoại" class="form-control" name="keyword"/>
+				</div>
+				<div class="col-md-auto">
+					<select class="form-select" aria-label="Trạng thái" name="status">
+						<option selected value="">Tất cả trạng thái</option>
+						<option value="new">Mới</option>
+						<option value="2">Đã thanh toán</option>
+						<option value="3">Đã xuất kết quả</option>
+						<option value="4">Đã nhận kết quả</option>
+					</select>
+				</div>
+				<div class="col-md-auto">
+					<button type="submit" class="btn btn-primary">Tìm kiếm</button>
+				</div>
+			</form>
 		</div>
 		<div id="record-list">
-			@RecordList([]models.Record{})
+			@partials.RecordTable([]models.Record{})
 		</div>
 	}
 }

@@ -18,8 +18,8 @@ type PatientStorage interface {
 type TestStorage interface {
 	Insert(test *models.Test) error
 	GetById(id string) (*models.Test, error)
-	GetByIds(ctx context.Context, ids []string) (*[]models.Test, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error)
+	GetByIds(ctx context.Context, ids []string) ([]*models.Test, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Test, error)
 	Update(test *models.Test) error
 	Delete(id string) error
 }
@@ -35,10 +35,11 @@ type RecordStorage interface {
 	GetById(ctx context.Context, id string) (*models.Record, error)
 	GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
 	ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error)
+	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error)
 	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
-	AddTest(ctx context.Context, recordId string, testId string) error
+	AddTest(ctx context.Context, recordId string, test *models.Test) error
+	AddTests(ctx context.Context, recordId string, tests []*models.Test) error
 	SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error
 }
 

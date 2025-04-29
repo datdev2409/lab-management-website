@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-templ TestRow(test models.Test, page string) {
+templ TestRow(test *models.Test, page string) {
 	<tr>
 		<td>{ test.Name }</td>
 		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
@@ -79,7 +79,7 @@ templ TestTableHeader(page string) {
 	</thead>
 }
 
-templ TestTable(tests []models.Test, page string, outOfBand bool) {
+templ TestTable(tests []*models.Test, page string, outOfBand bool) {
 	<div
 		id="test-table"
 		if outOfBand {

@@ -7,7 +7,8 @@ import (
 )
 
 type TestResult struct {
-	TestID     string `json:"test_id" bson:"test_id"`
+	ID         string `json:"id" bson:"_id,omitempty"`
+	Test       Test   `json:"test" bson:"test"`
 	Result     string `json:"result" bson:"result"`
 	ResultText string `json:"result_text" bson:"result_text"`
 }
@@ -44,6 +45,24 @@ type RecordWithDetails struct {
 	TestInfoMap map[string]Test `json:"test_info_map" bson:"test_info_map"`
 	CreatedAt   time.Time       `json:"created_at" bson:"created_at"`
 	UpdatedAt   time.Time       `json:"updated_at" bson:"updated_at"`
+}
+
+type RecordQueryOptions struct {
+	Keyword   string
+	Status    string
+	PatientID string
+	StartDate *time.Time
+	EndDate   *time.Time
+}
+
+type GenericQueryOptions struct {
+	// Sorting
+	SortBy    string
+	SortOrder string
+
+	// Pagination
+	Page     int
+	PageSize int
 }
 
 func (r *Record) MarshalBSON() ([]byte, error) {

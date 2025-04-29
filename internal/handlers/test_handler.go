@@ -21,7 +21,7 @@ func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
 		"test:create:success": "Thêm xét nghiệm thành công",
 	}
 	redirectCode := GetAndDeleteFlashCookie(w, r)
-	return Render(r.Context(), w, pages.TestPage(*tests, messages[redirectCode]))
+	return Render(r.Context(), w, pages.TestPage(tests, messages[redirectCode]))
 }
 
 func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error {
@@ -77,13 +77,13 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	switch target {
 	case "test-autocomplete":
 		recordId := r.URL.Query().Get("record_id")
-		return Render(r.Context(), w, pages.TestAutocomplete(*tests, recordId))
+		return Render(r.Context(), w, pages.TestAutocomplete(tests, recordId))
 	case "test-table":
-		return Render(r.Context(), w, partials.TestTable(*tests, "test-page", false))
+		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
 	case "test-search-result-combo-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "combo-page"))
+		return Render(r.Context(), w, pages.TestSearchAutocomplete(tests, "combo-page"))
 	case "test-search-result-record-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "record-page"))
+		return Render(r.Context(), w, pages.TestSearchAutocomplete(tests, "record-page"))
 	}
 	return nil
 }

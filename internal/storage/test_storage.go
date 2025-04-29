@@ -21,8 +21,8 @@ func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
 	return &test, err
 }
 
-func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) (*[]models.Test, error) {
-	tests := []models.Test{}
+func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) ([]*models.Test, error) {
+	tests := []*models.Test{}
 	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: ids}}}}
 	cursor, err := t.col.Find(ctx, filter)
 	if err != nil {
@@ -30,14 +30,14 @@ func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) (*[]model
 	}
 
 	if err = cursor.All(ctx, &tests); err != nil {
-		return &tests, err
+		return tests, err
 	}
 
-	return &tests, nil
+	return tests, nil
 }
 
-func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error) {
-	tests := []models.Test{}
+func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Test, error) {
+	tests := []*models.Test{}
 
 	filters := BuildMongoFilter(map[string]FilterCondition{
 		"name": {
@@ -58,14 +58,14 @@ func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, 
 
 	cursor, err := t.col.Find(ctx, filters, findOpts)
 	if err != nil {
-		return &tests, err
+		return tests, err
 	}
 
 	if err = cursor.All(ctx, &tests); err != nil {
-		return &tests, err
+		return tests, err
 	}
 
-	return &tests, nil
+	return tests, nil
 }
 
 func (t *MongoTestStorage) Update(test *models.Test) error {
