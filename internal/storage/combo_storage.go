@@ -13,8 +13,8 @@ func (m MongoComboStorage) Insert(combo *models.Combo) error {
 	return err
 }
 
-func (m MongoComboStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Combo, error) {
-	combos := []models.Combo{}
+func (m MongoComboStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Combo, error) {
+	combos := []*models.Combo{}
 	filter := BuildMongoFilter(map[string]FilterCondition{
 		"name": {
 			Operator: "$regex",
@@ -40,10 +40,10 @@ func (m MongoComboStorage) SearchByKeyword(ctx context.Context, keyword string, 
 
 	err = cursor.All(ctx, &combos)
 	if err != nil {
-		return &combos, err
+		return nil, err
 	}
 
-	return &combos, nil
+	return combos, nil
 }
 
 func (m MongoComboStorage) GetById(ctx context.Context, id string) (*models.Combo, error) {

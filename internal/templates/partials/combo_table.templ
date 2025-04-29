@@ -1,0 +1,34 @@
+package partials
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"strconv"
+)
+
+templ ComboTable(combos []*models.Combo) {
+	<table class="table table-bordered">
+		<thead>
+			<tr>
+				<th>Tên gói xét nghiệm</th>
+				<th>Số lượng xét nghiệm</th>
+				<th>Thao tác</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, combo := range combos {
+				@ComboRow(combo)
+			}
+		</tbody>
+	</table>
+}
+
+templ ComboRow(combo *models.Combo) {
+	<tr>
+		<td>{ combo.Name }</td>
+		<td>{ strconv.Itoa(len(combo.TestIDs)) }</td>
+		<td>
+			<a href={ templ.SafeURL("/danh-muc-goi-xet-nghiem/" + combo.ID) } class="link-primary">Chi tiết</a>
+			<a href={ templ.SafeURL("/danh-muc-goi-xet-nghiem/" + combo.ID) } class="link-danger">Xóa</a>
+		</td>
+	</tr>
+}

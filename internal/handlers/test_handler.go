@@ -81,9 +81,9 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	case "test-table":
 		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
 	case "test-search-result-combo-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(tests, "combo-page"))
+		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
 	case "test-search-result-record-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(tests, "record-page"))
+		return Render(r.Context(), w, partials.TestAutocomplete(tests, "record-page"))
 	}
 	return nil
 }

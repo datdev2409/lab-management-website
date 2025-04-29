@@ -27,7 +27,7 @@ type TestStorage interface {
 type ComboStorage interface {
 	Insert(combo *models.Combo) error
 	GetById(ctx context.Context, id string) (*models.Combo, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Combo, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Combo, error)
 }
 
 type RecordStorage interface {

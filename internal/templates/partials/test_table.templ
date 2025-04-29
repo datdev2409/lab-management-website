@@ -40,24 +40,6 @@ templ TestRow(test *models.Test, page string) {
 	</tr>
 }
 
-templ TestRowRecordPage(test models.Test) {
-	<tr>
-		<td>{ test.Name }</td>
-		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
-		<td style="width: 200px">{ test.NormalValue }</td>
-		<td style="width: 140px">{ test. Unit }</td>
-		<td contenteditable="true" style="width: 120px">
-			<input/>
-		</td>
-		<td contenteditable="true" style="width: 180px">
-			<input/>
-		</td>
-		<td contenteditable="true" style="width: 30px">
-			<input type="checkbox"/>
-		</td>
-	</tr>
-}
-
 templ TestTableHeader(page string) {
 	<thead class="position-sticky top-0">
 		<tr>

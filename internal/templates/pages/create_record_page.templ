@@ -70,7 +70,7 @@ templ PatientSuggestionList(patients []models.Patient, recordId string) {
 	</div>
 }
 
-templ ComboSuggestionList(combos []models.Combo, recordId string) {
+templ ComboSuggestionList(combos []*models.Combo, recordId string) {
 	{{
 		Method := "patch"
 		Endpoint := "/api/records/" + recordId + "/combos"
@@ -91,7 +91,7 @@ templ ComboSelect(recordId string, comboName string) {
 		<label style="min-width: 130px;" for="combo" class="form-label">Gói xét nghiệm</label>
 		<div x-data="{open: false}" class="position-relative flex-grow-1">
 			<input @keyup="open=true" autocomplete="off" id="combo" class="form-control" name="combo_name" hx-get={ "/api/combos?record_id=" + recordId } hx-trigger="keyup changed delay:500ms" hx-target="#combo-search-result" hx-swap="outerHTML" value={ comboName }/>
-			@ComboSuggestionList([]models.Combo{}, recordId)
+			@ComboSuggestionList([]*models.Combo{}, recordId)
 		</div>
 		<div></div>
 	</div>

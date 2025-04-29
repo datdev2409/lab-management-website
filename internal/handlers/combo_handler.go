@@ -18,9 +18,9 @@ func (h *Handler) HandleComboPage(w http.ResponseWriter, r *http.Request) error 
 
 func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
 	combo := &models.Combo{
-		ID:    "c" + uuid.NewString(),
-		Name:  r.FormValue("combo_name"),
-		Tests: strings.Split(r.FormValue("test_ids"), ","),
+		ID:      "c" + uuid.NewString(),
+		Name:    r.FormValue("combo_name"),
+		TestIDs: strings.Split(r.FormValue("test_ids"), ","),
 	}
 	return h.Store.Combos().Insert(combo)
 }
@@ -34,7 +34,7 @@ func (h *Handler) SearchCombosByKeyword(w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	return Render(r.Context(), w, pages.ComboSuggestionList(*combos, recordId))
+	return Render(r.Context(), w, partials.ComboTable(combos))
 }
 
 func (h *Handler) GetCombo(w http.ResponseWriter, r *http.Request) error {
@@ -46,7 +46,7 @@ func (h *Handler) GetCombo(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 
-	tests, err := h.Store.Tests().GetByIds(r.Context(), combo.Tests)
+	tests, err := h.Store.Tests().GetByIds(r.Context(), combo.TestIDs)
 	if err != nil {
 		log.Println(err)
 		return nil
