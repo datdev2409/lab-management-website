@@ -16,13 +16,24 @@ func (h *Handler) HandleComboPage(w http.ResponseWriter, r *http.Request) error 
 	return Render(r.Context(), w, pages.ComboPage(""))
 }
 
+func (h *Handler) HandleComboCreatePage(w http.ResponseWriter, r *http.Request) error {
+	return Render(r.Context(), w, pages.ComboCreatePage())
+}
+
 func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
 	combo := &models.Combo{
 		ID:      "c" + uuid.NewString(),
 		Name:    r.FormValue("combo_name"),
 		TestIDs: strings.Split(r.FormValue("test_ids"), ","),
 	}
-	return h.Store.Combos().Insert(combo)
+	err := h.Store.Combos().Insert(combo)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	HTMXRedirect(w, "/danh-muc-goi-xet-nghiem")
+	return nil
 }
 
 func (h *Handler) SearchCombosByKeyword(w http.ResponseWriter, r *http.Request) error {

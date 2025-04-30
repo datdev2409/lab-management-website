@@ -43,6 +43,7 @@ func Make(fn HandlerFuncReturnError) http.HandlerFunc {
 }
 
 func HTMXRedirect(w http.ResponseWriter, path string) {
+	w.WriteHeader(http.StatusFound)
 	w.Header().Set("HX-Redirect", path)
 }
 
