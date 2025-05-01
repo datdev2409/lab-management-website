@@ -12,18 +12,18 @@ import (
 func PatientSuggestionOption(p models.Patient) Node {
 	return Div(Class("patient-suggestion-option"),
 		Style("cursor: pointer; padding: 6px 12px; z-index: 100; color: black"),
-		hx.Trigger("click"), hx.Get("/api/patients/"+p.ID),
+		hx.Trigger("click"), hx.Get("/api/patients/"+p.ID.Hex()),
 		hx.Swap("outerHTML"), hx.Target("#patient-select-input"),
 		Textf("%s - %s", p.Name, p.Phone),
 	)
 }
 
-func PatientSuggestionList(patients []models.Patient, oob bool) Node {
+func PatientSuggestionList(patients []*models.Patient, oob bool) Node {
 	return Div(ID("cp_patient-suggestion-list"), Class("shadow bordered bg-white position-absolute start-0 end-0"),
 		Style("width: 100%; display: flex; flex-direction: column"),
 		If(oob, hx.SwapOOB("true")),
-		Map(patients, func(p models.Patient) Node {
-			return PatientSuggestionOption(p)
+		Map(patients, func(p *models.Patient) Node {
+			return PatientSuggestionOption(*p)
 		}),
 	)
 }
@@ -113,7 +113,7 @@ func CompareResultsPage(props PageProps) Node {
 						// 	hx.Swap("outerHTML"), hx.Target("#cp_patient-suggestion-list"),
 						// ),
 						PatientSelectInput("", ""),
-						PatientSuggestionList([]models.Patient{}, false),
+						PatientSuggestionList([]*models.Patient{}, false),
 					),
 					PatientInfo(nil, false),
 					// Div(Class("col"),

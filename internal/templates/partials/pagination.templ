@@ -14,6 +14,8 @@ templ Pagination(pagination *models.PaginationResponse, page string) {
 						switch page {
 							case "test-page":
 								<a class="page-link" hx-get={ "/api/tests?page=" + strconv.Itoa(i) } hx-include="#test-search-form" hx-target="#test-table">{ strconv.Itoa(i) }</a>
+							case "patient-page":
+								<a class="page-link" hx-get={ "/api/patients?page=" + strconv.Itoa(i) } hx-include="#patient-search-form" hx-target="#patient-table">{ strconv.Itoa(i) }</a>
 						}
 					</li>
 				}

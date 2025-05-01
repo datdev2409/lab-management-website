@@ -10,6 +10,7 @@ import (
 type PatientStorage interface {
 	Insert(patient *models.Patient) error
 	GetById(id string) (*models.Patient, error)
+	ListPatients(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Patient, error)
 	UpdateById(ctx context.Context, id string, patient *models.Patient) error
 	Delete(id string) error

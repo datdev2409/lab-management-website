@@ -37,7 +37,7 @@ templ PatientCreateModal() {
 	</div>
 }
 
-templ PatientSuggestionList(patients []models.Patient, recordId string) {
+templ PatientSuggestionList(patients []*models.Patient, recordId string) {
 	<style>
 		#patient-suggestion-list {
 			width: 100%;
@@ -60,8 +60,8 @@ templ PatientSuggestionList(patients []models.Patient, recordId string) {
 	</style>
 	<div id="patient-suggestion-list" class="shadow bordered position-absolute">
 		for _, patient := range patients {
-			<div hx-trigger="click" class="patient-option" hx-patch={ "/api/records/" + recordId } hx-target="#patient-select-form" hx-include={ "#patient-option-" + patient.ID }>
-				<input type="hidden" name="patient_id" id={ "patient-option-" + patient.ID } value={ patient.ID }/>
+			<div hx-trigger="click" class="patient-option" hx-patch={ "/api/records/" + recordId } hx-target="#patient-select-form" hx-include={ "#patient-option-" + patient.ID.Hex() }>
+				<input type="hidden" name="patient_id" id={ "patient-option-" + patient.ID.Hex() } value={ patient.ID.Hex() }/>
 				<div>
 					{ patient.Name } - { patient.Phone }
 				</div>
@@ -154,7 +154,7 @@ templ PatientSelectForm(recordId string, patient models.Patient) {
 			<label for="benh_nhan" style="min-width: 130px;" class="form-label">Bệnh nhân</label>
 			<div x-data="{open: false}" class="position-relative" style="width: 100%">
 				<input value={ patient.Name } @keyup="open=true" autocomplete="off" id="patient-search" style="width: 100%;" class="form-control" name="patient_name" hx-get={ "/api/patients?limit=5&record_id=" + recordId } hx-target="#patient-suggestion-list" hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms"/>
-				@PatientSuggestionList([]models.Patient{}, recordId)
+				@PatientSuggestionList(nil, recordId)
 			</div>
 		</div>
 		<div class="row">

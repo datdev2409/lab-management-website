@@ -16,9 +16,9 @@ templ TestRow(test *models.Test, page string) {
 			case "test-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
-				<td style="width: 120px">
-					<button class="btn btn-sm btn-secondary">Sửa</button>
-					<button class="btn btn-sm btn-danger">Xoá</button>
+				<td style="width: 100px">
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex() + "/edit") } class="link-primary">Sửa</a>
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex()) } class="link-danger">Xoá</a>
 				</td>
 			case "combo-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
@@ -51,7 +51,7 @@ templ TestTableHeader(page string) {
 				case "test-page":
 					<th style="width: 120px" scope="col">Cận dưới</th>
 					<th style="width: 120px" scope="col">Cận trên</th>
-					<th style="width: 120px" scope="col"></th>
+					<th style="width: 100px" scope="col"></th>
 				case "record-page":
 					<th style="width: 120px" scope="col">Kết quả</th>
 					<th style="width: 180px" scope="col">Kết quả (text)</th>
