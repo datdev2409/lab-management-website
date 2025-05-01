@@ -17,6 +17,7 @@ type PatientStorage interface {
 
 type TestStorage interface {
 	Insert(test *models.Test) error
+	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)
 	GetById(id string) (*models.Test, error)
 	GetByIds(ctx context.Context, ids []string) ([]*models.Test, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Test, error)

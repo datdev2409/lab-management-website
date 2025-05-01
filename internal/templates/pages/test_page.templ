@@ -18,10 +18,17 @@ templ TestPage(tests []*models.Test, message string) {
 			<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#test-create-modal">Thêm xét nghiệm</button>
 		</div>
 		@partials.TestCreateModal()
-		<div class="mb-2 d-flex align-items-center">
-			<input style="max-width: 200px;" class="form-control" name="test_name" id="test-search"/>
-			<button type="button" class="ms-2 btn btn-primary" hx-get="/api/tests" hx-target="#test-table" hx-include="#test-search">Tìm</button>
+		<div class="my-3 d-flex align-items-center">
+			<form id="test-search-form" class="row" hx-get="/api/tests" hx-target="#test-table" hx-trigger="load, submit">
+				<div class="col-md-auto" style="width: 400px;">
+					<input placeholder="Tên xét nghiệm" class="form-control" name="test_name" id="test-search"/>
+				</div>
+				<div class="col-md-auto px-0">
+					<button type="submit" class="btn btn-primary">Tìm</button>
+				</div>
+			</form>
 		</div>
 		@partials.TestTable(tests, "test-page", false)
+		@partials.Pagination(&models.PaginationResponse{}, "test-page")
 	}
 }

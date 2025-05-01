@@ -65,6 +65,13 @@ type GenericQueryOptions struct {
 	PageSize int
 }
 
+type PaginationResponse struct {
+	Total     int `json:"total"`
+	TotalPage int `json:"total_page"`
+	Page      int `json:"page"`
+	PageSize  int `json:"page_size"`
+}
+
 func (r *Record) MarshalBSON() ([]byte, error) {
 	if r.TestResults == nil {
 		r.TestResults = []TestResult{}

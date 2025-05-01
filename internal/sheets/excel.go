@@ -31,7 +31,7 @@ func CreateRecordBillingFile(record models.RecordWithDetails) (string, error) {
 	startTestRow := 10
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
-		testInfo := record.TestInfoMap[testResult.Test.ID]
+		testInfo := record.TestInfoMap[testResult.Test.ID.Hex()]
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), i+1)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), testInfo.Name)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), 1)
@@ -75,7 +75,7 @@ func CreateRecordResultFile(record models.RecordWithDetails) (string, error) {
 	startTestRow := 11
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
-		testInfo := record.TestInfoMap[testResult.Test.ID]
+		testInfo := record.TestInfoMap[testResult.Test.ID.Hex()]
 
 		testFieldValue := testResult.Result
 		if testResult.ResultText != "" {

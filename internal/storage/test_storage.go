@@ -2,6 +2,8 @@ package storage
 
 import (
 	"context"
+	"log"
+	"math"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,6 +15,43 @@ import (
 func (t *MongoTestStorage) Insert(test *models.Test) error {
 	_, err := t.col.InsertOne(context.Background(), test)
 	return err
+}
+
+func (t *MongoTestStorage) ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error) {
+	tests := []*models.Test{}
+	filters := bson.D{}
+
+	if filterOpts.Keyword != "" {
+		filters = append(filters, bson.E{Key: "name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}}})
+	}
+
+	findOpts := BuildMongoSortAndPaginationOptions(opts)
+
+	cursor, err := t.col.Find(ctx, filters, findOpts)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	count, err := t.col.CountDocuments(ctx, filters)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pagniation := &models.PaginationResponse{
+		Total:     int(count),
+		Page:      opts.Page,
+		PageSize:  opts.PageSize,
+		TotalPage: int(math.Ceil(float64(count) / float64(opts.PageSize))),
+	}
+
+	if err = cursor.All(ctx, &tests); err != nil {
+		return nil, nil, err
+	}
+
+	log.Println(tests)
+	log.Println(pagniation)
+
+	return tests, pagniation, nil
 }
 
 func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
@@ -69,7 +108,7 @@ func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, 
 }
 
 func (t *MongoTestStorage) Update(test *models.Test) error {
-	_, err := t.col.UpdateOne(context.Background(), map[string]string{"id": test.ID}, test)
+	_, err := t.col.UpdateOne(context.Background(), map[string]string{"_id": test.ID.Hex()}, test)
 	return err
 }
 

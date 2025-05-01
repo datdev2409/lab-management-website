@@ -125,11 +125,11 @@ templ TestAutocomplete(tests []*models.Test, recordId string) {
 	<div x-show="open" @click.outside="open=false">
 		<div id="test-autocomplete" class="shadow bordered">
 			for _, test := range tests {
-				<input id={ "test-option-" + test.ID } name="test_id" type="hidden" value={ test.ID }/>
+				<input id={ "test-option-" + test.ID.Hex() } name="test_id" type="hidden" value={ test.ID.Hex() }/>
 				<div
 					hx-trigger="click"
 					hx-post={ "/api/records/" + recordId + "/tests" }
-					hx-include={ "#test-option-" + test.ID }
+					hx-include={ "#test-option-" + test.ID.Hex() }
 					hx-target="#test-table tbody"
 					hx-swap="beforeend"
 					class="test-option"
@@ -227,13 +227,13 @@ templ RecordPageTestRow(test *models.Test, result models.TestResult) {
 		<td style="width: 200px">{ test.NormalValue }</td>
 		<td style="width: 140px">{ test. Unit }</td>
 		<td style="width: 120px">
-			<input name={ "result#" + test.ID } value={ result.Result }/>
+			<input name={ "result#" + test.ID.Hex() } value={ result.Result }/>
 		</td>
 		<td style="width: 180px">
-			<input name={ "result_text#" + test.ID } value={ result.ResultText }/>
+			<input name={ "result_text#" + test.ID.Hex() } value={ result.ResultText }/>
 		</td>
 		<td style="width: 30px">
-			<input type="checkbox" name={ "abnormal_" + test.ID }/>
+			<input type="checkbox" name={ "abnormal_" + test.ID.Hex() }/>
 		</td>
 	</tr>
 }
