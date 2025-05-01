@@ -46,7 +46,6 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("patient_name")
 	patients, pagination, err := h.Store.Patients().ListPatients(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -54,7 +53,6 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 
 	switch target {
 	case "patient-table":
-		// return Render(r.Context(), w, partials.PatientTable(*patients))
 		return RenderMultiComponents(r.Context(), w, []templ.Component{
 			partials.PatientTable(patients),
 			partials.Pagination(pagination, "patient-page"),

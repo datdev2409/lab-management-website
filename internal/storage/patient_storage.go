@@ -96,11 +96,19 @@ func (m *MongoPatientStorage) ListPatients(ctx context.Context, filterOpts model
 }
 
 func (m *MongoPatientStorage) UpdateById(ctx context.Context, id string, patient *models.Patient) error {
-	_, err := m.col.UpdateOne(context.Background(), map[string]string{"_id": id}, bson.D{{Key: "$set", Value: patient}})
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = m.col.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: oid}}, bson.D{{Key: "$set", Value: patient}})
 	return err
 }
 
 func (m *MongoPatientStorage) Delete(id string) error {
-	_, err := m.col.DeleteOne(context.Background(), map[string]string{"_id": id})
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = m.col.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: oid}})
 	return err
 }

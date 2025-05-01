@@ -1,7 +1,5 @@
 package partials
 
-import "github.com/datdev2409/lab-admin-go/internal/models"
-
 templ ComboCreateForm() {
 	<form hx-post="/api/combos" x-data="{chosenTests: [], open: false, keyword: '', addTest(test) {this.keyword = ''; this.open = false; this.chosenTests.filter(t => t.id == test.id).length > 0 ? alert('Xét nghiệm này đã được chọn') : this.chosenTests.push(test)},}">
 		<div class="mb-3">
@@ -12,7 +10,7 @@ templ ComboCreateForm() {
 			<label>Tìm xét nghiệm theo tên</label>
 			<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-combo-page" hx-swap="outerHTML"/>
 			<div x-show="open" @click.outside="open = false">
-				@TestAutocomplete([]*models.Test{}, "combo-page")
+				@TestAutocomplete(nil, "combo-page")
 			</div>
 		</div>
 		<div class="mb-3">

@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"log"
 	"math"
 	"strconv"
 
@@ -48,9 +47,6 @@ func (t *MongoTestStorage) ListTests(ctx context.Context, filterOpts models.Test
 		return nil, nil, err
 	}
 
-	log.Println(tests)
-	log.Println(pagniation)
-
 	return tests, pagniation, nil
 }
 
@@ -63,6 +59,7 @@ func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
 func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) ([]*models.Test, error) {
 	tests := []*models.Test{}
 	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: ids}}}}
+
 	cursor, err := t.col.Find(ctx, filter)
 	if err != nil {
 		return nil, err

@@ -18,7 +18,7 @@ templ ComboPage(message string) {
 			<a href="/danh-muc-goi-xet-nghiem/new"><button class="btn btn-primary">Tạo gói xét nghiệm mới</button></a>
 		</div>
 		<div class="my-3 d-flex align-items-center">
-			<form class="row" hx-get="/api/combos" hx-target="#combo-table-wrapper" hx-trigger="load, submit">
+			<form id="combo-search-form" class="row" hx-get="/api/combos" hx-target="#combo-table-wrapper" hx-trigger="load, submit">
 				<div class="col-md-auto" style="width: 400px;">
 					<input placeholder="Tên gói xét nghiệm" class="form-control" name="combo_name" id="combo-search"/>
 				</div>
@@ -30,5 +30,6 @@ templ ComboPage(message string) {
 		<div id="combo-table-wrapper">
 			@partials.ComboTable([]*models.Combo{})
 		</div>
+		@partials.Pagination(nil, "combo-page")
 	}
 }

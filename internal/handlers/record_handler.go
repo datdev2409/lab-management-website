@@ -62,7 +62,7 @@ func (h *Handler) UpdateRecordCombo(w http.ResponseWriter, r *http.Request) erro
 		log.Println(err)
 	}
 
-	tests, err := h.Store.Tests().GetByIds(r.Context(), combo.TestIDs)
+	tests, err := h.Store.Tests().GetByIds(r.Context(), combo.GetTestIDs())
 	if err != nil {
 		log.Println(err)
 	}

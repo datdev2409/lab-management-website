@@ -65,8 +65,8 @@ func NewHandler(store storage.AppStorage) *Handler {
 
 	r.Route("/api/combos", func(r chi.Router) {
 		r.Post("/", Make(h.CreateCombo))
-		r.Get("/", Make(h.SearchCombosByKeyword))
-		r.Get("/{id}", Make(h.GetCombo))
+		r.Get("/", Make(h.ListCombos))
+		r.Get("/{id}", Make(h.GetComboDetails))
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
