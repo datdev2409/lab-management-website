@@ -18,6 +18,8 @@ templ Pagination(pagination *models.PaginationResponse, page string) {
 								<a class="page-link" hx-get={ "/api/patients?page=" + strconv.Itoa(i) } hx-include="#patient-search-form" hx-target="#patient-table">{ strconv.Itoa(i) }</a>
 							case "combo-page":
 								<a class="page-link" hx-get={ "/api/combos?page=" + strconv.Itoa(i) } hx-include="#combo-search-form" hx-target="#combo-table-wrapper">{ strconv.Itoa(i) }</a>
+							case "record-page":
+								<a class="page-link" hx-get={ "/api/records?page=" + strconv.Itoa(i) } hx-include="#record-search-form" hx-target="#record-table-wrapper">{ strconv.Itoa(i) }</a>
 						}
 					</li>
 				}

@@ -35,11 +35,11 @@ type ComboStorage interface {
 }
 
 type RecordStorage interface {
-	Insert(ctx context.Context, record *models.Record) error
+	Insert(ctx context.Context, record *models.Record) (string, error)
 	// GetById(ctx context.Context, id string) (*models.Record, error)
 	// GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
 	// ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
-	// ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error)
+	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, *models.PaginationResponse, error)
 	// UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
 	// UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
 	// AddTest(ctx context.Context, recordId string, test *models.Test) error

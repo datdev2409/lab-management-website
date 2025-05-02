@@ -19,13 +19,25 @@ type TestResult struct {
 }
 
 type Record struct {
-	ID          bson.ObjectID `json:"id" bson:"_id"`
+	ID          bson.ObjectID `json:"id" bson:"_id,omitempty"`
 	ComboName   string        `json:"combo_name" bson:"combo_name"`
 	Patient     Patient       `json:"patient" bson:"patient"`
 	TestResults []TestResult  `json:"test_results" bson:"test_results"`
 	Status      string        `json:"status" bson:"status"`
 	CreatedAt   time.Time     `json:"created_at" bson:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at" bson:"updated_at"`
+}
+
+type TestResultRequest struct {
+	TestID     string `json:"test_id"`
+	Result     string `json:"result"`
+	ResultText string `json:"result_text"`
+}
+
+type CreateRecordRequest struct {
+	PatientID   string              `json:"patient_id"`
+	ComboName   string              `json:"combo_name"`
+	TestResults []TestResultRequest `json:"test_results"`
 }
 
 type RecordQueryOptions struct {
@@ -53,11 +65,11 @@ type PaginationResponse struct {
 	PageSize  int `json:"page_size"`
 }
 
-func (r *Record) MarshalBSON() ([]byte, error) {
-	if r.TestResults == nil {
-		r.TestResults = []TestResult{}
-	}
+// func (r *Record) MarshalBSON() ([]byte, error) {
+// 	if r.TestResults == nil {
+// 		r.TestResults = []TestResult{}
+// 	}
 
-	type my Record
-	return bson.Marshal((*my)(r))
-}
+// 	type my Record
+// 	return bson.Marshal((*my)(r))
+// }

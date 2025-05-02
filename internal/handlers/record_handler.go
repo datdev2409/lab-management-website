@@ -2,9 +2,16 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"log"
 	"net/http"
+	"strconv"
+	"time"
 
+	"github.com/a-h/templ"
+	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 )
 
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
@@ -13,6 +20,110 @@ func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error
 
 func (h *Handler) HandleCreateNewRecord(w http.ResponseWriter, r *http.Request) error {
 	return Render(r.Context(), w, pages.RecordCreatePage())
+}
+
+func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
+	var request models.CreateRecordRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return err
+	}
+
+	patient, err := h.Store.Patients().GetById(request.PatientID)
+	if err != nil {
+		return err
+	}
+
+	recordTestResults := []models.TestResult{}
+	for _, testResult := range request.TestResults {
+		test, err := h.Store.Tests().GetById(testResult.TestID)
+		if err != nil {
+			log.Println("Error getting test by id", err)
+			return err
+		}
+
+		recordTestResults = append(recordTestResults, models.TestResult{
+			ID:          test.ID,
+			Name:        test.Name,
+			Price:       test.Price,
+			NormalValue: test.NormalValue,
+			Unit:        test.Unit,
+			LowerBound:  test.LowerBound,
+			UpperBound:  test.UpperBound,
+			Result:      testResult.Result,
+			ResultText:  testResult.ResultText,
+		})
+	}
+
+	record := models.Record{
+		Patient:     *patient,
+		ComboName:   request.ComboName,
+		TestResults: recordTestResults,
+		Status:      "pending",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	recordId, err := h.Store.Records().Insert(r.Context(), &record)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	log.Println(recordId)
+	w.Write([]byte(recordId))
+	return nil
+}
+
+func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
+	patientId := r.URL.Query().Get("patient_id")
+	keyword := r.URL.Query().Get("keyword")
+	status := r.URL.Query().Get("status")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 20
+	}
+
+	sortBy := r.URL.Query().Get("sort_by")
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	sortOrder := r.URL.Query().Get("sort_order")
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	recordsQueryOptions := models.RecordQueryOptions{
+		Keyword:   keyword,
+		Status:    status,
+		PatientID: patientId,
+	}
+
+	genericQueryOptions := models.GenericQueryOptions{
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
+		Page:      page,
+		PageSize:  pageSize,
+	}
+
+	records, pagination, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
+	if err != nil {
+		return err
+	}
+
+	log.Println(records)
+
+	RenderMultiComponents(r.Context(), w, []templ.Component{
+		partials.RecordTable(*records),
+		partials.Pagination(pagination, "record-page"),
+	})
+	return nil
 }
 
 // func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {

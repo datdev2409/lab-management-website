@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -45,4 +46,19 @@ func ConvertIDsToObjectIDs(ids []string) ([]bson.ObjectID, error) {
 		objectIDs = append(objectIDs, oid)
 	}
 	return objectIDs, nil
+}
+
+// When response to json, convert TestIDs to string
+func (c *Combo) MarshalJSON() ([]byte, error) {
+	type ComboJSON struct {
+		ID      string   `json:"id"`
+		Name    string   `json:"name"`
+		TestIDs []string `json:"test_ids"`
+	}
+
+	return json.Marshal(ComboJSON{
+		ID:      c.ID.Hex(),
+		Name:    c.Name,
+		TestIDs: c.GetTestIDs(),
+	})
 }

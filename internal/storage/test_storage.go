@@ -51,8 +51,12 @@ func (t *MongoTestStorage) ListTests(ctx context.Context, filterOpts models.Test
 }
 
 func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
 	var test models.Test
-	err := t.col.FindOne(context.Background(), map[string]string{"_id": id}).Decode(&test)
+	err = t.col.FindOne(context.Background(), bson.M{"_id": oid}).Decode(&test)
 	return &test, err
 }
 

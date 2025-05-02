@@ -66,7 +66,8 @@ func NewHandler(store storage.AppStorage) *Handler {
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
-		// r.Get("/", Make(h.ListRecords))
+		r.Post("/", Make(h.CreateRecord))
+		r.Get("/", Make(h.ListRecords))
 		// r.Patch("/{id}", Make(h.UpdateRecordPatient))
 		// r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
 		// r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
@@ -98,51 +99,6 @@ func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
 	log.Printf("Selected records: %v", compareRecordIds)
 	return nil
 }
-
-// func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
-// 	patientId := r.URL.Query().Get("patient_id")
-// 	keyword := r.URL.Query().Get("keyword")
-// 	status := r.URL.Query().Get("status")
-
-// 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-// 	if err != nil {
-// 		page = 1
-// 	}
-// 	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-// 	if err != nil {
-// 		pageSize = 20
-// 	}
-
-// 	sortBy := r.URL.Query().Get("sort_by")
-// 	if sortBy == "" {
-// 		sortBy = "created_at"
-// 	}
-// 	sortOrder := r.URL.Query().Get("sort_order")
-// 	if sortOrder == "" {
-// 		sortOrder = "desc"
-// 	}
-
-// 	recordsQueryOptions := models.RecordQueryOptions{
-// 		Keyword:   keyword,
-// 		Status:    status,
-// 		PatientID: patientId,
-// 	}
-
-// 	genericQueryOptions := models.GenericQueryOptions{
-// 		SortBy:    sortBy,
-// 		SortOrder: sortOrder,
-// 		Page:      page,
-// 		PageSize:  pageSize,
-// 	}
-
-// 	records, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
-// 	if err != nil {
-// 		return nil
-// 	}
-
-// 	partials.RecordTable(*records).Render(r.Context(), w)
-// 	return nil
-// }
 
 // func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
 // 	recordId := chi.URLParam(r, "id")

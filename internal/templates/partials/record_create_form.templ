@@ -29,8 +29,25 @@ templ RecordCreateForm(values RecordCreateFormValues, errors map[string]string) 
 				},
 
 				submit() {
-					console.log(this.combo)
-					console.log(this.tests)
+					form_data = {
+						patient_id: this.patientId,
+						combo_name: this.combo?.name ?? "Custom",
+						test_results: this.tests.map(test => ({
+							test_id: test.id,
+							result: test.result,
+							result_text: test.result_text
+						}))
+					}
+
+					fetch("/api/records", {
+						method: "POST",
+						body: JSON.stringify(form_data),
+						headers: {
+							"Content-Type": "application/json"
+						}
+					}).then(response => response.json()).then(data => {
+						console.log(data)
+					})
 				}
 			}))
 		})

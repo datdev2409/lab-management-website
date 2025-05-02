@@ -2,8 +2,10 @@ package storage
 
 import (
 	"context"
+	"math"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 // func (m *MongoRecordStorage) UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error {
@@ -38,12 +40,12 @@ import (
 // 	return &record, err
 // }
 
-func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) error {
-	now := GetCurrentTime()
-	record.CreatedAt = now
-	record.UpdatedAt = now
-	_, err := m.col.InsertOne(ctx, record)
-	return err
+func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) (string, error) {
+	result, err := m.col.InsertOne(ctx, record)
+	if err != nil {
+		return "", err
+	}
+	return result.InsertedID.(bson.ObjectID).Hex(), err
 }
 
 // func (m *MongoRecordStorage) AddTest(ctx context.Context, recordId string, test *models.Test) error {
@@ -69,45 +71,54 @@ func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) 
 // }
 
 // // SearchRecords implements RecordStorage.
-// func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error) {
-// 	records := []models.Record{}
+func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, *models.PaginationResponse, error) {
+	records := []models.Record{}
 
-// 	// Build the base filter
-// 	filters := bson.D{}
+	filters := bson.D{}
 
-// 	// Add keyword search if provided
-// 	if filterOpts.Keyword != "" {
-// 		filters = append(filters, bson.E{
-// 			Key: "$or",
-// 			Value: bson.A{
-// 				bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
-// 				bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
-// 			},
-// 		})
-// 	}
+	if filterOpts.Keyword != "" {
+		filters = append(filters, bson.E{
+			Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
+				bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
+			},
+		})
+	}
 
-// 	if filterOpts.PatientID != "" {
-// 		filters = append(filters, bson.E{Key: "patient.id", Value: filterOpts.PatientID})
-// 	}
+	if filterOpts.PatientID != "" {
+		filters = append(filters, bson.E{Key: "patient.id", Value: filterOpts.PatientID})
+	}
 
-// 	if filterOpts.Status != "" {
-// 		filters = append(filters, bson.E{Key: "status", Value: filterOpts.Status})
-// 	}
+	if filterOpts.Status != "" {
+		filters = append(filters, bson.E{Key: "status", Value: filterOpts.Status})
+	}
 
-// 	// TODO: Add date range filters if provided
-// 	findOpts := BuildMongoSortAndPaginationOptions(opts)
-// 	cursor, err := m.col.Find(ctx, filters, findOpts)
+	// TODO: Add date range filters if provided
+	findOpts := BuildMongoSortAndPaginationOptions(opts)
+	cursor, err := m.col.Find(ctx, filters, findOpts)
+	if err != nil {
+		return nil, nil, err
+	}
 
-// 	if err != nil {
-// 		return &records, err
-// 	}
+	count, err := m.col.CountDocuments(ctx, filters)
+	if err != nil {
+		return nil, nil, err
+	}
 
-// 	if err = cursor.All(ctx, &records); err != nil {
-// 		return &records, err
-// 	}
+	pagination := models.PaginationResponse{
+		Total:     int(count),
+		TotalPage: int(math.Ceil(float64(count) / float64(opts.PageSize))),
+		Page:      opts.Page,
+		PageSize:  opts.PageSize,
+	}
 
-// 	return &records, nil
-// }
+	if err = cursor.All(ctx, &records); err != nil {
+		return nil, nil, err
+	}
+
+	return &records, &pagination, nil
+}
 
 // func (m *MongoRecordStorage) GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error) {
 // 	recordFilterStage := bson.D{{Key: "$match", Value: bson.D{{Key: "_id", Value: id}}}}
