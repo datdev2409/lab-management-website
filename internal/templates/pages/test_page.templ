@@ -6,13 +6,7 @@ import (
 )
 
 templ TestPage(tests []*models.Test, message string) {
-	{{
-		var testPageProps = models.PageProps{
-			Title: "Danh mục xét nghiệm",
-			Path:  "/danh-muc-xet-nghiem",
-		}
-	}}
-	@partials.Base(testPageProps) {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục xét nghiệm</h3>
 			<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#test-create-modal">Thêm xét nghiệm</button>

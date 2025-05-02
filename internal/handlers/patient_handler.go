@@ -42,9 +42,13 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		page = 1
 	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
 
 	keyword := r.URL.Query().Get("patient_name")
-	patients, pagination, err := h.Store.Patients().ListPatients(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	patients, pagination, err := h.Store.Patients().ListPatients(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
@@ -57,10 +61,8 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 			partials.PatientTable(patients),
 			partials.Pagination(pagination, "patient-page"),
 		})
-	case "patient-suggestion-list":
-		recordId := r.URL.Query().Get("record_id")
-		log.Println(recordId)
-		return Render(r.Context(), w, pages.PatientSuggestionList(patients, recordId))
+	case "patient-autocomplete":
+		return Render(r.Context(), w, partials.PatientAutocomplete(patients))
 	case "cp_patient-suggestion-list":
 		return view.PatientSuggestionList(patients, false).Render(w)
 	}
@@ -72,9 +74,13 @@ func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	patient, err := h.Store.Patients().GetById(id)
 	if err != nil {
-		log.Println(err)
-		// return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
-		return nil
+		return err
+	}
+
+	target := r.Header.Get("HX-Target")
+	switch target {
+	case "patient-info":
+		return Render(r.Context(), w, partials.PatientInfo(patient))
 	}
 
 	return RenderOOB(r.Context(), w, []Node{

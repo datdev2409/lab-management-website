@@ -7,44 +7,25 @@ import (
 )
 
 type TestResult struct {
-	ID         string `json:"id" bson:"_id,omitempty"`
-	Test       Test   `json:"test" bson:"test"`
-	Result     string `json:"result" bson:"result"`
-	ResultText string `json:"result_text" bson:"result_text"`
-}
-
-type TestResultWithDetails struct {
-	Test       Test   `json:"test" bson:"test"`
-	TestID     string `json:"test_id" bson:"test_id"`
-	Result     string `json:"result" bson:"result"`
-	ResultText string `json:"result_text" bson:"result_text"`
-}
-
-type EmbeddedPatient struct {
-	ID    string `json:"id" bson:"id"`
-	Name  string `json:"name" bson:"name"`
-	Phone string `json:"phone" bson:"phone"`
+	ID          bson.ObjectID `json:"id" bson:"_id"`
+	Name        string        `json:"name" bson:"name"`
+	Price       int           `json:"price" bson:"price"`
+	NormalValue string        `json:"normal_value" bson:"normal_value"`
+	Unit        string        `json:"unit" bson:"unit"`
+	LowerBound  float64       `json:"lower_bound" bson:"lower_bound"`
+	UpperBound  float64       `json:"upper_bound" bson:"upper_bound"`
+	Result      string        `json:"result" bson:"result"`
+	ResultText  string        `json:"result_text" bson:"result_text"`
 }
 
 type Record struct {
-	ID          string          `json:"id" bson:"_id"`
-	ComboName   string          `json:"combo_name" bson:"combo_name"`
-	Patient     EmbeddedPatient `json:"patient" bson:"patient"`
-	TestResults []TestResult    `json:"test_results" bson:"test_results"`
-	Status      string          `json:"status" bson:"status"`
-	CreatedAt   time.Time       `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at" bson:"updated_at"`
-}
-
-type RecordWithDetails struct {
-	ID          string          `json:"id" bson:"_id"`
-	ComboName   string          `json:"combo_name" bson:"combo_name"`
-	Patient     Patient         `json:"patient" bson:"patient"`
-	TestResults []TestResult    `json:"test_results" bson:"test_results"`
-	Status      string          `json:"status" bson:"status"`
-	TestInfoMap map[string]Test `json:"test_info_map" bson:"test_info_map"`
-	CreatedAt   time.Time       `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time       `json:"updated_at" bson:"updated_at"`
+	ID          bson.ObjectID `json:"id" bson:"_id"`
+	ComboName   string        `json:"combo_name" bson:"combo_name"`
+	Patient     Patient       `json:"patient" bson:"patient"`
+	TestResults []TestResult  `json:"test_results" bson:"test_results"`
+	Status      string        `json:"status" bson:"status"`
+	CreatedAt   time.Time     `json:"created_at" bson:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at" bson:"updated_at"`
 }
 
 type RecordQueryOptions struct {

@@ -36,15 +36,15 @@ type ComboStorage interface {
 
 type RecordStorage interface {
 	Insert(ctx context.Context, record *models.Record) error
-	GetById(ctx context.Context, id string) (*models.Record, error)
-	GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
-	ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
-	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error)
-	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
-	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
-	AddTest(ctx context.Context, recordId string, test *models.Test) error
-	AddTests(ctx context.Context, recordId string, tests []*models.Test) error
-	SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error
+	// GetById(ctx context.Context, id string) (*models.Record, error)
+	// GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
+	// ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
+	// ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, error)
+	// UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
+	// UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
+	// AddTest(ctx context.Context, recordId string, test *models.Test) error
+	// AddTests(ctx context.Context, recordId string, tests []*models.Test) error
+	// SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error
 }
 
 type AppStorage interface {

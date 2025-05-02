@@ -2,13 +2,14 @@ package pages
 
 import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
-templ ComboCreatePage() {
+templ RecordCreatePage() {
 	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
-			<h3 class="pt-3">Tạo gói xét nghiệm mới</h3>
+			<h3 class="pt-3">Tạo phiếu xét nghiệm mới</h3>
+			@partials.PatientCreateModal()
 		</div>
 		<div class="my-3">
-			@partials.ComboCreateForm()
+			@partials.RecordCreateForm(partials.RecordCreateFormValues{}, map[string]string{})
 		</div>
 	}
 }

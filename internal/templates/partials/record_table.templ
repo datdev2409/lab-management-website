@@ -25,7 +25,7 @@ templ RecordTable(records []models.Record) {
 					<td>{ record.CreatedAt.Format("2006-01-02 15:04:05") }</td>
 					<td>{ record.UpdatedAt.Format("2006-01-02 15:04:05") }</td>
 					<td>
-						<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID) } class="link-primary">Xem</a>
+						<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID.Hex()) } class="link-primary">Xem</a>
 					</td>
 				</tr>
 			}

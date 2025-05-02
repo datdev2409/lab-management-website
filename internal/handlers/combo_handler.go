@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -53,12 +54,21 @@ func (h *Handler) ListCombos(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		page = 1
 	}
-	combos, pagination, err := h.Store.Combos().ListCombos(r.Context(), models.ComboQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	combos, pagination, err := h.Store.Combos().ListCombos(r.Context(), models.ComboQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
 
-	// return Render(r.Context(), w, partials.ComboTable(combos))
+	target := r.Header.Get("HX-Target")
+	switch target {
+	case "combo-autocomplete":
+		return Render(r.Context(), w, partials.ComboAutocomplete(combos))
+	}
+
 	return RenderMultiComponents(r.Context(), w, []templ.Component{
 		partials.ComboTable(combos),
 		partials.Pagination(pagination, "combo-page"),
@@ -67,7 +77,7 @@ func (h *Handler) ListCombos(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetComboDetails(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	_, tests, err := h.Store.Combos().GetTestsInCombo(r.Context(), id)
+	combo, tests, err := h.Store.Combos().GetTestsInCombo(r.Context(), id)
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -84,5 +94,18 @@ func (h *Handler) GetComboDetails(w http.ResponseWriter, r *http.Request) error 
 		return nil
 	}
 
-	return Render(r.Context(), w, partials.TestTable(tests, "record-page", false))
+	// // return Render(r.Context(), w, partials.RecordTestTable(tests))
+	// return RenderMultiComponents(r.Context(), w, []templ.Component{
+	// 	partials.RecordTestTable(tests),
+	// 	partials.RecordComboInfo(combo),
+	// })
+	response := models.ComboDetailsResponse{
+		Combo: combo,
+		Tests: tests,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
+	return nil
 }

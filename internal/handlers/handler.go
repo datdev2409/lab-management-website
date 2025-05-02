@@ -3,14 +3,10 @@ package handlers
 import (
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,7 +31,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem/new", Make(h.HandleCreateNewRecord))
-		r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
+		// r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
@@ -70,14 +66,14 @@ func NewHandler(store storage.AppStorage) *Handler {
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
-		r.Get("/", Make(h.ListRecords))
-		r.Patch("/{id}", Make(h.UpdateRecordPatient))
-		r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
-		r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
-		r.Post("/{id}/tests", Make(h.AddTestToRecord))
-		r.Patch("/{id}/tests", Make(h.UpdateRecordTests))
-		r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
-		r.Post("/{id}/export/results", Make(h.ExportRecordResults))
+		// r.Get("/", Make(h.ListRecords))
+		// r.Patch("/{id}", Make(h.UpdateRecordPatient))
+		// r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
+		// r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
+		// r.Post("/{id}/tests", Make(h.AddTestToRecord))
+		// r.Patch("/{id}/tests", Make(h.UpdateRecordTests))
+		// r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
+		// r.Post("/{id}/export/results", Make(h.ExportRecordResults))
 	})
 
 	r.Route("/api/tracking", func(r chi.Router) {
@@ -88,7 +84,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 }
 
 func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) error {
-	return Render(r.Context(), w, pages.TrackingPage(""))
+	return Render(r.Context(), w, pages.TrackingPage())
 }
 
 func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
@@ -103,81 +99,81 @@ func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
-	patientId := r.URL.Query().Get("patient_id")
-	keyword := r.URL.Query().Get("keyword")
-	status := r.URL.Query().Get("status")
+// func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
+// 	patientId := r.URL.Query().Get("patient_id")
+// 	keyword := r.URL.Query().Get("keyword")
+// 	status := r.URL.Query().Get("status")
 
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		pageSize = 20
-	}
+// 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+// 	if err != nil {
+// 		page = 1
+// 	}
+// 	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+// 	if err != nil {
+// 		pageSize = 20
+// 	}
 
-	sortBy := r.URL.Query().Get("sort_by")
-	if sortBy == "" {
-		sortBy = "created_at"
-	}
-	sortOrder := r.URL.Query().Get("sort_order")
-	if sortOrder == "" {
-		sortOrder = "desc"
-	}
+// 	sortBy := r.URL.Query().Get("sort_by")
+// 	if sortBy == "" {
+// 		sortBy = "created_at"
+// 	}
+// 	sortOrder := r.URL.Query().Get("sort_order")
+// 	if sortOrder == "" {
+// 		sortOrder = "desc"
+// 	}
 
-	recordsQueryOptions := models.RecordQueryOptions{
-		Keyword:   keyword,
-		Status:    status,
-		PatientID: patientId,
-	}
+// 	recordsQueryOptions := models.RecordQueryOptions{
+// 		Keyword:   keyword,
+// 		Status:    status,
+// 		PatientID: patientId,
+// 	}
 
-	genericQueryOptions := models.GenericQueryOptions{
-		SortBy:    sortBy,
-		SortOrder: sortOrder,
-		Page:      page,
-		PageSize:  pageSize,
-	}
+// 	genericQueryOptions := models.GenericQueryOptions{
+// 		SortBy:    sortBy,
+// 		SortOrder: sortOrder,
+// 		Page:      page,
+// 		PageSize:  pageSize,
+// 	}
 
-	records, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
-	if err != nil {
-		return nil
-	}
+// 	records, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
+// 	if err != nil {
+// 		return nil
+// 	}
 
-	partials.RecordTable(*records).Render(r.Context(), w)
-	return nil
-}
+// 	partials.RecordTable(*records).Render(r.Context(), w)
+// 	return nil
+// }
 
-func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
+// func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
+// 	recordId := chi.URLParam(r, "id")
 
-	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
+// 	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	filepath, err := sheets.CreateRecordResultFile(*record)
-	if err != nil {
-		return err
-	}
+// 	filepath, err := sheets.CreateRecordResultFile(*record)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	HTMXRedirect(w, "/"+filepath)
-	return nil
-}
+// 	HTMXRedirect(w, "/"+filepath)
+// 	return nil
+// }
 
-func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
+// func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
+// 	recordId := chi.URLParam(r, "id")
 
-	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
+// 	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	filepath, err := sheets.CreateRecordBillingFile(*record)
-	if err != nil {
-		return err
-	}
+// 	filepath, err := sheets.CreateRecordBillingFile(*record)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	HTMXRedirect(w, "/"+filepath)
-	return nil
-}
+// 	HTMXRedirect(w, "/"+filepath)
+// 	return nil
+// }

@@ -16,9 +16,13 @@ func (m *MongoPatientStorage) Insert(patient *models.Patient) error {
 }
 
 func (m *MongoPatientStorage) GetById(id string) (*models.Patient, error) {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
 	var patient models.Patient
-	filter := bson.D{{Key: "_id", Value: id}}
-	err := m.col.FindOne(context.Background(), filter).Decode(&patient)
+	filter := bson.D{{Key: "_id", Value: oid}}
+	err = m.col.FindOne(context.Background(), filter).Decode(&patient)
 	return &patient, err
 }
 

@@ -6,13 +6,7 @@ import (
 )
 
 templ ComboDetailsPage(combo *models.Combo) {
-	{{
-	var comboDetailsPageProps = models.PageProps{
-		Title: "Chi tiết gói xét nghiệm",
-		Path:  "/danh-muc-goi-xet-nghiem/" + combo.GetID(),
-	}
-	}}
-	@partials.Base(comboDetailsPageProps) {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Chi tiết gói xét nghiệm</h3>
 		</div>

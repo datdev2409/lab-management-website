@@ -1,0 +1,110 @@
+package partials
+
+type RecordCreateFormValues struct {
+	PatientName string
+	PatientID   string
+	ComboName   string
+}
+
+templ RecordCreateForm(values RecordCreateFormValues, errors map[string]string) {
+	<script>
+		document.addEventListener('alpine:init', function() {
+			Alpine.data('recordCreateFormData', () => ({
+				patientId: '',
+				comboId: '',
+				combo: null,
+				tests: [],
+
+				async selectCombo(comboId) {
+					this.comboId = comboId
+					const response = await (await fetch(`/api/combos/${comboId}`)).json()
+					console.log(response)
+					this.tests = response.tests
+					this.combo = response.combo
+				},
+
+				addTest(test) {
+					this.tests.push(test)
+					this.$refs.testInput.value = ''
+				},
+
+				submit() {
+					console.log(this.combo)
+					console.log(this.tests)
+				}
+			}))
+		})
+	</script>
+	<form @submit.prevent="submit" x-data="recordCreateFormData">
+		<div id="patient-select" class="mb-3" style="position: relative;" x-data="{open: false}">
+			<div x-show="patientId == ''">
+				<label for="patient_name" class="form-label">Tên bệnh nhân hoặc số điện thoại</label>
+				<input
+					class="form-control"
+					id="patient_name"
+					name="patient_name"
+					autocomplete="off"
+					@keyup="open=true"
+					hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+					hx-target="#patient-autocomplete"
+					hx-swap="outerHTML"
+					hx-get="/api/patients?page_size=5"
+					value={ values.PatientName }
+				/>
+				@PatientAutocomplete(nil)
+			</div>
+			<div x-show="patientId != ''">
+				<div class="d-flex align-items-center justify-content-between">
+					<h6>Thông tin bệnh nhân</h6>
+					<a @click="patientId='';open=false" class="link-primary">Chọn bệnh nhân khác</a>
+				</div>
+				@PatientInfo(nil)
+			</div>
+			<input hidden id="patient_id" name="patient_id" x-model="patientId"/>
+		</div>
+		<div id="combo-select" class="mb-3" style="position: relative;" x-data="{open: false}">
+			<div x-show="comboId == ''">
+				<label for="combo_name" class="form-label">Gói xét nghiệm</label>
+				<input
+					class="form-control"
+					id="combo_name"
+					name="combo_name"
+					autocomplete="off"
+					@keyup="open=true"
+					hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+					hx-target="#combo-autocomplete"
+					hx-swap="outerHTML"
+					hx-get="/api/combos?page_size=5"
+					value={ values.ComboName }
+				/>
+				@ComboAutocomplete(nil)
+			</div>
+			<div x-show="comboId != ''">
+				<div class="d-flex align-items-center justify-content-between">
+					<h6>Thông tin gói xét nghiệm</h6>
+					<a @click="comboId='';comboName='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
+				</div>
+			</div>
+			@RecordComboInfo()
+		</div>
+		<div class="mb-3" style="position: relative;" x-data="{open: false}">
+			<label for="test_name" class="form-label">Tên xét nghiệm</label>
+			<input
+				class="form-control"
+				id="test_name"
+				name="test_name"
+				autocomplete="off"
+				@keyup="open=true"
+				hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+				hx-target="#test-autocomplete"
+				hx-swap="outerHTML"
+				hx-get="/api/tests?page_size=5"
+				value={ values.PatientName }
+				x-ref="testInput"
+			/>
+			@RecordTestAutocomplete(nil)
+		</div>
+		@RecordTestTable()
+		<button type="submit" class="btn btn-primary">Tạo</button>
+	</form>
+}

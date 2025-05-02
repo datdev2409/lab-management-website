@@ -14,6 +14,11 @@ type Combo struct {
 	UpdatedAt time.Time       `json:"updated_at" bson:"updated_at"`
 }
 
+type ComboDetailsResponse struct {
+	Combo *Combo  `json:"combo"`
+	Tests []*Test `json:"tests"`
+}
+
 type ComboQueryOptions struct {
 	Keyword string
 }

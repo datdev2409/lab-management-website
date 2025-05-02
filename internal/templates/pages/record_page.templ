@@ -6,13 +6,7 @@ import (
 )
 
 templ RecordPage() {
-	{{
-		var recordPageProps = models.PageProps{
-			Title: "Phiếu xét nghiệm",
-			Path:  "/phieu-xet-nghiem",
-		}
-	}}
-	@partials.Base(recordPageProps) {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
@@ -52,7 +46,7 @@ templ RecordList(records []models.Record) {
 			<div class="card-body">
 				<h5 class="card-title">{ record.Patient.Name }</h5>
 				<h6 class="card-subtitle mb-2 text-body-secondary">{ record.Patient.Phone }</h6>
-				<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID) } class="card-link">Chỉnh sửa</a>
+				<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID.Hex()) } class="card-link">Chỉnh sửa</a>
 				<a href="#" class="card-link">Đã thanh toán</a>
 			</div>
 		</div>

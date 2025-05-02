@@ -6,13 +6,7 @@ import (
 )
 
 templ ComboPage(message string) {
-	{{
-		var comboPageProps = models.PageProps{
-			Title: "Danh mục gói xét nghiệm",
-			Path:  "/danh-muc-goi-xet-nghiem",
-		}
-	}}
-	@partials.Base(comboPageProps) {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục gói xét nghiệm</h3>
 			<a href="/danh-muc-goi-xet-nghiem/new"><button class="btn btn-primary">Tạo gói xét nghiệm mới</button></a>

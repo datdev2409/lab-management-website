@@ -86,7 +86,7 @@ func RecordList(records []models.Record) Node {
 			TBody(
 				Map(records, func(r models.Record) Node {
 					return Tr(
-						Td(Input(Type("checkbox"), Name("record_id_"+r.ID), Value(r.ID), Checked())),
+						Td(Input(Type("checkbox"), Name("record_id_"+r.ID.Hex()), Value(r.ID.Hex()), Checked())),
 						Td(Text(r.CreatedAt.Format("2006-01-02"))),
 						Td(Text(r.ComboName)),
 						Td(Textf("%s xét nghiệm", strconv.Itoa(len(r.TestResults)))),

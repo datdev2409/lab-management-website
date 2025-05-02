@@ -6,16 +6,10 @@ import (
 )
 
 templ PatientsPage() {
-	{{
-		var patientsPageProps = models.PageProps{
-			Title: "Danh mục bệnh nhân",
-			Path:  "/danh-muc-benh-nhan",
-		}
-	}}
-	@partials.Base(patientsPageProps) {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục bệnh nhân</h3>
-			@partials.CreatePatientModal()
+			@partials.PatientCreateModal()
 		</div>
 		<div class="my-3 d-flex align-items-center">
 			<form id="patient-search-form" class="row" hx-get="/api/patients" hx-target="#patient-table" hx-trigger="load, submit">

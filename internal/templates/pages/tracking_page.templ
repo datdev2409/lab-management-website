@@ -5,14 +5,8 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 )
 
-templ TrackingPage(message string) {
-	{{
-		var trackingPageProps = models.PageProps{
-			Title: "Danh mục so sánh",
-			Path:  "/so-sanh-ket-qua",
-		}
-	}}
-	@partials.Base(trackingPageProps) {
+templ TrackingPage() {
+	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Danh mục so sánh</h3>
 		</div>

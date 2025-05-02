@@ -1,0 +1,16 @@
+package partials
+
+templ RecordComboInfo() {
+	<template x-if="comboId != ''">
+		<div id="record-combo-info" hx-swap-oob="true">
+			<table class="table table-bordered">
+				<tbody>
+					<tr>
+						<td style="width: 300px">Tên gói xét nghiệm</td>
+						<td x-text="combo?.name"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</template>
+}
