@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -62,67 +61,3 @@ type RecordQueryOptions struct {
 	StartDate *time.Time
 	EndDate   *time.Time
 }
-
-type GenericQueryOptions struct {
-	// Sorting
-	SortBy    string
-	SortOrder string
-
-	// Pagination
-	Page     int
-	PageSize int
-}
-
-type PaginationResponse struct {
-	Total     int `json:"total"`
-	TotalPage int `json:"total_page"`
-	Page      int `json:"page"`
-	PageSize  int `json:"page_size"`
-}
-
-// Convert frontend JSON data to TestResult
-func ConvertFrontendTestResult(data map[string]interface{}) (TestResult, error) {
-	// Convert string ID to bson.ObjectID
-	idStr, ok := data["id"].(string)
-	if !ok {
-		return TestResult{}, fmt.Errorf("invalid id format")
-	}
-
-	id, err := bson.ObjectIDFromHex(idStr)
-	if err != nil {
-		return TestResult{}, fmt.Errorf("invalid id format: %v", err)
-	}
-
-	// Convert other fields
-	name, _ := data["name"].(string)
-	price, _ := data["price"].(float64) // JSON numbers are float64 by default
-	normalValue, _ := data["normal_value"].(string)
-	unit, _ := data["unit"].(string)
-	lowerBound, _ := data["lower_bound"].(float64)
-	upperBound, _ := data["upper_bound"].(float64)
-	result, _ := data["result"].(string)
-	resultText, _ := data["result_text"].(string)
-
-	return TestResult{
-		ID:          id,
-		Name:        name,
-		Price:       int(price),
-		NormalValue: normalValue,
-		Unit:        unit,
-		LowerBound:  lowerBound,
-		UpperBound:  upperBound,
-		Result:      result,
-		ResultText:  resultText,
-	}, nil
-}
-
-// func (r *Record) MarshalBSON() ([]byte, error) {
-// 	if r.TestResults == nil {
-// 		r.TestResults = []TestResult{}
-// 	}
-
-// 	type my Record
-// 	return bson.Marshal((*my)(r))
-// }
-
-// Update TestId from string to bson.ObjectID when unmarshal

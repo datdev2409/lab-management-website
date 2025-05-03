@@ -26,12 +26,7 @@ func (h *Handler) HandleCreateNewRecord(w http.ResponseWriter, r *http.Request) 
 
 func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
-	record, err := h.Store.Records().GetById(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
-
-	return Render(r.Context(), w, pages.RecordDetailsPage(record))
+	return Render(r.Context(), w, pages.RecordDetailsPage(recordId))
 }
 
 func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
@@ -158,7 +153,25 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Record updated successfully"))
+	w.Write([]byte(`{"message": "Record updated successfully"}`))
+	return nil
+}
+
+func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	record, err := h.Store.Records().GetById(r.Context(), recordId)
+	if err != nil {
+		return err
+	}
+
+	jsonResponse, err := json.Marshal(record)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
 	return nil
 }
 

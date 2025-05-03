@@ -1,122 +1,148 @@
 package partials
 
-import (
-	"encoding/json"
-	"fmt"
-	"github.com/datdev2409/lab-admin-go/internal/models"
-)
+import "fmt"
 
-templ RecordCreateForm(record *models.Record) {
+templ RecordCreateForm(recordId string) {
 	<script>
-		document.addEventListener('alpine:init', function() {
-			Alpine.data('recordCreateFormData', () => ({
-				patientId: '',
-				comboName: '',
-				tests: [],
+		document.addEventListener('keydown', function(event) {
+			if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+				window.dispatchEvent(new CustomEvent("save"))
+				event.preventDefault();
+			}
+		});
 
-				async selectCombo(comboId) {
-					if (!confirm("Chọn gói xét nghiệm khác sẽ xóa tất cả các xét nghiệm đã chọn. Bạn có muốn tiếp tục không?")) {
+		document.addEventListener('alpine:init', function() {
+			Alpine.data("recordForm", (recordId) => ({
+				flow: "create-record",
+				patient: null,
+				combo_name: "",
+				test_results: [],
+
+				async init() {
+					if (recordId == '') {
+						console.log("Create new record flow")
 						return
 					}
-					const response = await (await fetch(`/api/combos/${comboId}`)).json()
-					this.tests = response.tests
-					this.combo = response.combo
-					this.comboName = response?.combo?.name
-				},
 
-				addTest(test) {
-					this.tests.push(test)
-					this.$refs.testInput.value = ''
-				},
-
-				updateRecord(recordId) {
-					console.log(recordId)
-					console.log(this.tests)
-				},
-
-				initTests(data) {
-					if (data != '') {
-						this.tests = JSON.parse(data)
-					}
-				},
-
-				submit(recordId) {
-					if (recordId == '') {
-						// Create new record
-						form_data = {
-							patient_id: this.patientId,
-							combo_name: this.combo?.name ?? "Custom",
-							test_results: this.tests
+					try {
+						const response = await fetch(`/api/records/${recordId}`)
+						if (!response.ok) {
+							throw new Error("Failed to fetch record data")
 						}
 
-						fetch("/api/records", {
-							method: "POST",
-							body: JSON.stringify(form_data),
-							headers: {
-								"Content-Type": "application/json"
-							}
-						}).then(response => response.json()).then(data => {
-							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
-						})
+						const data = await response.json()
+
+						this.patient = data.patient
+						this.test_results = data.test_results
+						this.combo_name = data.combo_name
+						this.flow = "update-record"
+						console.log(data)
 					}
-					else {
-						console.log("Update record")
-						console.log(this.tests)
-						fetch(`/api/records/${recordId}`, {
-							method: "PATCH",
-							body: JSON.stringify({
-								test_results: this.tests
-							}),
-							headers: {
-								"Content-Type": "application/json"
-							}
-						})
+					catch (error) {
+						this.flow = "create-record"
+						console.error("Error fetching record data:", error)
 					}
 				},
 
+				async selectPatient(patientId) {
+					try {
+						const response = await fetch(`/api/patients/${patientId}`)
+						if (!response.ok) {
+							throw new Error("Failed to fetch patient data")
+						}
+
+						const data = await response.json()
+						this.patient = data
+					}
+					catch (error) {
+						console.error("Error fetching patient data:", error)
+					}
+				},
+
+				async selectCombo(comboId) {
+					try {
+						const response = await fetch(`/api/combos/${comboId}`)
+						if (!response.ok) {
+							throw new Error("Failed to fetch combo data")
+						}
+
+						const data = await response.json()
+						this.combo_name = data.combo.name
+						this.test_results = data.tests
+					}
+					catch (error) {
+						console.error("Error fetching combo data:", error)
+					}
+				},
+
+				async addTest(data) {
+					if (typeof data === 'string') {
+						data = JSON.parse(data)
+					}
+					this.test_results.push(data)
+					this.$refs.testSearchInput.value = ''
+				},
+
+				async submit() {
+					try {
+						const config = {
+							"create-record": {
+								method: "POST",
+								endpoint: "/api/records"
+							},
+							"update-record": {
+								method: "PATCH",
+								endpoint: `/api/records/${recordId}`
+							}
+						}
+
+						const formData = {
+							patient_id: this.patient.id,
+							combo_name: this.combo_name,
+							test_results: this.test_results
+						}
+
+						const {method, endpoint} = config[this.flow]
+
+						const response = await fetch(endpoint, {
+							method,
+							body: JSON.stringify(formData),
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						})
+
+						if (!response.ok) {
+							throw new Error('Failed to submit record')
+						}
+
+						const data = await response.json()
+						if (this.flow === 'create-record') {
+							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
+						}
+					}
+					catch (error) {
+						console.error('Error submitting record:', error)
+						alert('Lỗi khi tạo phiếu xét nghiệm. Vui lòng thử lại.')
+					}
+				}
 			}))
+
 		})
 	</script>
-	{{
-		var patient *models.Patient = nil
-		var comboName string = ""
-		var tests []byte = nil
-		var recordId string = ""
-		if record != nil {
-			recordId = record.ID.Hex()
-			patient = &record.Patient
-			comboName = record.ComboName
-			tests, _ = json.Marshal(record.TestResults)
-		}
-	}}
-	<form @submit.prevent={ fmt.Sprintf("submit('%s')", recordId) } x-data="recordCreateFormData">
+	<form @submit.prevent="submit" @save.window="submit" x-data={ fmt.Sprintf("recordForm('%s')", recordId) }>
 		<div class="mb-3" style="position: relative;" x-data="{open: false}">
 			@RecordPatientSelect()
-			@PatientInfo(patient)
+			@PatientInfo()
 		</div>
 		<div id="combo-select" class="mb-3" style="position: relative;" x-data="{open: false}">
 			@RecordComboSelect()
-			@RecordComboInfo(comboName)
+			@RecordComboInfo()
 		</div>
 		<div class="mb-3" style="position: relative;" x-data="{open: false}">
-			<label for="test_name" class="form-label">Tên xét nghiệm</label>
-			<input
-				class="form-control"
-				id="test_name"
-				name="test_name"
-				autocomplete="off"
-				@keyup="open=true"
-				hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
-				hx-target="#test-autocomplete"
-				hx-swap="outerHTML"
-				hx-get="/api/tests?page_size=5"
-				x-ref="testInput"
-			/>
-			@RecordTestAutocomplete(nil)
+			@RecordTestSelect()
 		</div>
-		<div x-init={ fmt.Sprintf("initTests('%s')", string(tests)) }>
-			@RecordTestTable()
-		</div>
-		<button type="submit" class="btn btn-primary">Tạo</button>
+		@RecordTestTable()
+		<button x-text="flow === 'create-record' ? 'Tạo' : 'Lưu thay đổi'" type="submit" class="btn btn-primary">Tạo</button>
 	</form>
 }

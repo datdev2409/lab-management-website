@@ -1,17 +1,14 @@
 package pages
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-)
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
-templ RecordDetailsPage(record *models.Record) {
+templ RecordDetailsPage(recordId string) {
 	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
 			<h3 class="pt-3">Chi tiết phiếu xét nghiệm</h3>
 		</div>
 		<div class="my-3">
-			@partials.RecordCreateForm(record)
+			@partials.RecordCreateForm(recordId)
 		</div>
 	}
 }

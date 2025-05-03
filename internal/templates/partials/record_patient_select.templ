@@ -1,7 +1,7 @@
 package partials
 
 templ RecordPatientSelect() {
-	<div x-show="patientId == ''">
+	<div x-show="patient == null">
 		<label for="patient_name" class="form-label">Tên bệnh nhân hoặc số điện thoại</label>
 		<input
 			class="form-control"
