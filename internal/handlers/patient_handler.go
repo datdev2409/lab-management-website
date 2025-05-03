@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
-	. "maragu.dev/gomponents"
 )
 
 func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
@@ -77,18 +77,15 @@ func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	target := r.Header.Get("HX-Target")
-	switch target {
-	case "patient-info":
-		return Render(r.Context(), w, partials.PatientInfo(patient))
+	jsonResponse, err := json.Marshal(patient)
+	if err != nil {
+		return err
 	}
 
-	return RenderOOB(r.Context(), w, []Node{
-		view.PatientSelectInput(patient.Name, patient.ID.Hex()),
-		view.PatientInfo(patient, true),
-		// view.PatientSuggestionList([]models.Patient{}, true),
-	})
-	// return view.PatientInfo(patient, false).Render(w)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+	return nil
 }
 
 func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
