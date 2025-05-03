@@ -41,6 +41,10 @@ type TestResultRequest struct {
 	ResultText  string  `json:"result_text"`
 }
 
+type CreateRecordResponse struct {
+	ID string `json:"id"`
+}
+
 type CreateRecordRequest struct {
 	PatientID   string              `json:"patient_id"`
 	ComboName   string              `json:"combo_name"`

@@ -12,15 +12,12 @@ templ RecordCreateForm(record *models.Record) {
 			Alpine.data('recordCreateFormData', () => ({
 				patientId: '',
 				comboName: '',
-				comboId: '',
-				combo: null,
 				tests: [],
 
 				async selectCombo(comboId) {
 					if (!confirm("Chọn gói xét nghiệm khác sẽ xóa tất cả các xét nghiệm đã chọn. Bạn có muốn tiếp tục không?")) {
 						return
 					}
-					this.comboId = comboId
 					const response = await (await fetch(`/api/combos/${comboId}`)).json()
 					this.tests = response.tests
 					this.combo = response.combo
@@ -35,6 +32,12 @@ templ RecordCreateForm(record *models.Record) {
 				updateRecord(recordId) {
 					console.log(recordId)
 					console.log(this.tests)
+				},
+
+				initTests(data) {
+					if (data != '') {
+						this.tests = JSON.parse(data)
+					}
 				},
 
 				submit(recordId) {
@@ -53,7 +56,7 @@ templ RecordCreateForm(record *models.Record) {
 								"Content-Type": "application/json"
 							}
 						}).then(response => response.json()).then(data => {
-							console.log(data)
+							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
 						})
 					}
 					else {
@@ -111,7 +114,7 @@ templ RecordCreateForm(record *models.Record) {
 			/>
 			@RecordTestAutocomplete(nil)
 		</div>
-		<div x-init={ fmt.Sprintf("tests=JSON.parse('%s')", string(tests)) }>
+		<div x-init={ fmt.Sprintf("initTests('%s')", string(tests)) }>
 			@RecordTestTable()
 		</div>
 		<button type="submit" class="btn btn-primary">Tạo</button>

@@ -79,10 +79,15 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	jsonResponse, err := json.Marshal(models.CreateRecordResponse{ID: recordId})
+
+	if err != nil {
+		return err
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	log.Println(recordId)
-	w.Write([]byte(recordId))
+	w.Write(jsonResponse)
 	return nil
 }
 
