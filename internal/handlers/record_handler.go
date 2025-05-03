@@ -12,6 +12,8 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+	"github.com/go-chi/chi"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
@@ -20,6 +22,16 @@ func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error
 
 func (h *Handler) HandleCreateNewRecord(w http.ResponseWriter, r *http.Request) error {
 	return Render(r.Context(), w, pages.RecordCreatePage())
+}
+
+func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	record, err := h.Store.Records().GetById(r.Context(), recordId)
+	if err != nil {
+		return err
+	}
+
+	return Render(r.Context(), w, pages.RecordDetailsPage(record))
 }
 
 func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
@@ -36,20 +48,18 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 
 	recordTestResults := []models.TestResult{}
 	for _, testResult := range request.TestResults {
-		test, err := h.Store.Tests().GetById(testResult.TestID)
+		testId, err := bson.ObjectIDFromHex(testResult.ID)
 		if err != nil {
-			log.Println("Error getting test by id", err)
 			return err
 		}
-
 		recordTestResults = append(recordTestResults, models.TestResult{
-			ID:          test.ID,
-			Name:        test.Name,
-			Price:       test.Price,
-			NormalValue: test.NormalValue,
-			Unit:        test.Unit,
-			LowerBound:  test.LowerBound,
-			UpperBound:  test.UpperBound,
+			ID:          testId,
+			Name:        testResult.Name,
+			Price:       testResult.Price,
+			NormalValue: testResult.NormalValue,
+			Unit:        testResult.Unit,
+			LowerBound:  testResult.LowerBound,
+			UpperBound:  testResult.UpperBound,
 			Result:      testResult.Result,
 			ResultText:  testResult.ResultText,
 		})
@@ -123,6 +133,27 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 		partials.RecordTable(*records),
 		partials.Pagination(pagination, "record-page"),
 	})
+	return nil
+}
+
+func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+
+	var request models.UpdateRecordRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		log.Println("Error while decoding request", err)
+		return err
+	}
+
+	err := h.Store.Records().UpdateTestResults(r.Context(), recordId, request.TestResults)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Record updated successfully"))
 	return nil
 }
 

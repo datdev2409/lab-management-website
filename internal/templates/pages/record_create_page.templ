@@ -9,7 +9,7 @@ templ RecordCreatePage() {
 			@partials.PatientCreateModal()
 		</div>
 		<div class="my-3">
-			@partials.RecordCreateForm(partials.RecordCreateFormValues{}, map[string]string{})
+			@partials.RecordCreateForm(nil)
 		</div>
 	}
 }

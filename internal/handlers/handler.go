@@ -31,7 +31,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem/new", Make(h.HandleCreateNewRecord))
-		// r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
+		r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
@@ -68,6 +68,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 	r.Route("/api/records", func(r chi.Router) {
 		r.Post("/", Make(h.CreateRecord))
 		r.Get("/", Make(h.ListRecords))
+		r.Patch("/{id}", Make(h.UpdateRecord))
 		// r.Patch("/{id}", Make(h.UpdateRecordPatient))
 		// r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
 		// r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))

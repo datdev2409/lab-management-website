@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"log"
 	"math"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -34,11 +35,16 @@ import (
 // 	return nil
 // }
 
-// func (m *MongoRecordStorage) GetById(ctx context.Context, id string) (*models.Record, error) {
-// 	var record models.Record
-// 	err := m.col.FindOne(ctx, map[string]string{"_id": id}).Decode(&record)
-// 	return &record, err
-// }
+func (m *MongoRecordStorage) GetById(ctx context.Context, id string) (*models.Record, error) {
+	recordId, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
+	var record models.Record
+	err = m.col.FindOne(ctx, bson.D{{Key: "_id", Value: recordId}}).Decode(&record)
+	return &record, err
+}
 
 func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) (string, error) {
 	result, err := m.col.InsertOne(ctx, record)
@@ -179,11 +185,38 @@ func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.
 // 	return &result, nil
 // }
 
-// func (m *MongoRecordStorage) SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error {
-// 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: testResults}}}}
-// 	_, err := m.col.UpdateByID(ctx, recordId, update)
-// 	return err
-// }
+func (m *MongoRecordStorage) UpdateTestResults(ctx context.Context, recordId string, testResults []models.TestResultRequest) error {
+	recordOId, err := bson.ObjectIDFromHex(recordId)
+	if err != nil {
+		log.Println("Error while converting record id to object id", err)
+		return err
+	}
+
+	updatedTestResults := []models.TestResult{}
+	for _, testResult := range testResults {
+		log.Println("Test result", testResult.ID)
+		testId, err := bson.ObjectIDFromHex(testResult.ID)
+		if err != nil {
+			log.Println("Error while converting test id to object idd", err)
+			return err
+		}
+		updatedTestResults = append(updatedTestResults, models.TestResult{
+			ID:          testId,
+			Name:        testResult.Name,
+			Price:       testResult.Price,
+			NormalValue: testResult.NormalValue,
+			Unit:        testResult.Unit,
+			LowerBound:  testResult.LowerBound,
+			UpperBound:  testResult.UpperBound,
+			Result:      testResult.Result,
+			ResultText:  testResult.ResultText,
+		})
+	}
+
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: updatedTestResults}}}}
+	_, err = m.col.UpdateOne(ctx, bson.D{{Key: "_id", Value: recordOId}}, update)
+	return err
+}
 
 // func (m *MongoRecordStorage) ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error) {
 // 	records := []models.Record{}

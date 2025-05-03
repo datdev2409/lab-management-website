@@ -1,0 +1,19 @@
+package partials
+
+templ RecordPatientSelect() {
+	<div x-show="patientId == ''">
+		<label for="patient_name" class="form-label">Tên bệnh nhân hoặc số điện thoại</label>
+		<input
+			class="form-control"
+			id="patient_name"
+			name="patient_name"
+			autocomplete="off"
+			@keyup="open=true"
+			hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+			hx-target="#patient-autocomplete"
+			hx-swap="outerHTML"
+			hx-get="/api/patients?page_size=5"
+		/>
+		@PatientAutocomplete(nil)
+	</div>
+}

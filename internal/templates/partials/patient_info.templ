@@ -3,8 +3,12 @@ package partials
 import "github.com/datdev2409/lab-admin-go/internal/models"
 
 templ PatientInfo(patient *models.Patient) {
-	<div id="patient-info">
+	<div x-show="patientId != ''" id="patient-info">
 		if patient != nil {
+			<div class="d-flex align-items-center justify-content-between">
+				<h6>Thông tin bệnh nhân</h6>
+				<a @click="patientId='';open=false" class="link-primary">Chọn bệnh nhân khác</a>
+			</div>
 			<table x-init={ "patientId='" + patient.ID.Hex() + "'" } class="table table-bordered">
 				<tbody>
 					<tr>
