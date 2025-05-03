@@ -1,0 +1,29 @@
+package partials
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"strconv"
+)
+
+templ Pagination(pagination *models.PaginationResponse, page string) {
+	if pagination != nil && pagination.TotalPage > 1 {
+		<nav id="pagination" aria-label="Page navigation">
+			<ul class="pagination">
+				for i := 1; i <= pagination.TotalPage; i++ {
+					<li class={ "page-item", templ.KV("active", i == pagination.Page) }>
+						switch page {
+							case "test-page":
+								<a class="page-link" hx-get={ "/api/tests?page=" + strconv.Itoa(i) } hx-include="#test-search-form" hx-target="#test-table">{ strconv.Itoa(i) }</a>
+							case "patient-page":
+								<a class="page-link" hx-get={ "/api/patients?page=" + strconv.Itoa(i) } hx-include="#patient-search-form" hx-target="#patient-table">{ strconv.Itoa(i) }</a>
+							case "combo-page":
+								<a class="page-link" hx-get={ "/api/combos?page=" + strconv.Itoa(i) } hx-include="#combo-search-form" hx-target="#combo-table-wrapper">{ strconv.Itoa(i) }</a>
+							case "record-page":
+								<a class="page-link" hx-get={ "/api/records?page=" + strconv.Itoa(i) } hx-include="#record-search-form" hx-target="#record-table-wrapper">{ strconv.Itoa(i) }</a>
+						}
+					</li>
+				}
+			</ul>
+		</nav>
+	}
+}

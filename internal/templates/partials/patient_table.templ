@@ -2,8 +2,8 @@ package partials
 
 import "github.com/datdev2409/lab-admin-go/internal/models"
 
-templ PatientRow(p models.Patient) {
-	<tr id={ "pr" + p.ID } x-data="{editable: false}">
+templ PatientRow(p *models.Patient) {
+	<tr id={ "pr" + p.ID.Hex() } x-data="{editable: false}">
 		<td class="text-truncate" style="max-width: 300px">
 			<p x-show="!editable">{ p.Name }</p>
 			<input x-show="editable" name="patient_name" class="form-control" value={ p.Name }/>
@@ -27,12 +27,12 @@ templ PatientRow(p models.Patient) {
 		<td class="text-truncate" style="width: 100px">
 			<div class="d-flex align-items-start">
 				<div x-show="editable">
-					<button type="button" @click="editable=false" class="btn btn-sm btn-secondary">Huỷ</button>
-					<button hx-put={ "/api/patients/" + p.ID } hx-target={ "#pr" + p.ID } hx-swap="outerHTML" hx-include="closest tr" class="btn btn-sm btn-primary">Lưu</button>
+					<a @click="editable=false" class="link-secondary">Huỷ</a>
+					<a hx-put={ "/api/patients/" + p.ID.Hex() } hx-target={ "#pr" + p.ID.Hex() } hx-swap="outerHTML" hx-include="closest tr" class="link-primary">Lưu</a>
 				</div>
 				<div x-show="!editable">
-					<button type="button" @click="editable=true" id="edit-btn" class="btn btn-sm btn-secondary">Sửa</button>
-					<button type="button" class="btn btn-sm btn-danger" hx-confirm={ "Bạn có chắc chắn muốn xoá bệnh nhân: " + p.Name } hx-delete={ "/api/patients/" + p.ID } hx-target={ "#pr" + p.ID }>Xoá</button>
+					<a @click="editable=true" id="edit-btn" class="link-primary">Sửa</a>
+					<a class="link-danger" hx-confirm={ "Bạn có chắc chắn muốn xoá bệnh nhân: " + p.Name } hx-delete={ "/api/patients/" + p.ID.Hex() } hx-target={ "#pr" + p.ID.Hex() }>Xoá</a>
 				</div>
 			</div>
 		</td>
@@ -52,13 +52,15 @@ templ PatientTableHeader() {
 	</thead>
 }
 
-templ PatientTable(patients []models.Patient) {
-	<table id="patient-table" class="table table-bordered table-hover">
-		@PatientTableHeader()
-		<tbody>
-			for _, p := range patients {
-				@PatientRow(p)
-			}
-		</tbody>
-	</table>
+templ PatientTable(patients []*models.Patient) {
+	<div id="patient-table">
+		<table class="table table-bordered table-hover">
+			@PatientTableHeader()
+			<tbody>
+				for _, p := range patients {
+					@PatientRow(p)
+				}
+			</tbody>
+		</table>
+	</div>
 }

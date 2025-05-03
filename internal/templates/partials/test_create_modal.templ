@@ -1,0 +1,45 @@
+package partials
+
+templ TestCreateModal() {
+	<div class="modal fade" id="test-create-modal" tabindex="-1">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Thêm xét nghiệm</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form hx-post="/api/tests">
+						<div class="mb-3 d-flex align-items-center">
+							<label style="min-width: 160px;" for="test_name" class="form-label">Tên xét nghiệm</label>
+							<input class="form-control" id="test_name" name="test_name"/>
+						</div>
+						<div class="mb-3 d-flex align-items-center">
+							<label style="min-width: 160px;" for="test_normal_value" class="form-label">Khoảng bình thường</label>
+							<input class="form-control" id="test_normal_value" name="test_normal_value"/>
+						</div>
+						<div class="mb-3 d-flex align-items-center">
+							<label style="min-width: 80px" for="test_unit" class="form-label">Đơn vị</label>
+							<input class="form-control" id="test_unit" name="test_unit"/>
+						</div>
+						<div class="row">
+							<div class="col mb-3 d-flex align-items-center">
+								<label style="min-width: 80px;" for="test_lower_bound" class="form-label">Cận dưới</label>
+								<input class="form-control" id="test_lower_bound" name="test_lower_bound"/>
+							</div>
+							<div class="col mb-3 d-flex align-items-center">
+								<label style="min-width: 80px" for="test_upper_bound" class="form-label">Cận trên</label>
+								<input class="form-control" id="test_upper_bound" name="test_upper_bound"/>
+							</div>
+						</div>
+						<div class="mb-3 d-flex align-items-center">
+							<label style="min-width: 80px;" for="test_price" class="form-label">Giá tiền</label>
+							<input class="form-control" id="test_price" name="test_price"/>
+						</div>
+						<button style="float: right;" type="submit" class="btn btn-primary">Submit</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+}

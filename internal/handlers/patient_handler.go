@@ -3,27 +3,23 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
+	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
-	"github.com/google/uuid"
 	. "maragu.dev/gomponents"
 )
 
 func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
-	patients, err := h.Store.Patients().SearchByKeyword(r.Context(), "", map[string]string{"limit": "10"})
-	if err != nil {
-		patients = &[]models.Patient{}
-	}
-	return Render(r.Context(), w, pages.PatientsPage(*patients))
+	return Render(r.Context(), w, pages.PatientsPage())
 }
 
 func (h *Handler) HandleCreatePatient(w http.ResponseWriter, r *http.Request) error {
 	patient := models.Patient{
-		ID:      "p-" + uuid.NewString(),
 		Name:    r.FormValue("patient_name"),
 		YOB:     r.FormValue("patient_yob"),
 		Gender:  r.FormValue("patient_gender"),
@@ -42,32 +38,33 @@ func (h *Handler) HandleCreatePatient(w http.ResponseWriter, r *http.Request) er
 }
 
 func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
-	opts := make(map[string]string)
-	if limit := r.URL.Query().Get("limit"); limit != "" {
-		opts["limit"] = limit
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
 	}
 
 	keyword := r.URL.Query().Get("patient_name")
-
-	log.Println(keyword)
-
-	patients, err := h.Store.Patients().SearchByKeyword(r.Context(), keyword, opts)
+	patients, pagination, err := h.Store.Patients().ListPatients(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
-		patients = &[]models.Patient{}
+		return err
 	}
 
 	target := r.Header.Get("HX-Target")
-	log.Println(target)
 
 	switch target {
 	case "patient-table":
-		return Render(r.Context(), w, partials.PatientTable(*patients))
-	case "patient-suggestion-list":
-		recordId := r.URL.Query().Get("record_id")
-		log.Println(recordId)
-		return Render(r.Context(), w, pages.PatientSuggestionList(*patients, recordId))
+		return RenderMultiComponents(r.Context(), w, []templ.Component{
+			partials.PatientTable(patients),
+			partials.Pagination(pagination, "patient-page"),
+		})
+	case "patient-autocomplete":
+		return Render(r.Context(), w, partials.PatientAutocomplete(patients))
 	case "cp_patient-suggestion-list":
-		return view.PatientSuggestionList(*patients, false).Render(w)
+		return view.PatientSuggestionList(patients, false).Render(w)
 	}
 
 	return nil
@@ -77,15 +74,19 @@ func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	patient, err := h.Store.Patients().GetById(id)
 	if err != nil {
-		log.Println(err)
-		// return Render(r.Context(), w, pages.PatientInfo(models.Patient{}))
-		return nil
+		return err
+	}
+
+	target := r.Header.Get("HX-Target")
+	switch target {
+	case "patient-info":
+		return Render(r.Context(), w, partials.PatientInfo(patient))
 	}
 
 	return RenderOOB(r.Context(), w, []Node{
-		view.PatientSelectInput(patient.Name, patient.ID),
+		view.PatientSelectInput(patient.Name, patient.ID.Hex()),
 		view.PatientInfo(patient, true),
-		view.PatientSuggestionList([]models.Patient{}, true),
+		// view.PatientSuggestionList([]models.Patient{}, true),
 	})
 	// return view.PatientInfo(patient, false).Render(w)
 }
@@ -94,7 +95,6 @@ func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
 	patient := models.Patient{
-		ID:      id,
 		Name:    r.FormValue("patient_name"),
 		YOB:     r.FormValue("patient_yob"),
 		Gender:  r.FormValue("patient_gender"),
@@ -107,7 +107,7 @@ func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
 		log.Println(err)
 		return err
 	}
-	return Render(r.Context(), w, partials.PatientRow(patient))
+	return Render(r.Context(), w, partials.PatientRow(&patient))
 }
 
 func (h *Handler) DeletePatient(w http.ResponseWriter, r *http.Request) error {

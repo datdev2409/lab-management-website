@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-templ TestRow(test models.Test, page string) {
+templ TestRow(test *models.Test, page string) {
 	<tr>
 		<td>{ test.Name }</td>
 		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
@@ -16,9 +16,9 @@ templ TestRow(test models.Test, page string) {
 			case "test-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
-				<td style="width: 120px">
-					<button class="btn btn-sm btn-secondary">Sửa</button>
-					<button class="btn btn-sm btn-danger">Xoá</button>
+				<td style="width: 100px">
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex() + "/edit") } class="link-primary">Sửa</a>
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex()) } class="link-danger">Xoá</a>
 				</td>
 			case "combo-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
@@ -40,24 +40,6 @@ templ TestRow(test models.Test, page string) {
 	</tr>
 }
 
-templ TestRowRecordPage(test models.Test) {
-	<tr>
-		<td>{ test.Name }</td>
-		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
-		<td style="width: 200px">{ test.NormalValue }</td>
-		<td style="width: 140px">{ test. Unit }</td>
-		<td contenteditable="true" style="width: 120px">
-			<input/>
-		</td>
-		<td contenteditable="true" style="width: 180px">
-			<input/>
-		</td>
-		<td contenteditable="true" style="width: 30px">
-			<input type="checkbox"/>
-		</td>
-	</tr>
-}
-
 templ TestTableHeader(page string) {
 	<thead class="position-sticky top-0">
 		<tr>
@@ -69,7 +51,7 @@ templ TestTableHeader(page string) {
 				case "test-page":
 					<th style="width: 120px" scope="col">Cận dưới</th>
 					<th style="width: 120px" scope="col">Cận trên</th>
-					<th style="width: 120px" scope="col"></th>
+					<th style="width: 100px" scope="col"></th>
 				case "record-page":
 					<th style="width: 120px" scope="col">Kết quả</th>
 					<th style="width: 180px" scope="col">Kết quả (text)</th>
@@ -79,7 +61,7 @@ templ TestTableHeader(page string) {
 	</thead>
 }
 
-templ TestTable(tests []models.Test, page string, outOfBand bool) {
+templ TestTable(tests []*models.Test, page string, outOfBand bool) {
 	<div
 		id="test-table"
 		if outOfBand {

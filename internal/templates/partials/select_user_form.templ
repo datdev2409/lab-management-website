@@ -24,7 +24,7 @@ templ GenderInput(id string, checked bool) {
 templ PatientSuggestionList(patients []models.Patient) {
 	<div id="patient-suggestion-list" class="shadow bordered">
 		for _, patient := range patients {
-			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID } hx-target="#select-user-form">
+			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID.Hex() } hx-target="#select-user-form">
 				{ patient.Name } - { patient.Phone }
 			</div>
 		}
@@ -148,7 +148,7 @@ templ SelectUserForm(patient models.Patient, scriptInclude bool) {
 templ ComboSearchAutocomplete(combos []models.Combo) {
 	<div id="combo-search-result">
 		for _, combo := range combos {
-			<div hx-get={ "/api/combos/" + combo.ID } hx-trigger="click" hx-target="#test-table" hx-swap="outerHTML" @click={ "keyword='" + combo.Name + "';open=false" } style="cursor:pointer; padding: 12px; border-bottom: 1px solid gray;">{ combo.Name }</div>
+			<div hx-get={ "/api/combos/" + combo.GetID() } hx-trigger="click" hx-target="#test-table" hx-swap="outerHTML" @click={ "keyword='" + combo.Name + "';open=false" } style="cursor:pointer; padding: 12px; border-bottom: 1px solid gray;">{ combo.Name }</div>
 		}
 	</div>
 }

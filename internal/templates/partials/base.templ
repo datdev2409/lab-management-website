@@ -20,7 +20,7 @@ templ Notification(props models.NotificationProps) {
 	</script>
 }
 
-templ Base(props models.PageProps) {
+templ Base() {
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
@@ -34,21 +34,47 @@ templ Base(props models.PageProps) {
 			/>
 			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+			<style>
+				.autocomplete {
+					width: 100%;
+					position: absolute;
+					display: flex;
+					flex-direction: column;
+					background-color: #fff;
+					z-index: 100;
+				}
+
+				.autocomplete-option {
+					padding: 6px 12px;
+					cursor: pointer;
+					color: black;
+					z-index: 100;
+				}
+
+				.autocomplete-option:hover {
+					background-color: #f1f1f1;
+				}
+			</style>
 		</head>
 		<body>
 			<div class="container-fluid" style="min-height: 100vh;">
 				<div class="row">
 					<div class="col-2 px-0 position-fixed top-0 left-0 bottom-0">
-						@Sidebar(props.Path)
+						@Sidebar("/")
 					</div>
 					<div class="col-2"></div>
 					<div class="col-10 position-relative">
-						@Notification(props.Notification)
 						{ children... }
 					</div>
 				</div>
 			</div>
 			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+			<script>
+				document.addEventListener('htmx:responseError', event => {
+					console.log(event)
+					alert("Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.")
+				});
+			</script>
 		</body>
 	</html>
 }

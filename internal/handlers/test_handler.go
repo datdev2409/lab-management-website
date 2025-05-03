@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-	"github.com/google/uuid"
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
@@ -21,7 +21,7 @@ func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
 		"test:create:success": "Thêm xét nghiệm thành công",
 	}
 	redirectCode := GetAndDeleteFlashCookie(w, r)
-	return Render(r.Context(), w, pages.TestPage(*tests, messages[redirectCode]))
+	return Render(r.Context(), w, pages.TestPage(tests, messages[redirectCode]))
 }
 
 func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error {
@@ -44,7 +44,6 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 		w.Write([]byte(errorMessage))
 	}
 	test := models.Test{
-		ID:          "t-" + uuid.NewString(),
 		Name:        r.FormValue("test_name"),
 		NormalValue: r.FormValue("test_normal_value"),
 		Unit:        r.FormValue("test_unit"),
@@ -76,14 +75,41 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	target := r.Header.Get("HX-Target")
 	switch target {
 	case "test-autocomplete":
-		recordId := r.URL.Query().Get("record_id")
-		return Render(r.Context(), w, pages.TestAutocomplete(*tests, recordId))
+		// recordId := r.URL.Query().Get("record_id")
+		return nil
+		// return Render(r.Context(), w, pages.TestAutocomplete(tests, recordId))
 	case "test-table":
-		return Render(r.Context(), w, partials.TestTable(*tests, "test-page", false))
+		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
 	case "test-search-result-combo-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "combo-page"))
+		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
 	case "test-search-result-record-page":
-		return Render(r.Context(), w, pages.TestSearchAutocomplete(*tests, "record-page"))
+		return Render(r.Context(), w, partials.TestAutocomplete(tests, "record-page"))
+	}
+	return nil
+}
+
+func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
+	keyword := r.URL.Query().Get("test_name")
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	tests, pagination, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	if err != nil {
+		return err
+	}
+
+	target := r.Header.Get("HX-Target")
+	switch target {
+	case "test-table":
+		return RenderMultiComponents(r.Context(), w, []templ.Component{
+			partials.TestTable(tests, "test-page", false),
+			partials.Pagination(pagination, "test-page"),
+		})
+	case "test-search-result-combo-page":
+		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
+	case "test-autocomplete":
+		return Render(r.Context(), w, partials.RecordTestAutocomplete(tests))
 	}
 	return nil
 }

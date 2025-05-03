@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"math"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,29 +16,68 @@ func (t *MongoTestStorage) Insert(test *models.Test) error {
 	return err
 }
 
+func (t *MongoTestStorage) ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error) {
+	tests := []*models.Test{}
+	filters := bson.D{}
+
+	if filterOpts.Keyword != "" {
+		filters = append(filters, bson.E{Key: "name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}}})
+	}
+
+	findOpts := BuildMongoSortAndPaginationOptions(opts)
+
+	cursor, err := t.col.Find(ctx, filters, findOpts)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	count, err := t.col.CountDocuments(ctx, filters)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	pagniation := &models.PaginationResponse{
+		Total:     int(count),
+		Page:      opts.Page,
+		PageSize:  opts.PageSize,
+		TotalPage: int(math.Ceil(float64(count) / float64(opts.PageSize))),
+	}
+
+	if err = cursor.All(ctx, &tests); err != nil {
+		return nil, nil, err
+	}
+
+	return tests, pagniation, nil
+}
+
 func (t *MongoTestStorage) GetById(id string) (*models.Test, error) {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
 	var test models.Test
-	err := t.col.FindOne(context.Background(), map[string]string{"_id": id}).Decode(&test)
+	err = t.col.FindOne(context.Background(), bson.M{"_id": oid}).Decode(&test)
 	return &test, err
 }
 
-func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) (*[]models.Test, error) {
-	tests := []models.Test{}
+func (t *MongoTestStorage) GetByIds(ctx context.Context, ids []string) ([]*models.Test, error) {
+	tests := []*models.Test{}
 	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: ids}}}}
+
 	cursor, err := t.col.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 
 	if err = cursor.All(ctx, &tests); err != nil {
-		return &tests, err
+		return tests, err
 	}
 
-	return &tests, nil
+	return tests, nil
 }
 
-func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error) {
-	tests := []models.Test{}
+func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Test, error) {
+	tests := []*models.Test{}
 
 	filters := BuildMongoFilter(map[string]FilterCondition{
 		"name": {
@@ -58,18 +98,18 @@ func (t *MongoTestStorage) SearchByKeyword(ctx context.Context, keyword string, 
 
 	cursor, err := t.col.Find(ctx, filters, findOpts)
 	if err != nil {
-		return &tests, err
+		return tests, err
 	}
 
 	if err = cursor.All(ctx, &tests); err != nil {
-		return &tests, err
+		return tests, err
 	}
 
-	return &tests, nil
+	return tests, nil
 }
 
 func (t *MongoTestStorage) Update(test *models.Test) error {
-	_, err := t.col.UpdateOne(context.Background(), map[string]string{"id": test.ID}, test)
+	_, err := t.col.UpdateOne(context.Background(), map[string]string{"_id": test.ID.Hex()}, test)
 	return err
 }
 

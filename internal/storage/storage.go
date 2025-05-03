@@ -10,6 +10,7 @@ import (
 type PatientStorage interface {
 	Insert(patient *models.Patient) error
 	GetById(id string) (*models.Patient, error)
+	ListPatients(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
 	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Patient, error)
 	UpdateById(ctx context.Context, id string, patient *models.Patient) error
 	Delete(id string) error
@@ -17,29 +18,33 @@ type PatientStorage interface {
 
 type TestStorage interface {
 	Insert(test *models.Test) error
+	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)
 	GetById(id string) (*models.Test, error)
-	GetByIds(ctx context.Context, ids []string) (*[]models.Test, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Test, error)
+	GetByIds(ctx context.Context, ids []string) ([]*models.Test, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Test, error)
 	Update(test *models.Test) error
 	Delete(id string) error
 }
 
 type ComboStorage interface {
 	Insert(combo *models.Combo) error
+	ListCombos(ctx context.Context, filterOpts models.ComboQueryOptions, opts models.GenericQueryOptions) ([]*models.Combo, *models.PaginationResponse, error)
 	GetById(ctx context.Context, id string) (*models.Combo, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Combo, error)
+	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Combo, error)
+	GetTestsInCombo(ctx context.Context, comboId string) (*models.Combo, []*models.Test, error)
 }
 
 type RecordStorage interface {
-	Insert(ctx context.Context, record *models.Record) error
+	Insert(ctx context.Context, record *models.Record) (string, error)
 	GetById(ctx context.Context, id string) (*models.Record, error)
-	GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
-	ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
-	SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Record, error)
-	UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
-	UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
-	AddTest(ctx context.Context, recordId string, testId string) error
-	SaveTestResults(ctx context.Context, recordId string, testResults []models.TestResult) error
+	// GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
+	// ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
+	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, *models.PaginationResponse, error)
+	// UpdatePatient(ctx context.Context, recordId string, patient models.Patient) error
+	// UpdateCombo(ctx context.Context, recordId string, combo *models.Combo) error
+	// AddTest(ctx context.Context, recordId string, test *models.Test) error
+	// AddTests(ctx context.Context, recordId string, tests []*models.Test) error
+	UpdateTestResults(ctx context.Context, recordId string, testResults []models.TestResultRequest) error
 }
 
 type AppStorage interface {
@@ -58,33 +63,37 @@ type MongoStorage struct {
 }
 
 func (m *MongoStorage) Patients() PatientStorage {
-	return &MongoPatientStorage{col: m.db.Collection("patients")}
+	return &MongoPatientStorage{db: m.db, col: m.db.Collection("patients")}
 }
 
 func (m *MongoStorage) Tests() TestStorage {
-	return &MongoTestStorage{col: m.db.Collection("tests")}
+	return &MongoTestStorage{db: m.db, col: m.db.Collection("tests")}
 }
 
 func (m *MongoStorage) Combos() ComboStorage {
-	return &MongoComboStorage{col: m.db.Collection("combos")}
+	return &MongoComboStorage{db: m.db, col: m.db.Collection("combos")}
 }
 
 func (m *MongoStorage) Records() RecordStorage {
-	return &MongoRecordStorage{col: m.db.Collection("records")}
+	return &MongoRecordStorage{db: m.db, col: m.db.Collection("records")}
 }
 
 type MongoPatientStorage struct {
+	db  *mongo.Database
 	col *mongo.Collection
 }
 
 type MongoTestStorage struct {
+	db  *mongo.Database
 	col *mongo.Collection
 }
 
 type MongoComboStorage struct {
+	db  *mongo.Database
 	col *mongo.Collection
 }
 
 type MongoRecordStorage struct {
+	db  *mongo.Database
 	col *mongo.Collection
 }

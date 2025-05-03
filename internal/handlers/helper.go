@@ -44,6 +44,7 @@ func Make(fn HandlerFuncReturnError) http.HandlerFunc {
 
 func HTMXRedirect(w http.ResponseWriter, path string) {
 	w.Header().Set("HX-Redirect", path)
+	w.WriteHeader(http.StatusFound)
 }
 
 func SetFlashCookie(w http.ResponseWriter, value string) {

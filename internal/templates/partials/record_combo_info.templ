@@ -1,0 +1,20 @@
+package partials
+
+templ RecordComboInfo(comboName string) {
+	<div x-show="comboName != ''">
+		<div class="d-flex align-items-center justify-content-between">
+			<h6>Thông tin gói xét nghiệm</h6>
+			<a @click="comboName='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
+		</div>
+		<div x-init={ "comboName='" + comboName + "'" } id="record-combo-info" hx-swap-oob="true">
+			<table class="table table-bordered">
+				<tbody>
+					<tr>
+						<td style="width: 300px">Tên gói xét nghiệm</td>
+						<td x-text="comboName"></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+}

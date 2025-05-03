@@ -1,0 +1,122 @@
+package partials
+
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/datdev2409/lab-admin-go/internal/models"
+)
+
+templ RecordCreateForm(record *models.Record) {
+	<script>
+		document.addEventListener('alpine:init', function() {
+			Alpine.data('recordCreateFormData', () => ({
+				patientId: '',
+				comboName: '',
+				tests: [],
+
+				async selectCombo(comboId) {
+					if (!confirm("Chọn gói xét nghiệm khác sẽ xóa tất cả các xét nghiệm đã chọn. Bạn có muốn tiếp tục không?")) {
+						return
+					}
+					const response = await (await fetch(`/api/combos/${comboId}`)).json()
+					this.tests = response.tests
+					this.combo = response.combo
+					this.comboName = response?.combo?.name
+				},
+
+				addTest(test) {
+					this.tests.push(test)
+					this.$refs.testInput.value = ''
+				},
+
+				updateRecord(recordId) {
+					console.log(recordId)
+					console.log(this.tests)
+				},
+
+				initTests(data) {
+					if (data != '') {
+						this.tests = JSON.parse(data)
+					}
+				},
+
+				submit(recordId) {
+					if (recordId == '') {
+						// Create new record
+						form_data = {
+							patient_id: this.patientId,
+							combo_name: this.combo?.name ?? "Custom",
+							test_results: this.tests
+						}
+
+						fetch("/api/records", {
+							method: "POST",
+							body: JSON.stringify(form_data),
+							headers: {
+								"Content-Type": "application/json"
+							}
+						}).then(response => response.json()).then(data => {
+							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
+						})
+					}
+					else {
+						console.log("Update record")
+						console.log(this.tests)
+						fetch(`/api/records/${recordId}`, {
+							method: "PATCH",
+							body: JSON.stringify({
+								test_results: this.tests
+							}),
+							headers: {
+								"Content-Type": "application/json"
+							}
+						})
+					}
+				},
+
+			}))
+		})
+	</script>
+	{{
+		var patient *models.Patient = nil
+		var comboName string = ""
+		var tests []byte = nil
+		var recordId string = ""
+		if record != nil {
+			recordId = record.ID.Hex()
+			patient = &record.Patient
+			comboName = record.ComboName
+			tests, _ = json.Marshal(record.TestResults)
+		}
+	}}
+	<form @submit.prevent={ fmt.Sprintf("submit('%s')", recordId) } x-data="recordCreateFormData">
+		<div class="mb-3" style="position: relative;" x-data="{open: false}">
+			@RecordPatientSelect()
+			@PatientInfo(patient)
+		</div>
+		<div id="combo-select" class="mb-3" style="position: relative;" x-data="{open: false}">
+			@RecordComboSelect()
+			@RecordComboInfo(comboName)
+		</div>
+		<div class="mb-3" style="position: relative;" x-data="{open: false}">
+			<label for="test_name" class="form-label">Tên xét nghiệm</label>
+			<input
+				class="form-control"
+				id="test_name"
+				name="test_name"
+				autocomplete="off"
+				@keyup="open=true"
+				hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+				hx-target="#test-autocomplete"
+				hx-swap="outerHTML"
+				hx-get="/api/tests?page_size=5"
+				x-ref="testInput"
+			/>
+			@RecordTestAutocomplete(nil)
+		</div>
+		<div x-init={ fmt.Sprintf("initTests('%s')", string(tests)) }>
+			@RecordTestTable()
+		</div>
+		<button type="submit" class="btn btn-primary">Tạo</button>
+	</form>
+}

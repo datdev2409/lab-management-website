@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/view"
@@ -36,6 +35,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
+		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
 		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingPage))
 		r.Get("/so-sanh-ket-qua", func(w http.ResponseWriter, r *http.Request) {
 			view.CompareResultsPage(view.PageProps{}).Render(w)
@@ -53,27 +53,29 @@ func NewHandler(store storage.AppStorage) *Handler {
 
 	// Handle tests
 	r.Route("/api/tests", func(r chi.Router) {
-		r.Get("/", Make(h.SearchTestsByKeyword))
+		r.Get("/", Make(h.ListTests))
+		r.Get("/search", Make(h.SearchTestsByKeyword))
 		//r.Get("/{id}", Make(h.SelectTest))
 		r.Post("/", Make(h.HandleCreateTest))
 	})
 
 	r.Route("/api/combos", func(r chi.Router) {
 		r.Post("/", Make(h.CreateCombo))
-		r.Get("/", Make(h.SearchCombosByKeyword))
-		r.Get("/{id}", Make(h.GetCombo))
+		r.Get("/", Make(h.ListCombos))
+		r.Get("/{id}", Make(h.GetComboDetails))
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
-		r.Get("/search", Make(h.SearchRecordsByPatientNameOrPhone))
+		r.Post("/", Make(h.CreateRecord))
 		r.Get("/", Make(h.ListRecords))
-		r.Patch("/{id}", Make(h.UpdateRecordPatient))
-		r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
-		r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
-		r.Post("/{id}/tests", Make(h.AddTestToRecord))
-		r.Patch("/{id}/tests", Make(h.UpdateRecordTests))
-		r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
-		r.Post("/{id}/export/results", Make(h.ExportRecordResults))
+		r.Patch("/{id}", Make(h.UpdateRecord))
+		// r.Patch("/{id}", Make(h.UpdateRecordPatient))
+		// r.Patch("/{id}/patients", Make(h.UpdateRecordPatient))
+		// r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
+		// r.Post("/{id}/tests", Make(h.AddTestToRecord))
+		// r.Patch("/{id}/tests", Make(h.UpdateRecordTests))
+		// r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
+		// r.Post("/{id}/export/results", Make(h.ExportRecordResults))
 	})
 
 	r.Route("/api/tracking", func(r chi.Router) {
@@ -84,7 +86,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 }
 
 func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) error {
-	return Render(r.Context(), w, pages.TrackingPage(""))
+	return Render(r.Context(), w, pages.TrackingPage())
 }
 
 func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
@@ -99,54 +101,36 @@ func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
-	patientId := r.URL.Query().Get("patient_id")
-	records, err := h.Store.Records().ListByPatientId(r.Context(), patientId)
-	if err != nil {
-		return nil
-	}
+// func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
+// 	recordId := chi.URLParam(r, "id")
 
-	log.Println(patientId)
-	view.RecordList(*records).Render(w)
-	return nil
-	// records, err := h.Store.Records().GetAll(r.Context())
-	// if err != nil {
-	// 	return err
-	// }
+// 	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	// return view.RecordTable(*records).Render(w)
-}
+// 	filepath, err := sheets.CreateRecordResultFile(*record)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
+// 	HTMXRedirect(w, "/"+filepath)
+// 	return nil
+// }
 
-	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
+// func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
+// 	recordId := chi.URLParam(r, "id")
 
-	filepath, err := sheets.CreateRecordResultFile(*record)
-	if err != nil {
-		return err
-	}
+// 	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	HTMXRedirect(w, "/"+filepath)
-	return nil
-}
+// 	filepath, err := sheets.CreateRecordBillingFile(*record)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
-
-	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
-
-	filepath, err := sheets.CreateRecordBillingFile(*record)
-	if err != nil {
-		return err
-	}
-
-	HTMXRedirect(w, "/"+filepath)
-	return nil
-}
+// 	HTMXRedirect(w, "/"+filepath)
+// 	return nil
+// }

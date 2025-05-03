@@ -1,0 +1,34 @@
+package partials
+
+import "github.com/datdev2409/lab-admin-go/internal/models"
+
+templ PatientInfo(patient *models.Patient) {
+	<div x-show="patientId != ''" id="patient-info">
+		if patient != nil {
+			<div class="d-flex align-items-center justify-content-between">
+				<h6>Thông tin bệnh nhân</h6>
+				<a @click="patientId='';open=false" class="link-primary">Chọn bệnh nhân khác</a>
+			</div>
+			<table x-init={ "patientId='" + patient.ID.Hex() + "'" } class="table table-bordered">
+				<tbody>
+					<tr>
+						<td style="width: 300px">Họ tên</td>
+						<td>{ patient.Name }</td>
+					</tr>
+					<tr>
+						<td style="width: 300px">Số điện thoại</td>
+						<td>{ patient.Phone }</td>
+					</tr>
+					<tr>
+						<td style="width: 300px">Địa chỉ</td>
+						<td>{ patient.Address }</td>
+					</tr>
+					<tr>
+						<td style="width: 300px">Ngày sinh</td>
+						<td>{ patient.YOB }</td>
+					</tr>
+				</tbody>
+			</table>
+		}
+	</div>
+}
