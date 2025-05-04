@@ -50,6 +50,8 @@ func CreateRecordBillingFile(record models.Record) (string, error) {
 		},
 	})
 
+	now := time.Now()
+	f.SetCellValue("Sheet1", "A4", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
 	f.SetCellValue("Sheet1", "B6", record.Patient.Name)
 	f.SetCellStyle("Sheet1", "B6", "B6", fontBoldStyle)
 	f.SetCellValue("Sheet1", "B7", record.Patient.Address)
@@ -78,8 +80,7 @@ func CreateRecordBillingFile(record models.Record) (string, error) {
 		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), borderCenterStyle)
 	}
 
-	now := time.Now().Format("2006-01-02")
-	filename := fmt.Sprintf("reports/%s-%s-hoa-don.xlsx", now, strings.ReplaceAll(record.Patient.Name, " ", "_"))
+	filename := fmt.Sprintf("reports/%s-%s-hoa-don.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
 	if err := f.SaveAs(filename); err != nil {
 		return "", err
 	}
