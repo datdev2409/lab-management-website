@@ -1,4 +1,4 @@
-services: 
+services:
   mongo_db:
     image: mongo:latest
     restart: always # Restart the container if it crashes
@@ -9,6 +9,11 @@ services:
       - 27017:27017
     volumes:
       - mongo_data:/data/db
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    ports:
+      - "3000:3000"
 
 volumes:
   mongo_data:
