@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -61,30 +60,14 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	record := models.Record{
-		Patient:     *patient,
-		ComboName:   request.ComboName,
-		TestResults: recordTestResults,
-		Status:      "pending",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-	}
+	record := models.NewRecord(*patient, recordTestResults)
 
-	recordId, err := h.Store.Records().Insert(r.Context(), &record)
+	recordId, err := h.Store.Records().Insert(r.Context(), record)
 	if err != nil {
 		return err
 	}
 
-	jsonResponse, err := json.Marshal(models.CreateRecordResponse{ID: recordId})
-
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	w.Write(jsonResponse)
-	return nil
+	return WriteJSON(w, http.StatusCreated, map[string]string{"id": recordId})
 }
 
 func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
@@ -152,10 +135,9 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Record updated successfully"}`))
-	return nil
+	return WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "Record updated successfully",
+	})
 }
 
 func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
@@ -165,15 +147,7 @@ func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	jsonResponse, err := json.Marshal(record)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
-	return nil
+	return WriteJSON(w, http.StatusOK, record)
 }
 
 type FileExportResponse struct {
@@ -189,30 +163,20 @@ func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	filepath, err := sheets.CreateRecordBillingFile(*record)
+	filePath, err := sheets.CreateRecordBillingFile(*record)
 	if err != nil {
 		return err
 	}
 
-	pdfPath, err := sheets.ConvertExcelToPDF(filepath)
+	pdfPath, err := sheets.ConvertExcelToPDF(filePath)
 	if err != nil {
 		return err
 	}
 
-	response := FileExportResponse{
-		PDFPath:   pdfPath,
-		ExcelPath: filepath,
-	}
-
-	jsonResponse, err := json.Marshal(response)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
-	return nil
+	return WriteJSON(w, http.StatusOK, map[string]string{
+		"pdf_path":   pdfPath,
+		"excel_path": filePath,
+	})
 }
 
 // func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {
