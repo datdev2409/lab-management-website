@@ -75,7 +75,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		// r.Patch("/{id}/combos", Make(h.UpdateRecordCombo))
 		// r.Post("/{id}/tests", Make(h.AddTestToRecord))
 		// r.Patch("/{id}/tests", Make(h.UpdateRecordTests))
-		// r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
+		r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
 		// r.Post("/{id}/export/results", Make(h.ExportRecordResults))
 	})
 
@@ -111,23 +111,6 @@ func (h *Handler) ExportTracking(w http.ResponseWriter, r *http.Request) error {
 // 	}
 
 // 	filepath, err := sheets.CreateRecordResultFile(*record)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	HTMXRedirect(w, "/"+filepath)
-// 	return nil
-// }
-
-// func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
-// 	recordId := chi.URLParam(r, "id")
-
-// 	record, err := h.Store.Records().GetDetails(r.Context(), recordId)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	filepath, err := sheets.CreateRecordBillingFile(*record)
 // 	if err != nil {
 // 		return err
 // 	}

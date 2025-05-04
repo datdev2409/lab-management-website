@@ -10,6 +10,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
@@ -165,6 +166,45 @@ func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	jsonResponse, err := json.Marshal(record)
+	if err != nil {
+		return err
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonResponse)
+	return nil
+}
+
+type FileExportResponse struct {
+	PDFPath   string `json:"pdf_path"`
+	ExcelPath string `json:"excel_path"`
+}
+
+func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+
+	record, err := h.Store.Records().GetById(r.Context(), recordId)
+	if err != nil {
+		return err
+	}
+
+	filepath, err := sheets.CreateRecordBillingFile(*record)
+	if err != nil {
+		return err
+	}
+
+	pdfPath, err := sheets.ConvertExcelToPDF(filepath)
+	if err != nil {
+		return err
+	}
+
+	response := FileExportResponse{
+		PDFPath:   pdfPath,
+		ExcelPath: filepath,
+	}
+
+	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		return err
 	}
