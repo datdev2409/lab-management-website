@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
@@ -19,6 +20,9 @@ type Handler struct {
 
 func NewHandler(store storage.AppStorage) *Handler {
 	r := chi.NewRouter()
+
+	r.Use(middleware.Timeout(60 * time.Second))
+
 	h := &Handler{Router: r, Store: store}
 
 	r.Use(middleware.Logger)
