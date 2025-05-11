@@ -1,3 +1,6 @@
+env:
+	docker-compose up
+
 # run templ generation in watch mode to detect all .templ files and 
 # re-create _templ.txt files on change, then send reload event to browser. 
 # Default url: http://localhost:7331
@@ -13,16 +16,6 @@ live/server:
 	--build.stop_on_error "false" \
 	--misc.clean_on_exit true
 
-# watch for any js or css change in the assets/ folder, then reload the browser via templ proxy.
-live/sync_assets:
-	@air \
-	--build.cmd "templ generate -lazy --watch --proxy="http://localhost:8081" --notify-proxy" \
-	--build.bin "true" \
-	--build.delay "100" \
-	--build.exclude_dir "" \
-	--build.include_dir "public" \
-	--build.include_ext "js,css"
-
-# start all 5 watch processes in parallel.
+# start live server and templ generation
 live: 
 	make -j2 live/server live/templ
