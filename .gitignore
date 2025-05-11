@@ -1,5 +1,6 @@
 tmp/
 .idea/
+bin/
 .env*
 
 internal/templates/*/*_templ.go
