@@ -111,8 +111,6 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	log.Println(records)
-
 	RenderMultiComponents(r.Context(), w, []templ.Component{
 		partials.RecordTable(*records),
 		partials.Pagination(pagination, "record-page"),
@@ -181,8 +179,6 @@ func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) er
 
 func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
-
-	log.Println("Create the record result pdf file", recordId)
 
 	record, err := h.Store.Records().GetById(r.Context(), recordId)
 	if err != nil {

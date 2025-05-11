@@ -2,21 +2,62 @@ package main
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/datdev2409/lab-admin-go/internal/db"
 	"github.com/datdev2409/lab-admin-go/internal/handlers"
 	"github.com/datdev2409/lab-admin-go/internal/storage"
-	"log"
+	"github.com/joho/godotenv"
 )
 
+type DBConfig struct {
+	Addr string
+	Port int
+}
+
+type Config struct {
+	Env  string
+	Port string
+	DB   *DBConfig
+}
+
+type Application struct {
+	Config  *Config
+	Store   storage.AppStorage
+	Handler http.Handler
+}
+
+func (app *Application) Init(config *Config, store storage.AppStorage, handler http.Handler) {
+	app.Config = config
+	app.Store = store
+	app.Handler = handler
+}
+
+func (app *Application) Start() error {
+	err := http.ListenAndServe(app.Config.Port, app.Handler)
+	return err
+}
+
 func main() {
+	env := os.Getenv("GO_ENV")
+	if env == "" {
+		env = "local"
+	}
+	err := godotenv.Load(".env." + env)
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
+
 	app := &Application{}
 
 	// Init config
 	config := &Config{
-		Env:  "development",
+		Env:  os.Getenv("ENV"),
 		Port: ":8081",
 		DB: &DBConfig{
-			Addr: "mongodb://root:password123@localhost:27017/",
+			Addr: os.Getenv("MONGODB_URI"),
 		},
 	}
 
