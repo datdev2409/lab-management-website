@@ -55,7 +55,7 @@ func main() {
 	// Init config
 	config := &Config{
 		Env:  os.Getenv("ENV"),
-		Port: ":8081",
+		Port: os.Getenv("SERVER_PORT"),
 		DB: &DBConfig{
 			Addr: os.Getenv("MONGODB_URI"),
 		},
