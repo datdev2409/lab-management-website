@@ -194,7 +194,6 @@ func (m *MongoRecordStorage) UpdateTestResults(ctx context.Context, recordId str
 
 	updatedTestResults := []models.TestResult{}
 	for _, testResult := range testResults {
-		log.Println("Test result", testResult.ID)
 		testId, err := bson.ObjectIDFromHex(testResult.ID)
 		if err != nil {
 			log.Println("Error while converting test id to object idd", err)
