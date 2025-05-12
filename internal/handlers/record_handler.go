@@ -60,7 +60,7 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		})
 	}
 
-	record := models.NewRecord(*patient, recordTestResults)
+	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
 
 	recordId, err := h.Store.Records().Insert(r.Context(), record)
 	if err != nil {

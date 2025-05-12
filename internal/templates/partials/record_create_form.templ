@@ -16,7 +16,9 @@ templ RecordCreateForm(recordId string) {
 				flow: "create-record",
 				patient: null,
 				combo_name: "",
+				combo_name_input: "",
 				test_results: [],
+				number_of_empty_tests: 1,
 
 				async init() {
 					if (recordId == '') {
@@ -120,7 +122,7 @@ templ RecordCreateForm(recordId string) {
 
 						const formData = {
 							patient_id: this.patient.id,
-							combo_name: this.combo_name,
+							combo_name: this.combo_name != '' ? this.combo_name : this.combo_name_input,
 							test_results: this.test_results
 						}
 
@@ -153,16 +155,27 @@ templ RecordCreateForm(recordId string) {
 		})
 	</script>
 	<form style="position: relative;" @submit.prevent="submit" @save.window="submit" x-data={ fmt.Sprintf("recordForm('%s')", recordId) }>
-		<div class="mb-3" style="position: relative;" x-data="{open: false}">
-			@RecordPatientSelect()
-			@PatientInfo()
-		</div>
-		<div id="combo-select" class="mb-3" style="position: relative;" x-data="{open: false}">
-			@RecordComboSelect()
-			@RecordComboInfo()
-		</div>
-		<div class="mb-3" style="position: relative;" x-data="{open: false}">
-			@RecordTestSelect()
+		<div class="mb-3">
+			<table class="table table-bordered">
+				<tbody>
+					<tr>
+						<td style="width: 200px">Trạng thái</td>
+						<td><span class="badge text-bg-secondary">New</span></td>
+					</tr>
+					<tr>
+						<td style="width: 200px">Bệnh nhân</td>
+						<td>
+							@PatientInput()
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 200px">Tên gói xét nghiệm</td>
+						<td>
+							@ComboSelectInput()
+						</td>
+					</tr>
+				</tbody>
+			</table>
 		</div>
 		<div class="mb-3">
 			@RecordTestTable()
