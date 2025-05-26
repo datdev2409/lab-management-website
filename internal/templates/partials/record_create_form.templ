@@ -95,9 +95,9 @@ templ RecordCreateForm(recordId string) {
 							throw new Error("Failed to export report")
 						}
 
-						const {pdf_path} = await response.json()
-						if (pdf_path) {
-							window.open(`/${pdf_path}`, '_blank')
+						const {excel_path} = await response.json()
+						if (excel_path) {
+							window.open(`/${excel_path}`, '_blank')
 						}
 					}
 					catch (error) {
