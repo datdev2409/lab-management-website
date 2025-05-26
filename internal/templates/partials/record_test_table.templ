@@ -5,7 +5,7 @@ templ RecordTestTable() {
 		<thead class="position-sticky top-0">
 			<tr>
 				<th scope="col">Tên xét nghiệm</th>
-				<th style="width: 180px" scope="col">Đơn giá</th>
+				<th style="width: 120px" scope="col">Đơn giá</th>
 				<th style="width: 200px" scope="col">GT bình thường</th>
 				<th style="width: 140px" scope="col">Đơn vị</th>
 				<th style="width: 120px" scope="col">Kết quả</th>
@@ -17,7 +17,7 @@ templ RecordTestTable() {
 			<template x-for="test in test_results" x-key="test.id">
 				<tr>
 					<td x-text="test.name"></td>
-					<td style="width: 180px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="test.price"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
@@ -36,7 +36,7 @@ templ RecordTestTable() {
 					<td>
 						@RecordTestSelect()
 					</td>
-					<td style="width: 180px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="test.price"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
