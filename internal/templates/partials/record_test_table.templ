@@ -1,11 +1,11 @@
 package partials
 
 templ RecordTestTable() {
-	<table id="record-test-table" class="table table-bordered">
+	<table id="record-test-table" class="table table-bordered mb-0">
 		<thead class="position-sticky top-0">
 			<tr>
 				<th scope="col">Tên xét nghiệm</th>
-				<th style="width: 180px" scope="col">Đơn giá</th>
+				<th style="width: 120px" scope="col">Đơn giá</th>
 				<th style="width: 200px" scope="col">GT bình thường</th>
 				<th style="width: 140px" scope="col">Đơn vị</th>
 				<th style="width: 120px" scope="col">Kết quả</th>
@@ -17,7 +17,26 @@ templ RecordTestTable() {
 			<template x-for="test in test_results" x-key="test.id">
 				<tr>
 					<td x-text="test.name"></td>
-					<td style="width: 180px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="test.price"></td>
+					<td style="width: 200px" x-text="test.normal_value"></td>
+					<td style="width: 140px" x-text="test.unit"></td>
+					<td style="width: 120px">
+						<input x-model="test.result"/>
+					</td>
+					<td style="width: 180px">
+						<input x-model="test.result_text"/>
+					</td>
+					<td style="width: 30px">
+						<input type="checkbox" x-model="test.abnormal"/>
+					</td>
+				</tr>
+			</template>
+			<template x-for="i in number_of_empty_tests" x-key="i">
+				<tr>
+					<td>
+						@RecordTestSelect()
+					</td>
+					<td style="width: 120px" x-text="test.price"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
@@ -33,4 +52,5 @@ templ RecordTestTable() {
 			</template>
 		</tbody>
 	</table>
+	<button type="button" @click="number_of_empty_tests += 1">+</button>
 }

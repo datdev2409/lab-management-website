@@ -1,18 +1,19 @@
 package partials
 
 templ RecordTestSelect() {
-	<label for="test_name" class="form-label">Tên xét nghiệm</label>
-	<input
-		class="form-control"
-		id="test_name"
-		name="test_name"
-		autocomplete="off"
-		@keyup="open=true"
-		hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
-		hx-target="#test-autocomplete"
-		hx-swap="outerHTML"
-		hx-get="/api/tests?page_size=5"
-		x-ref="testSearchInput"
-	/>
-	@RecordTestAutocomplete(nil)
+	<div style="position: relative;" x-data="{open: false}">
+		<input
+			class="form-control"
+			id="test_name"
+			name="test_name"
+			autocomplete="off"
+			@keyup="open=true"
+			hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+			hx-target="#test-autocomplete"
+			hx-swap="outerHTML"
+			hx-get="/api/tests?page_size=5"
+			x-ref="testSearchInput"
+		/>
+		@RecordTestAutocomplete(nil)
+	</div>
 }
