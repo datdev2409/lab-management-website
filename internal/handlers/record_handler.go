@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -148,55 +149,39 @@ func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
 	return WriteJSON(w, http.StatusOK, record)
 }
 
-type FileExportResponse struct {
-	PDFPath   string `json:"pdf_path"`
-	ExcelPath string `json:"excel_path"`
-}
+func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
+	var req struct {
+		RecordId   string `json:"record_id"`
+		ReportType string `json:"report_type"`
+	}
 
-func (h *Handler) ExportRecordBilling(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return err
+	}
 
-	record, err := h.Store.Records().GetById(r.Context(), recordId)
+	record, err := h.Store.Records().GetById(r.Context(), req.RecordId)
 	if err != nil {
 		return err
 	}
 
-	filePath, err := sheets.CreateRecordBillingFile(record)
-	if err != nil {
-		return err
+	var filePath string
+
+	switch models.ReportType(req.ReportType) {
+	case models.BillingReport:
+		filePath, err = sheets.CreateRecordBillingFile(record)
+	case models.ResultsReport:
+		filePath, err = sheets.CreateRecordResultFile(record)
+	case models.ResultsWithSignature:
+		filePath, err = sheets.CreateRecordResultWithSignatureFile(record)
+	default:
+		return errors.New("invalid export type")
 	}
 
-	pdfPath, err := sheets.ConvertExcelToPDF(filePath)
-	if err != nil {
-		return err
-	}
-
-	return WriteJSON(w, http.StatusOK, map[string]string{
-		"pdf_path":   pdfPath,
-		"excel_path": filePath,
-	})
-}
-
-func (h *Handler) ExportRecordResults(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
-
-	record, err := h.Store.Records().GetById(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
-
-	filePath, err := sheets.CreateRecordResultFile(record)
-	if err != nil {
-		return err
-	}
-
-	pdfPath, err := sheets.ConvertExcelToPDF(filePath)
 	if err != nil {
 		return err
 	}
 
 	return WriteJSON(w, http.StatusOK, map[string]string{
-		"pdf_path":   pdfPath,
 		"excel_path": filePath,
 	})
 }

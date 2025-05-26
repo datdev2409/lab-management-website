@@ -98,3 +98,50 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	}
 	return filename, nil
 }
+
+func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) {
+	f, err := OpenTemplate("phieu_ket_qua_chu_ky")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	now := time.Now()
+	f.SetCellValue("Sheet1", "C9", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
+	f.SetCellValue("Sheet1", "C11", record.Patient.Address)
+	f.SetCellValue("Sheet1", "E9", record.Patient.Phone)
+	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
+	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
+
+	startTestRow := 15
+	for i := range len(record.TestResults) - 1 {
+		fmt.Print("Duplicating row for test result...\n", i)
+		f.DuplicateRow("Sheet1", startTestRow)
+	}
+
+	for i, testResult := range record.TestResults {
+		row := startTestRow + i
+
+		testFieldValue := testResult.Result
+		if testResult.ResultText != "" {
+			testFieldValue += " (" + testResult.ResultText + ")"
+		}
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), testFieldValue)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
+	}
+
+	filename := fmt.Sprintf("reports/%s-%s-ket-qua-online.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
+	if err := f.SaveAs(filename); err != nil {
+		return "", err
+	}
+	return filename, nil
+}

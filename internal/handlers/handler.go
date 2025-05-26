@@ -74,8 +74,10 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/", Make(h.ListRecords))
 		r.Get("/{id}", Make(h.GetRecord))
 		r.Patch("/{id}", Make(h.UpdateRecord))
-		r.Post("/{id}/export/billing", Make(h.ExportRecordBilling))
-		r.Post("/{id}/export/results", Make(h.ExportRecordResults))
+	})
+
+	r.Route("/api/reports", func(r chi.Router) {
+		r.Post("/export", Make(h.ExportRecord))
 	})
 
 	r.Route("/api/tracking", func(r chi.Router) {
