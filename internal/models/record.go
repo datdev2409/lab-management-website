@@ -81,4 +81,5 @@ const (
 	BillingReport        ReportType = "phieu_thu"
 	ResultsReport        ReportType = "phieu_ket_qua"
 	ResultsWithSignature ReportType = "phieu_ket_qua_chu_ky"
+	TrackingReport       ReportType = "phieu_theo_doi"
 )

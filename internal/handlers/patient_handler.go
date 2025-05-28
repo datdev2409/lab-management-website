@@ -63,6 +63,8 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 		})
 	case "patient-autocomplete":
 		return Render(r.Context(), w, partials.PatientAutocomplete(patients))
+	case "tracking-patient-autocomplete":
+		return Render(r.Context(), w, partials.TrackingPatientAutocomplete(patients))
 	case "cp_patient-suggestion-list":
 		return view.PatientSuggestionList(patients, false).Render(w)
 	}

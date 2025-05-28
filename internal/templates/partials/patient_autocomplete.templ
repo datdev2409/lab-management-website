@@ -16,3 +16,15 @@ templ PatientAutocomplete(patients []*models.Patient) {
 		}
 	</div>
 }
+
+templ TrackingPatientAutocomplete(patients []*models.Patient) {
+	<div x-show="open" @click.outside="open=false" id="tracking-patient-autocomplete" class="shadow bordered position-absolute autocomplete">
+		for _, patient := range patients {
+			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient({patientId: '%s', patientName: '%s'})", patient.ID.Hex(), patient.Name) }>
+				<div>
+					{ patient.Name } - { patient.Phone }
+				</div>
+			</div>
+		}
+	</div>
+}

@@ -112,10 +112,16 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	RenderMultiComponents(r.Context(), w, []templ.Component{
-		partials.RecordTable(*records),
-		partials.Pagination(pagination, "record-page"),
-	})
+	target := r.Header.Get("HX-Target")
+	switch target {
+	case "tracking-record-list":
+		return Render(r.Context(), w, partials.TrackingRecordTable(*records))
+	default:
+		RenderMultiComponents(r.Context(), w, []templ.Component{
+			partials.RecordTable(*records),
+			partials.Pagination(pagination, "record-page"),
+		})
+	}
 	return nil
 }
 
