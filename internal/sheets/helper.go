@@ -3,13 +3,15 @@ package sheets
 import (
 	"errors"
 
+	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/xuri/excelize/v2"
 )
 
-func OpenTemplate(name string) (*excelize.File, error) {
-	supportedTemplates := map[string]string{
-		"record_result":  "templates/record_result.xlsx",
-		"record_billing": "templates/record_billing.xlsx",
+func OpenTemplate(name models.ReportType) (*excelize.File, error) {
+	supportedTemplates := map[models.ReportType]string{
+		models.BillingReport:        "templates/PhieuThu.xlsx",
+		models.ResultsReport:        "templates/PhieuKetQua.xlsx",
+		models.ResultsWithSignature: "templates/PhieuKetQuaChuKy.xlsx",
 	}
 
 	templatePath, ok := supportedTemplates[name]

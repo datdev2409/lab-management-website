@@ -74,3 +74,11 @@ type RecordQueryOptions struct {
 	StartDate *time.Time
 	EndDate   *time.Time
 }
+
+type ReportType string
+
+const (
+	BillingReport        ReportType = "phieu_thu"
+	ResultsReport        ReportType = "phieu_ket_qua"
+	ResultsWithSignature ReportType = "phieu_ket_qua_chu_ky"
+)

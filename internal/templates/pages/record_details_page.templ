@@ -1,11 +1,57 @@
 package pages
 
-import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
+import (
+	"fmt"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
 
 templ RecordDetailsPage(recordId string) {
+	<script>
+		document.addEventListener('alpine:init', function () {
+			Alpine.data("recordDetails", (recordId) => ({
+				async exportReport(reportType) {
+					try {
+						const response = await fetch(`/api/reports/export`, {
+							method: "POST",
+							body: JSON.stringify({
+								record_id: recordId,
+								report_type: reportType
+							})
+						})
+						if (!response.ok) {
+							throw new Error("Failed to export report")
+						}
+
+						const { excel_path } = await response.json()
+						if (excel_path) {
+							window.open(`/${excel_path}`, '_blank')
+						}
+					}
+					catch (error) {
+						console.error("Error exporting report:", error)
+					}
+				}
+			}))
+		})
+	</script>
 	@partials.Base() {
-		<div class="d-flex align-items-center justify-content-between">
+		<div class="d-flex align-items-center justify-content-between" x-data={ fmt.Sprintf("recordDetails('%s')", recordId) }>
 			<h3 class="pt-3">Chi tiết phiếu xét nghiệm</h3>
+			<div class="btn-group" role="group" class="ms-2">
+				<button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+					Xuất file
+				</button>
+				<ul class="dropdown-menu">
+					<li><button class="dropdown-item" @click="exportReport('phieu_thu')">Xuất phiếu thu</button></li>
+					<li><button class="dropdown-item" @click="exportReport('phieu_ket_qua')">Xuất phiếu kết quả</button></li>
+					<li>
+						<button class="dropdown-item" @click="exportReport('phieu_ket_qua_chu_ky')">
+							Xuất phiếu kết quả có chữ
+							ký
+						</button>
+					</li>
+				</ul>
+			</div>
 		</div>
 		<div class="my-3">
 			@partials.RecordCreateForm(recordId)

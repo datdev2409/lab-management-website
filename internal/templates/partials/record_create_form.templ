@@ -85,28 +85,6 @@ templ RecordCreateForm(recordId string) {
 					this.$refs.testSearchInput.value = ''
 				},
 
-				async exportReport(reportType) {
-					try {
-						const response = await fetch(`/api/records/${recordId}/export/${reportType}`, {
-							method: "POST",
-							body: JSON.stringify({
-								record_id: recordId
-							})
-						})
-						if (!response.ok) {
-							throw new Error("Failed to export report")
-						}
-
-						const {pdf_path} = await response.json()
-						if (pdf_path) {
-							window.open(`/${pdf_path}`, '_blank')
-						}
-					}
-					catch (error) {
-						console.error("Error exporting report:", error)
-					}
-				},
-
 				async submit() {
 					try {
 						const config = {
@@ -182,15 +160,9 @@ templ RecordCreateForm(recordId string) {
 		</div>
 		<div class="position-sticky bottom-0 end-0 start-0 bg-white py-3 z-10">
 			<button type="button" class="btn btn-secondary" @click="window.location.replace(`/phieu-xet-nghiem`)">Trở lại</button>
-			<button type="submit" class="btn btn-primary">
+			<button type="submit" class="btn btn-primary me-2">
 				<span x-text="flow === 'create-record' ? 'Tạo' : 'Lưu thay đổi'"></span>
 				<span class="badge text-bg-dark">(Ctrl + S)</span>
-			</button>
-			<button x-show="flow === 'update-record'" class="btn btn-success" @click="exportReport('billing')">
-				Xuất phiếu thu <span class="badge text-bg-dark">(Ctrl + P)</span>
-			</button>
-			<button x-show="flow === 'update-record'" class="btn btn-warning" @click="exportReport('results')">
-				Xuất phiếu kết quả <span class="badge text-bg-dark">(Ctrl + R)</span>
 			</button>
 		</div>
 	</form>
