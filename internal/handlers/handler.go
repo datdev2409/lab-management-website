@@ -43,8 +43,8 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
 		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
-		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingPage))
-		r.Get("/so-sanh-ket-qua", func(w http.ResponseWriter, r *http.Request) {
+		r.Get("/so-sanh-ket-qua", Make(h.HandleTrackingPage))
+		r.Get("/danh-muc-so-sanh", func(w http.ResponseWriter, r *http.Request) {
 			view.CompareResultsPage(view.PageProps{}).Render(w)
 		})
 	})
