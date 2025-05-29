@@ -18,6 +18,11 @@ type Test struct {
 	UpdatedAt   time.Time     `json:"updated_at" bson:"updated_at"`
 }
 
+type TestInfo struct {
+	Name        string
+	NormalValue string
+}
+
 type TestQueryOptions struct {
 	Keyword string `json:"keyword"`
 }

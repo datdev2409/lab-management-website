@@ -2,6 +2,8 @@ package sheets
 
 import (
 	"fmt"
+	"log"
+	"slices"
 	"strings"
 	"time"
 
@@ -140,6 +142,73 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 	}
 
 	filename := fmt.Sprintf("reports/%s-%s-ket-qua-online.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
+	if err := f.SaveAs(filename); err != nil {
+		return "", err
+	}
+	return filename, nil
+}
+
+func CreateRecordTrackingFile(records []*models.Record, testMap map[string]models.TestInfo) (string, error) {
+	f, err := OpenTemplate("phieu_theo_doi")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	now := time.Now()
+	startTestRow := 7
+	startRecordCol := 'D'
+
+	rowMap := make(map[string]int)
+	i := 0
+	for testName, testInfo := range testMap {
+		rowMap[testName] = startTestRow + i
+		f.DuplicateRow("Sheet1", startTestRow+i)
+		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", startTestRow+i), i+1)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", startTestRow+i), testName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", startTestRow+i), testInfo.NormalValue)
+		i += 1
+	}
+	// Remove the last duplicated row since we don't need it
+	f.RemoveRow("Sheet1", startTestRow+i)
+
+	// Sort records by CreatedAt in increasing order
+	slices.SortFunc(records, func(a, b *models.Record) int {
+		if a.CreatedAt.Before(b.CreatedAt) {
+			return -1
+		} else if a.CreatedAt.After(b.CreatedAt) {
+			return 1
+		}
+		return 0
+	})
+
+	tableHeaderStyle, err := f.GetCellStyle("Sheet1", "A6")
+	if err != nil {
+		log.Println("Error getting table header style:", err)
+		return "", err
+	}
+	tableCellStyle, _ := f.GetCellStyle("Sheet1", "A7")
+	for j, record := range records {
+		col := string(startRecordCol + rune(j))
+		headerCell := fmt.Sprintf("%s6", col)
+		if j != 0 {
+			f.InsertCols("Sheet1", col, 1)
+		}
+		f.SetCellValue("Sheet1", headerCell, "Ngày "+record.CreatedAt.Format("02/01/2006"))
+		f.SetCellStyle("Sheet1", headerCell, headerCell, tableHeaderStyle)
+
+		for _, testResult := range record.TestResults {
+			row := rowMap[testResult.Name]
+			cell := fmt.Sprintf("%s%d", col, row)
+			f.SetCellValue("Sheet1", cell, testResult.Result)
+		}
+
+		if len(testMap) > 0 {
+			f.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col, startTestRow), fmt.Sprintf("%s%d", col, startTestRow+len(testMap)-1), tableCellStyle)
+		}
+	}
+
+	filename := fmt.Sprintf("reports/%s-%s-theo-doi.xlsx", now.Format("20060102"), ToLowerCaseNonAccentVietnamese(strings.ReplaceAll(records[0].Patient.Name, " ", "_")))
 	if err := f.SaveAs(filename); err != nil {
 		return "", err
 	}

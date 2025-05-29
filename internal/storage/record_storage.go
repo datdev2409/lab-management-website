@@ -44,7 +44,12 @@ func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.
 	}
 
 	if filterOpts.PatientID != "" {
-		filters = append(filters, bson.E{Key: "patient.id", Value: filterOpts.PatientID})
+		patientOID, err := bson.ObjectIDFromHex(filterOpts.PatientID)
+		if err != nil {
+			log.Println("Error while converting patient ID to ObjectID:", err)
+			return nil, nil, err
+		}
+		filters = append(filters, bson.E{Key: "patient._id", Value: patientOID})
 	}
 
 	if filterOpts.Status != "" {
