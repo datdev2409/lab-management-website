@@ -136,8 +136,6 @@ func (h *Handler) CreateTracking(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	log.Println(testMap)
-
 	filename, err := sheets.CreateRecordTrackingFile(records, testMap)
 	if err != nil {
 		log.Println("Error creating tracking file:", err)
