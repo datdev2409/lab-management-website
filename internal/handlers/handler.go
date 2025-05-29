@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/storage"
-	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -38,9 +37,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
 		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
 		r.Get("/so-sanh-ket-qua", Make(h.HandleTrackingPage))
-		r.Get("/danh-muc-so-sanh", func(w http.ResponseWriter, r *http.Request) {
-			view.CompareResultsPage(view.PageProps{}).Render(w)
-		})
+		r.Get("/danh-muc-so-sanh/new", Make(h.HandleCreateTrackingListPage))
 	})
 
 	// Handle patients

@@ -14,6 +14,10 @@ func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) err
 	return Render(r.Context(), w, pages.TrackingPage())
 }
 
+func (h *Handler) HandleCreateTrackingListPage(w http.ResponseWriter, r *http.Request) error {
+	return Render(r.Context(), w, pages.TrackingCreatePage())
+}
+
 func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) error {
 	r.ParseForm()
 

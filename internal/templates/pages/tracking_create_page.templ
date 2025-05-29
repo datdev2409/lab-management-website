@@ -1,0 +1,84 @@
+package pages
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
+
+templ TrackingCreatePage() {
+	@partials.Base() {
+		<script>
+			document.addEventListener('alpine:init', () => {
+        Alpine.data('trackingCreatePageData', () => ({
+						trackingName: '',
+						open: false,
+						keyword: '',
+						chosenTests: [],
+						addTest(test) {
+							this.keyword = '';
+							this.open = false;
+							if (this.chosenTests.filter(t => t.id == test.id).length > 0) {
+									alert('Xét nghiệm này đã được chọn');
+							} else {
+									this.chosenTests.push(test);
+							}
+						},
+            logSortedData() {
+                const items = Array.from(document.querySelectorAll('tr[x-sort\\:item]'))
+                const data = items.map(el => el.getAttribute('data-testId'));
+                console.log(data); 
+            },
+						submit() {
+							console.log(this.trackingName)
+							console.log(this.logSortedData())
+						}
+        }))
+    })
+		</script>
+		<div class="d-flex align-items-center justify-content-between">
+			<h3 class="pt-3">Danh mục so sánh</h3>
+		</div>
+		<div class="mb-3 mt-3" x-data="trackingCreatePageData()">
+			<form @submit.prevent="submit">
+				<div class="mb-3">
+					<input x-model="trackingName" placeholder="Tên so sánh" class="form-control" id="tracking_name" name="tracking_name"/>
+				</div>
+				<div class="mb-3 position-relative">
+					<label>Tìm xét nghiệm theo tên</label>
+					<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-combo-page" hx-swap="outerHTML"/>
+					<div x-show="open" @click.outside="open = false">
+						@partials.TestAutocomplete([]*models.Test{}, "combo-page")
+					</div>
+				</div>
+				<div class="mb-3">
+					<input style="display: none" name="test_ids" x-bind:value="chosenTests.map(t => t.id)"/>
+					<table id="test-table" class="table table-bordered">
+						<thead>
+							<tr>
+								<th>Tên xét nghiệm</th>
+								<th>Giá trị bình thường</th>
+								<th>Đơn vị</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody id="test-table-body" x-sort>
+							<template x-for="(item, index) in chosenTests" :key="item.id">
+								<tr :data-testId="item.id" :x-sort:item="item.id">
+									<td x-text="item.name"></td>
+									<td x-text="item.normal_value" style="width: 200px"></td>
+									<td x-text="item.unit" style="width: 140px"></td>
+									<td style="width: 120px">
+										<button x-on:click="chosenTests.splice(index, 1)" class="btn btn-sm btn-secondary">Xoá</button>
+									</td>
+								</tr>
+							</template>
+						</tbody>
+					</table>
+				</div>
+				<div class="mt-3">
+					<button @click="logSortedData()" class="btn btn-primary">Tạo so sánh</button>
+				</div>
+			</form>
+		</div>
+	}
+}
