@@ -37,6 +37,7 @@ func NewHandler(store storage.AppStorage) *Handler {
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
 		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
 		r.Get("/so-sanh-ket-qua", Make(h.HandleTrackingPage))
+		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingListPage))
 		r.Get("/danh-muc-so-sanh/new", Make(h.HandleCreateTrackingListPage))
 	})
 
@@ -74,7 +75,10 @@ func NewHandler(store storage.AppStorage) *Handler {
 	})
 
 	r.Route("/api/tracking", func(r chi.Router) {
-		r.Post("/", Make(h.CreateTrackingReport))
+		r.Get("/", Make(h.ListTrackings))
+		r.Post("/", Make(h.CreateTracking))
+		r.Post("/tests", Make(h.ListTestsForTracking))
+		r.Post("/export", Make(h.CreateTrackingReport))
 	})
 
 	return h

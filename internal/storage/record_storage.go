@@ -20,6 +20,31 @@ func (m *MongoRecordStorage) GetById(ctx context.Context, id string) (*models.Re
 	return &record, err
 }
 
+func (m *MongoRecordStorage) GetByIds(ctx context.Context, ids []string) ([]*models.Record, error) {
+	objectIds := make([]bson.ObjectID, 0, len(ids))
+	for _, id := range ids {
+		objectId, err := bson.ObjectIDFromHex(id)
+		if err != nil {
+			return nil, err
+		}
+		objectIds = append(objectIds, objectId)
+	}
+
+	filter := bson.D{{Key: "_id", Value: bson.D{{Key: "$in", Value: objectIds}}}}
+	cursor, err := m.col.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var records []*models.Record
+	if err = cursor.All(ctx, &records); err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
 func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) (string, error) {
 	result, err := m.col.InsertOne(ctx, record)
 	if err != nil {

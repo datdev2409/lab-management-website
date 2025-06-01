@@ -37,6 +37,7 @@ type ComboStorage interface {
 type RecordStorage interface {
 	Insert(ctx context.Context, record *models.Record) (string, error)
 	GetById(ctx context.Context, id string) (*models.Record, error)
+	GetByIds(ctx context.Context, ids []string) ([]*models.Record, error)
 	// GetDetails(ctx context.Context, id string) (*models.RecordWithDetails, error)
 	// ListByPatientId(ctx context.Context, patientId string) (*[]models.Record, error)
 	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*[]models.Record, *models.PaginationResponse, error)
@@ -47,11 +48,18 @@ type RecordStorage interface {
 	UpdateTestResults(ctx context.Context, recordId string, testResults []models.TestResultRequest) error
 }
 
+type TrackingStorage interface {
+	Insert(ctx context.Context, tracking *models.Tracking) (string, error)
+	ListTrackings(ctx context.Context, filterOpts models.TrackingQueryOptions, opts models.GenericQueryOptions) ([]*models.Tracking, *models.PaginationResponse, error)
+	GetById(ctx context.Context, id string) (*models.Tracking, error)
+}
+
 type AppStorage interface {
 	Patients() PatientStorage
 	Tests() TestStorage
 	Combos() ComboStorage
 	Records() RecordStorage
+	Trackings() TrackingStorage
 }
 
 func NewMongoStorage(client *mongo.Client) *MongoStorage {
@@ -78,6 +86,10 @@ func (m *MongoStorage) Records() RecordStorage {
 	return &MongoRecordStorage{db: m.db, col: m.db.Collection("records")}
 }
 
+func (m *MongoStorage) Trackings() TrackingStorage {
+	return &MongoTrackingStorage{db: m.db, col: m.db.Collection("trackings")}
+}
+
 type MongoPatientStorage struct {
 	db  *mongo.Database
 	col *mongo.Collection
@@ -94,6 +106,11 @@ type MongoComboStorage struct {
 }
 
 type MongoRecordStorage struct {
+	db  *mongo.Database
+	col *mongo.Collection
+}
+
+type MongoTrackingStorage struct {
 	db  *mongo.Database
 	col *mongo.Collection
 }

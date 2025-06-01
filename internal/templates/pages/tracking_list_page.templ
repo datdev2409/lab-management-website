@@ -1,0 +1,28 @@
+package pages
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+)
+
+templ TrackingListPage() {
+	@partials.Base() {
+		<div class="d-flex align-items-center justify-content-between">
+			<h3 class="pt-3">Danh mục so sánh</h3>
+			<a href="/danh-muc-so-sanh/new"><button class="btn btn-primary">Tạo danh mục so sánh mới</button></a>
+		</div>
+		<div class="mb-3 mt-3">
+			<form id="tracking-search-form" class="row" hx-get="/api/tracking" hx-target="#tracking-list" hx-trigger="load, submit">
+				<div class="col-md-auto" style="width: 500px;">
+					<input placeholder="Tìm danh mục so sánh theo tên" class="form-control" name="keyword"/>
+				</div>
+				<div class="col-md-auto px-0">
+					<button type="submit" class="btn btn-primary">Tìm kiếm</button>
+				</div>
+			</form>
+		</div>
+		<div id="tracking-list">
+			@partials.TrackingTable([]*models.Tracking{})
+		</div>
+	}
+}

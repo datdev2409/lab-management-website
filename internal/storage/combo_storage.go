@@ -35,7 +35,7 @@ func (m MongoComboStorage) ListCombos(ctx context.Context, filterOpts models.Com
 		return nil, nil, err
 	}
 
-	pagniation := &models.PaginationResponse{
+	pagination := &models.PaginationResponse{
 		Total:     int(count),
 		Page:      opts.Page,
 		PageSize:  opts.PageSize,
@@ -46,7 +46,7 @@ func (m MongoComboStorage) ListCombos(ctx context.Context, filterOpts models.Com
 		return nil, nil, err
 	}
 
-	return combos, pagniation, nil
+	return combos, pagination, nil
 }
 
 func (m MongoComboStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) ([]*models.Combo, error) {
