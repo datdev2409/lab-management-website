@@ -155,6 +155,10 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 	}
 	defer f.Close()
 
+	startDate := records[0].CreatedAt.Format("02/01/2006")
+	f.SetCellValue("Sheet1", "A4", fmt.Sprintf(" Từ ngày: %s đến ngày: %s", startDate, time.Now().Format("02/01/2006")))
+	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
+
 	now := time.Now()
 	startTestRow := 7
 	startRecordCol := 'D'
@@ -191,7 +195,7 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 	for j, record := range records {
 		col := string(startRecordCol + rune(j))
 		headerCell := fmt.Sprintf("%s6", col)
-		if j != 0 {
+		if j != len(records)-1 {
 			f.InsertCols("Sheet1", col, 1)
 		}
 		f.SetCellValue("Sheet1", headerCell, "Ngày "+record.CreatedAt.Format("02/01/2006"))
