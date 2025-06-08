@@ -13,7 +13,7 @@ import (
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
-	tests, err := h.Store.Tests().SearchByKeyword(r.Context(), "", map[string]string{"limit": "10"})
+	tests, _, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
 	if err != nil {
 		log.Println(err)
 	}
@@ -52,7 +52,7 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 		Price:       testPrice,
 	}
 
-	err = h.Store.Tests().Insert(&test)
+	err = h.Store.Tests().Insert(r.Context(), test)
 	if err != nil {
 		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
@@ -66,7 +66,7 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 
 func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
-	tests, err := h.Store.Tests().SearchByKeyword(r.Context(), keyword, map[string]string{"limit": "5"})
+	tests, _, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
 	if err != nil {
 		return err
 	}

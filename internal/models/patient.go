@@ -20,3 +20,18 @@ type Patient struct {
 type PatientQueryOptions struct {
 	Keyword string
 }
+
+type PatientUpdate struct {
+	Name    *string `json:"name,omitempty"`
+	YOB     *string `json:"yob,omitempty"`
+	Gender  *string `json:"gender,omitempty"`
+	Address *string `json:"address,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+}
+
+func GetStringPtr(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
+}

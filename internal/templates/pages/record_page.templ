@@ -31,7 +31,7 @@ templ RecordPage() {
 			</form>
 		</div>
 		<div id="record-list">
-			@partials.RecordTable([]models.Record{})
+			@partials.RecordTable([]*models.Record{})
 		</div>
 		@partials.Pagination(&models.PaginationResponse{}, "record-page")
 	}

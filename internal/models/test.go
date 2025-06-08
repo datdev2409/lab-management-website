@@ -21,6 +21,7 @@ type Test struct {
 type TestInfo struct {
 	Name        string
 	NormalValue string
+	Unit        string
 }
 
 type TestQueryOptions struct {

@@ -11,11 +11,11 @@ templ TrackingPage() {
 			<form x-data="{open: false, patientId: '', patientName: '', selectPatient({patientId, patientName}) {this.patientId = patientId; this.patientName = patientName; this.open = false;}}" hx-get="/api/records" hx-include="#patient_id,#frequency" hx-target="#tracking-record-list" hx-trigger="submit">
 				<div class="row align-items-end">
 					<div class="col-8 mb-3 position-relative">
-						<label for="patient_name" class="form-label">Khách hàng</label>
 						<input
 							class="form-control"
 							id="patient_name"
 							name="patient_name"
+							placeholder="Nhập tên hoặc số điện thoại bệnh nhân"
 							aria-describedby="patient_name_help"
 							autocomplete="off"
 							@keyup="open=true"
@@ -29,9 +29,8 @@ templ TrackingPage() {
 						@partials.TrackingPatientAutocomplete(nil)
 					</div>
 					<div class="col-4 mb-3">
-						<label for="frequency" class="form-label">Chọn thời gian</label>
 						<select class="form-select" id="frequency" name="page_size" aria-label="Chọn thời gian">
-							<option value="" selected>Tất cả</option>
+							<option value="" selected>Tất cả lần xét nghiệm</option>
 							<option value="3">3 lần gần nhất</option>
 							<option value="5">5 lần gần nhất</option>
 							<option value="7">7 lần gần nhất</option>

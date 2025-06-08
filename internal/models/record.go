@@ -28,7 +28,7 @@ type Record struct {
 	UpdatedAt   time.Time     `json:"updated_at" bson:"updated_at"`
 }
 
-func NewRecord(patient Patient, comboName string, testResults []TestResult) *Record {
+func NewRecord(patient Patient, comboName string, testResults []TestResult) Record {
 	now := time.Now()
 	record := Record{
 		Patient:     patient,
@@ -38,7 +38,7 @@ func NewRecord(patient Patient, comboName string, testResults []TestResult) *Rec
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
-	return &record
+	return record
 }
 
 type TestResultRequest struct {
