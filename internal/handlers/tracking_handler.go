@@ -156,16 +156,15 @@ func (h *Handler) CreateTracking(w http.ResponseWriter, r *http.Request) error {
 	var request models.CreateTrackingRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return fmt.Errorf("failed to decode request: %v", err)
+		return err
 	}
 
 	tracking := models.NewTracking(request.Name, request.Tests)
 
-	trackingId, err := h.Store.Trackings().Insert(r.Context(), tracking)
+	err := h.Store.Trackings().Insert(r.Context(), tracking)
 	if err != nil {
-		return fmt.Errorf("failed to create tracking: %v", err)
+		return err
 	}
 
-	log.Println(trackingId)
 	return nil
 }

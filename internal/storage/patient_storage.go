@@ -2,61 +2,21 @@ package storage
 
 import (
 	"context"
-	"math"
-	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func (m *MongoPatientStorage) Insert(patient *models.Patient) error {
-	_, err := m.col.InsertOne(context.Background(), patient)
-	return err
+type PatientStorage interface {
+	Insert(ctx context.Context, patient models.Patient) error
+	SearchByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
+	GetById(ctx context.Context, id string) (*models.Patient, error)
+	UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error
+	UpdateById(ctx context.Context, id string, update interface{}) error
+	DeleteById(ctx context.Context, id string) error
 }
 
-func (m *MongoPatientStorage) GetById(id string) (*models.Patient, error) {
-	oid, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-	var patient models.Patient
-	filter := bson.D{{Key: "_id", Value: oid}}
-	err = m.col.FindOne(context.Background(), filter).Decode(&patient)
-	return &patient, err
-}
-
-func (m *MongoPatientStorage) SearchByKeyword(ctx context.Context, keyword string, opts map[string]string) (*[]models.Patient, error) {
-	var patients []models.Patient
-
-	filters := bson.D{{}}
-	if keyword != "" {
-		filters = bson.D{{Key: "name", Value: bson.D{{Key: "$regex", Value: keyword}, {Key: "$options", Value: "i"}}}}
-	}
-
-	findOpts := options.Find()
-	if val, ok := opts["limit"]; ok {
-		limit, err := strconv.Atoi(val)
-		if err != nil {
-			limit = 5
-		}
-		findOpts.SetLimit(int64(limit))
-	}
-
-	cursor, err := m.col.Find(context.Background(), filters, findOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := cursor.All(context.Background(), &patients); err != nil {
-		patients = []models.Patient{}
-	}
-
-	return &patients, nil
-}
-
-func (m *MongoPatientStorage) ListPatients(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error) {
-	patients := []*models.Patient{}
+func (m *MongoPatientStorage) SearchByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error) {
 	filters := bson.D{}
 
 	if filterOpts.Keyword != "" {
@@ -70,49 +30,30 @@ func (m *MongoPatientStorage) ListPatients(ctx context.Context, filterOpts model
 			},
 		})
 	}
-
-	findOpts := BuildMongoSortAndPaginationOptions(opts)
-
-	cursor, err := m.col.Find(ctx, filters, findOpts)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if err := cursor.All(ctx, &patients); err != nil {
-		return nil, nil, err
-	}
-
-	// Get total count for pagination
-	total, err := m.col.CountDocuments(ctx, filters)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	totalPage := int(math.Ceil(float64(total) / float64(opts.PageSize)))
-	pagination := &models.PaginationResponse{
-		Total:     int(total),
-		TotalPage: totalPage,
-		Page:      opts.Page,
-		PageSize:  opts.PageSize,
-	}
-
-	return patients, pagination, nil
+	return m.List(ctx, filters, opts)
 }
 
-func (m *MongoPatientStorage) UpdateById(ctx context.Context, id string, patient *models.Patient) error {
+func (m *MongoPatientStorage) UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error {
 	oid, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return err
 	}
-	_, err = m.col.UpdateOne(context.Background(), bson.D{{Key: "_id", Value: oid}}, bson.D{{Key: "$set", Value: patient}})
-	return err
-}
 
-func (m *MongoPatientStorage) Delete(id string) error {
-	oid, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return err
+	updateBSON := bson.D{}
+	if update.Name != nil {
+		updateBSON = append(updateBSON, bson.E{Key: "name", Value: *update.Name})
 	}
-	_, err = m.col.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: oid}})
-	return err
+	if update.Phone != nil {
+		updateBSON = append(updateBSON, bson.E{Key: "phone", Value: *update.Phone})
+	}
+	if update.Address != nil {
+		updateBSON = append(updateBSON, bson.E{Key: "address", Value: *update.Address})
+	}
+	if update.YOB != nil {
+		updateBSON = append(updateBSON, bson.E{Key: "yob", Value: *update.YOB})
+	}
+	if update.Gender != nil {
+		updateBSON = append(updateBSON, bson.E{Key: "gender", Value: *update.Gender})
+	}
+	return m.UpdateById(ctx, oid.Hex(), bson.M{"$set": updateBSON})
 }

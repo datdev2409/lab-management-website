@@ -2,7 +2,7 @@ package partials
 
 import "github.com/datdev2409/lab-admin-go/internal/models"
 
-templ RecordTable(records []models.Record) {
+templ RecordTable(records []*models.Record) {
 	<table class="table table-bordered">
 		<thead>
 			<tr>
@@ -33,7 +33,7 @@ templ RecordTable(records []models.Record) {
 	</table>
 }
 
-templ TrackingRecordTable(records []models.Record) {
+templ TrackingRecordTable(records []*models.Record) {
 	<div>
 		<form hx-post="/api/tracking/export" hx-swap="innerHTML">
 			<table class="table table-bordered">

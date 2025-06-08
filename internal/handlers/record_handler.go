@@ -37,7 +37,7 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	patient, err := h.Store.Patients().GetById(request.PatientID)
+	patient, err := h.Store.Patients().GetById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
 	}
@@ -63,12 +63,12 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 
 	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
 
-	recordId, err := h.Store.Records().Insert(r.Context(), record)
+	err = h.Store.Records().Insert(r.Context(), record)
 	if err != nil {
 		return err
 	}
 
-	return WriteJSON(w, http.StatusCreated, map[string]string{"id": recordId})
+	return WriteJSON(w, http.StatusCreated, map[string]string{"id": record.ID.Hex()})
 }
 
 func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
@@ -115,10 +115,10 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 	target := r.Header.Get("HX-Target")
 	switch target {
 	case "tracking-record-list":
-		return Render(r.Context(), w, partials.TrackingRecordTable(*records))
+		return Render(r.Context(), w, partials.TrackingRecordTable(records))
 	default:
 		RenderMultiComponents(r.Context(), w, []templ.Component{
-			partials.RecordTable(*records),
+			partials.RecordTable(records),
 			partials.Pagination(pagination, "record-page"),
 		})
 	}
@@ -135,7 +135,7 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	err := h.Store.Records().UpdateTestResults(r.Context(), recordId, request.TestResults)
+	err := h.Store.Records().UpdateById(r.Context(), recordId, request.TestResults)
 	if err != nil {
 		return err
 	}

@@ -32,13 +32,13 @@ func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	combo := &models.Combo{
+	combo := models.Combo{
 		Name:      r.FormValue("combo_name"),
 		TestIDs:   testIds,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-	err = h.Store.Combos().Insert(combo)
+	err = h.Store.Combos().Insert(r.Context(), combo)
 	if err != nil {
 		log.Println(err)
 		return err

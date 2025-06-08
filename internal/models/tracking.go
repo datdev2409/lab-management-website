@@ -35,7 +35,7 @@ type TrackingQueryOptions struct {
 	Keyword string `json:"keyword,omitempty" bson:"keyword,omitempty"`
 }
 
-func NewTracking(name string, testRequests []TrackingTestRequest) *Tracking {
+func NewTracking(name string, testRequests []TrackingTestRequest) Tracking {
 	var tests []TrackingTestData
 	for _, test := range testRequests {
 		oid, _ := bson.ObjectIDFromHex(test.TestID)
@@ -48,7 +48,7 @@ func NewTracking(name string, testRequests []TrackingTestRequest) *Tracking {
 		})
 	}
 
-	return &Tracking{
+	return Tracking{
 		ID:    bson.NewObjectID(),
 		Name:  name,
 		Tests: tests,
