@@ -8,15 +8,13 @@ require (
 	github.com/a-h/templ v0.3.819
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.2.0
+	github.com/joho/godotenv v1.5.1
 	github.com/xuri/excelize/v2 v2.9.0
 	go.mongodb.org/mongo-driver/v2 v2.0.0
-	maragu.dev/gomponents v1.0.0
-	maragu.dev/gomponents-htmx v0.6.1
 )
 
 require (
 	github.com/golang/snappy v0.0.4 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect

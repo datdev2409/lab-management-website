@@ -135,7 +135,16 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	err := h.Store.Records().UpdateById(r.Context(), recordId, request.TestResults)
+	if request.PatientID != "" {
+		patient, err := h.Store.Patients().GetById(r.Context(), request.PatientID)
+		if err != nil {
+			return err
+		}
+
+		request.Patient = patient
+	}
+
+	err := h.Store.Records().UpdateRecord(r.Context(), recordId, request)
 	if err != nil {
 		return err
 	}

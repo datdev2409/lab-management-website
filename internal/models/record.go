@@ -64,7 +64,10 @@ type CreateRecordRequest struct {
 }
 
 type UpdateRecordRequest struct {
-	TestResults []TestResultRequest `json:"test_results"`
+	ComboName   string              `json:"combo_name" bson:"combo_name"`
+	PatientID   string              `json:"patient_id" bson:"patient_id"`
+	Patient     *Patient            `json:"patient,omitempty" bson:"patient,omitempty"`
+	TestResults []TestResultRequest `json:"test_results" bson:"test_results"`
 }
 
 type RecordQueryOptions struct {

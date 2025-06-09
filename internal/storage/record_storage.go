@@ -8,24 +8,13 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-// func (m *MongoRecordStorage) GetById(ctx context.Context, id string) (*models.Record, error) {
-// 	recordId, err := bson.ObjectIDFromHex(id)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var record models.Record
-// 	err = m.col.FindOne(ctx, bson.D{{Key: "_id", Value: recordId}}).Decode(&record)
-// 	return &record, err
-// }
-
-// func (m *MongoRecordStorage) Insert(ctx context.Context, record *models.Record) (string, error) {
-// 	result, err := m.col.InsertOne(ctx, record)
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return result.InsertedID.(bson.ObjectID).Hex(), err
-// }
+type RecordStorage interface {
+	Insert(ctx context.Context, record models.Record) error
+	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
+	GetById(ctx context.Context, id string) (*models.Record, error)
+	GetByIds(ctx context.Context, ids []string) ([]*models.Record, error)
+	UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error
+}
 
 func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error) {
 	filters := bson.D{}
@@ -56,34 +45,41 @@ func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.
 
 }
 
-// func (m *MongoRecordStorage) UpdateTestResults(ctx context.Context, recordId string, testResults []models.TestResultRequest) error {
-// 	recordOId, err := bson.ObjectIDFromHex(recordId)
-// 	if err != nil {
-// 		log.Println("Error while converting record id to object id", err)
-// 		return err
-// 	}
+func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
 
-// 	updatedTestResults := []models.TestResult{}
-// 	for _, testResult := range testResults {
-// 		testId, err := bson.ObjectIDFromHex(testResult.ID)
-// 		if err != nil {
-// 			log.Println("Error while converting test id to object idd", err)
-// 			return err
-// 		}
-// 		updatedTestResults = append(updatedTestResults, models.TestResult{
-// 			ID:          testId,
-// 			Name:        testResult.Name,
-// 			Price:       testResult.Price,
-// 			NormalValue: testResult.NormalValue,
-// 			Unit:        testResult.Unit,
-// 			LowerBound:  testResult.LowerBound,
-// 			UpperBound:  testResult.UpperBound,
-// 			Result:      testResult.Result,
-// 			ResultText:  testResult.ResultText,
-// 		})
-// 	}
+	update := bson.D{}
+	if updateRequest.ComboName != "" {
+		update = append(update, bson.E{Key: "combo_name", Value: updateRequest.ComboName})
+	}
 
-// 	update := bson.D{{Key: "$set", Value: bson.D{{Key: "test_results", Value: updatedTestResults}}}}
-// 	_, err = m.col.UpdateOne(ctx, bson.D{{Key: "_id", Value: recordOId}}, update)
-// 	return err
-// }
+	if updateRequest.Patient != nil {
+		patientBSON, err := models.ToBSONDocument(updateRequest.Patient)
+		if err != nil {
+			return err
+		}
+		update = append(update, bson.E{Key: "patient", Value: patientBSON})
+	}
+
+	updatedTestResults := []models.TestResult{}
+	for _, testResult := range updateRequest.TestResults {
+		testId, err := bson.ObjectIDFromHex(testResult.ID)
+		if err != nil {
+			log.Println("Error while converting test id to object id", err)
+			return err
+		}
+		updatedTestResults = append(updatedTestResults, models.TestResult{
+			ID:          testId,
+			Name:        testResult.Name,
+			Price:       testResult.Price,
+			NormalValue: testResult.NormalValue,
+			Unit:        testResult.Unit,
+			LowerBound:  testResult.LowerBound,
+			UpperBound:  testResult.UpperBound,
+			Result:      testResult.Result,
+			ResultText:  testResult.ResultText,
+		})
+	}
+	update = append(update, bson.E{Key: "test_results", Value: updatedTestResults})
+
+	return m.UpdateById(ctx, recordId, bson.M{"$set": update})
+}

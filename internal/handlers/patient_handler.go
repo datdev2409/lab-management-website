@@ -10,7 +10,6 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-	"github.com/datdev2409/lab-admin-go/internal/view"
 	"github.com/go-chi/chi"
 )
 
@@ -65,8 +64,6 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 		return Render(r.Context(), w, partials.PatientAutocomplete(patients))
 	case "tracking-patient-autocomplete":
 		return Render(r.Context(), w, partials.TrackingPatientAutocomplete(patients))
-	case "cp_patient-suggestion-list":
-		return view.PatientSuggestionList(patients, false).Render(w)
 	}
 
 	return nil

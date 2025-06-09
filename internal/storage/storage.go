@@ -24,14 +24,6 @@ type ComboStorage interface {
 	DeleteById(ctx context.Context, id string) error
 }
 
-type RecordStorage interface {
-	Insert(ctx context.Context, record models.Record) error
-	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
-	GetById(ctx context.Context, id string) (*models.Record, error)
-	GetByIds(ctx context.Context, ids []string) ([]*models.Record, error)
-	UpdateById(ctx context.Context, id string, update interface{}) error
-}
-
 type TrackingStorage interface {
 	Insert(ctx context.Context, tracking models.Tracking) error
 	ListTrackings(ctx context.Context, filterOpts models.TrackingQueryOptions, opts models.GenericQueryOptions) ([]*models.Tracking, *models.PaginationResponse, error)
