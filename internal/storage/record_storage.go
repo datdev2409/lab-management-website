@@ -47,9 +47,9 @@ func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.
 
 func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
 
-	update := bson.D{}
+	update := bson.M{}
 	if updateRequest.ComboName != "" {
-		update = append(update, bson.E{Key: "combo_name", Value: updateRequest.ComboName})
+		update["combo_name"] = updateRequest.ComboName
 	}
 
 	if updateRequest.Patient != nil {
@@ -57,7 +57,7 @@ func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, 
 		if err != nil {
 			return err
 		}
-		update = append(update, bson.E{Key: "patient", Value: patientBSON})
+		update["patient"] = patientBSON
 	}
 
 	updatedTestResults := []models.TestResult{}
@@ -79,7 +79,7 @@ func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, 
 			ResultText:  testResult.ResultText,
 		})
 	}
-	update = append(update, bson.E{Key: "test_results", Value: updatedTestResults})
+	update["test_results"] = updatedTestResults
 
 	return m.UpdateById(ctx, recordId, bson.M{"$set": update})
 }

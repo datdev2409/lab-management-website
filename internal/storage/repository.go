@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"errors"
 	"math"
 	"time"
 
@@ -97,7 +98,24 @@ func (r *BaseRepository[T]) UpdateById(ctx context.Context, id string, update in
 		return err
 	}
 
-	_, err = r.col.UpdateOne(ctx, bson.M{"_id": oid}, update)
+	updateDoc, ok := update.(bson.M)
+	if !ok {
+		return errors.New("update must be a bson.M type")
+	}
+
+	setDoc, ok := updateDoc["$set"]
+	if !ok {
+		return errors.New("$set operator is required in update")
+	}
+
+	setDocMap, ok := setDoc.(bson.M)
+	if !ok {
+		return errors.New("$set must be a bson.M type")
+	}
+
+	setDocMap["updated_at"] = GetCurrentTime()
+
+	_, err = r.col.UpdateOne(ctx, bson.M{"_id": oid}, bson.M{"$set": setDocMap})
 	return err
 }
 

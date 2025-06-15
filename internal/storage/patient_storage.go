@@ -39,21 +39,21 @@ func (m *MongoPatientStorage) UpdatePatientById(ctx context.Context, id string, 
 		return err
 	}
 
-	updateBSON := bson.D{}
+	updateBSON := bson.M{}
 	if update.Name != nil {
-		updateBSON = append(updateBSON, bson.E{Key: "name", Value: *update.Name})
+		updateBSON["name"] = *update.Name
 	}
 	if update.Phone != nil {
-		updateBSON = append(updateBSON, bson.E{Key: "phone", Value: *update.Phone})
+		updateBSON["phone"] = *update.Phone
 	}
 	if update.Address != nil {
-		updateBSON = append(updateBSON, bson.E{Key: "address", Value: *update.Address})
+		updateBSON["address"] = *update.Address
 	}
 	if update.YOB != nil {
-		updateBSON = append(updateBSON, bson.E{Key: "yob", Value: *update.YOB})
+		updateBSON["yob"] = *update.YOB
 	}
 	if update.Gender != nil {
-		updateBSON = append(updateBSON, bson.E{Key: "gender", Value: *update.Gender})
+		updateBSON["gender"] = *update.Gender
 	}
 	return m.UpdateById(ctx, oid.Hex(), bson.M{"$set": updateBSON})
 }
