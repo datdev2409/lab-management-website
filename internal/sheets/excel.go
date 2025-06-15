@@ -24,8 +24,7 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 	f.SetCellValue("Sheet1", "D6", record.Patient.YOB)
 
 	startTestRow := 10
-	for i := range len(record.TestResults) - 1 {
-		fmt.Print("Duplicating row for test result...\n", i)
+	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
 	}
 
@@ -70,8 +69,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	f.SetCellValue("Sheet1", "E4", record.Patient.Gender)
 
 	startTestRow := 8
-	for i := range len(record.TestResults) - 1 {
-		fmt.Print("Duplicating row for test result...\n", i)
+	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
 	}
 
@@ -117,8 +115,7 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
 
 	startTestRow := 15
-	for i := range len(record.TestResults) - 1 {
-		fmt.Print("Duplicating row for test result...\n", i)
+	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
 	}
 
