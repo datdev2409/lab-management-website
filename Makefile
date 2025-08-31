@@ -21,7 +21,13 @@ live:
 	make -j2 live/server live/templ
 
 build:
-	@go build -o bin/main cmd/api/main.go
+	@GOOS=linux GOARCH=amd64 go build -o bin/main cmd/api/main.go
 
 start:
 	@GO_ENV=production ./bin/main
+
+deploy:
+	scp -i ~/Documents/AnhQuanLab/anhquanlab-mainserver.pem bin/main ec2-user@18.138.255.12:/home/ec2-user
+
+copy-template:
+	scp -i ~/Documents/AnhQuanLab/anhquanlab-mainserver.pem -r templates/ ec2-user@18.138.255.12:/home/ec2-user

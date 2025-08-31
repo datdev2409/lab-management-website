@@ -2,7 +2,6 @@ package sheets
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"strings"
 	"time"
@@ -185,7 +184,6 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 
 	tableHeaderStyle, err := f.GetCellStyle("Sheet1", "A6")
 	if err != nil {
-		log.Println("Error getting table header style:", err)
 		return "", err
 	}
 	tableCellStyle, _ := f.GetCellStyle("Sheet1", "A7")

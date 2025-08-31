@@ -7,38 +7,17 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type PatientStorage interface {
-	Insert(ctx context.Context, patient models.Patient) error
-	SearchByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
-	GetById(ctx context.Context, id string) (*models.Patient, error)
-	UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error
-	UpdateById(ctx context.Context, id string, update interface{}) error
-	DeleteById(ctx context.Context, id string) error
+func (m *MongoStorage) InsertPatient(ctx context.Context, patient *models.Patient) (string, error) {
+	col := m.getCollection("patients")
+	return MongoInsert(ctx, col, patient)
 }
 
-func (m *MongoPatientStorage) SearchByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error) {
-	filters := bson.D{}
-
-	if filterOpts.Keyword != "" {
-		regexPattern := bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}
-		filters = append(filters, bson.E{
-			Key: "$or",
-			Value: bson.A{
-				bson.D{{Key: "name", Value: regexPattern}},
-				bson.D{{Key: "phone", Value: regexPattern}},
-				bson.D{{Key: "address", Value: regexPattern}},
-			},
-		})
-	}
-	return m.List(ctx, filters, opts)
+func (m *MongoStorage) GetPatientById(ctx context.Context, id string) (*models.Patient, error) {
+	col := m.getCollection("patients")
+	return MongoGetById[models.Patient](ctx, col, id)
 }
 
-func (m *MongoPatientStorage) UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error {
-	oid, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-
+func (m *MongoStorage) UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error {
 	updateBSON := bson.M{}
 	if update.Name != nil {
 		updateBSON["name"] = *update.Name
@@ -55,5 +34,28 @@ func (m *MongoPatientStorage) UpdatePatientById(ctx context.Context, id string, 
 	if update.Gender != nil {
 		updateBSON["gender"] = *update.Gender
 	}
-	return m.UpdateById(ctx, oid.Hex(), bson.M{"$set": updateBSON})
+	col := m.getCollection("patients")
+	return MongoUpdateById[models.Patient](ctx, col, id, bson.M{"$set": updateBSON})
+}
+
+func (m *MongoStorage) DeletePatientById(ctx context.Context, id string) error {
+	col := m.getCollection("patients")
+	return MongoDeleteById[models.Patient](ctx, col, id)
+}
+
+func (m *MongoStorage) SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error) {
+	filters := bson.D{}
+	if filterOpts.Keyword != "" {
+		regexPattern := bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}
+		filters = append(filters, bson.E{
+			Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "name", Value: regexPattern}},
+				bson.D{{Key: "phone", Value: regexPattern}},
+				bson.D{{Key: "address", Value: regexPattern}},
+			},
+		})
+	}
+	col := m.getCollection("patients")
+	return MongoList[models.Patient](ctx, col, filters, opts)
 }

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -18,15 +17,15 @@ func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) erro
 }
 
 func (h *Handler) HandleCreatePatient(w http.ResponseWriter, r *http.Request) error {
-	patient := models.Patient{
-		Name:    r.FormValue("patient_name"),
-		YOB:     r.FormValue("patient_yob"),
-		Gender:  r.FormValue("patient_gender"),
-		Address: r.FormValue("patient_address"),
-		Phone:   r.FormValue("patient_phone"),
-	}
+	patient := models.NewPatient(
+		r.FormValue("patient_name"),
+		r.FormValue("patient_yob"),
+		r.FormValue("patient_gender"),
+		r.FormValue("patient_address"),
+		r.FormValue("patient_phone"),
+	)
 
-	err := h.Store.Patients().Insert(r.Context(), patient)
+	_, err := h.Store.InsertPatient(r.Context(), patient)
 	if err != nil {
 		return err
 	}
@@ -47,7 +46,7 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	keyword := r.URL.Query().Get("patient_name")
-	patients, pagination, err := h.Store.Patients().SearchByNameOrPhone(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	patients, pagination, err := h.Store.SearchPatientByNameOrPhone(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
@@ -71,7 +70,7 @@ func (h *Handler) ListPatients(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	patient, err := h.Store.Patients().GetById(r.Context(), id)
+	patient, err := h.Store.GetPatientById(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -98,13 +97,12 @@ func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
 		Phone:   models.GetStringPtr(r.FormValue("patient_phone")),
 	}
 
-	err := h.Store.Patients().UpdatePatientById(r.Context(), id, update)
+	err := h.Store.UpdatePatientById(r.Context(), id, update)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
-	patient, err := h.Store.Patients().GetById(r.Context(), id)
+	patient, err := h.Store.GetPatientById(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -114,9 +112,8 @@ func (h *Handler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) DeletePatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	err := h.Store.Patients().DeleteById(r.Context(), id)
+	err := h.Store.DeletePatientById(r.Context(), id)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 

@@ -2,19 +2,33 @@ package models
 
 import (
 	"time"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Patient struct {
-	ID        bson.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name      string        `json:"name" bson:"name"`
-	YOB       string        `json:"yob" bson:"yob"`
-	Gender    string        `json:"gender" bson:"gender"`
-	Address   string        `json:"address" bson:"address"`
-	Phone     string        `json:"phone" bson:"phone"`
-	CreatedAt time.Time     `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at" bson:"updated_at"`
+	// ID        bson.ObjectID `json:"id" bson:"_id,omitempty"`
+	ID        string    `json:"id" bson:"_id"`
+	Name      string    `json:"name" bson:"name"`
+	YOB       string    `json:"yob" bson:"yob"`
+	Gender    string    `json:"gender" bson:"gender"`
+	Address   string    `json:"address" bson:"address"`
+	Phone     string    `json:"phone" bson:"phone"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
+}
+
+func NewPatient(name string, yob string, gender string, address string, phone string) *Patient {
+	patientId := GenerateRandomID("patient_")
+	now := time.Now()
+	return &Patient{
+		ID:        patientId,
+		Name:      name,
+		YOB:       yob,
+		Gender:    gender,
+		Address:   address,
+		Phone:     phone,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
 }
 
 type PatientQueryOptions struct {

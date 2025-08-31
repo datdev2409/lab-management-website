@@ -3,16 +3,14 @@ package models
 import (
 	"encoding/json"
 	"time"
-
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type Combo struct {
-	ID        bson.ObjectID   `bson:"_id,omitempty"`
-	Name      string          `json:"name" bson:"name"`
-	TestIDs   []bson.ObjectID `json:"test_ids" bson:"test_ids"`
-	CreatedAt time.Time       `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time       `json:"updated_at" bson:"updated_at"`
+	ID        string    `bson:"_id,omitempty"`
+	Name      string    `json:"name" bson:"name"`
+	TestIDs   []string  `json:"test_ids" bson:"test_ids"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
 type ComboDetailsResponse struct {
@@ -25,27 +23,15 @@ type ComboQueryOptions struct {
 }
 
 func (c *Combo) GetTestIDs() []string {
-	ids := []string{}
-	for _, id := range c.TestIDs {
-		ids = append(ids, id.Hex())
-	}
-	return ids
+	return c.TestIDs
 }
 
 func (c *Combo) GetID() string {
-	return c.ID.Hex()
+	return c.ID
 }
 
-func ConvertIDsToObjectIDs(ids []string) ([]bson.ObjectID, error) {
-	objectIDs := []bson.ObjectID{}
-	for _, id := range ids {
-		oid, err := bson.ObjectIDFromHex(id)
-		if err != nil {
-			return nil, err
-		}
-		objectIDs = append(objectIDs, oid)
-	}
-	return objectIDs, nil
+func ConvertIDsToObjectIDs(ids []string) ([]string, error) {
+	return ids, nil // No conversion needed
 }
 
 // When response to json, convert TestIDs to string
@@ -57,8 +43,20 @@ func (c *Combo) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(ComboJSON{
-		ID:      c.ID.Hex(),
+		ID:      c.ID,
 		Name:    c.Name,
 		TestIDs: c.GetTestIDs(),
 	})
+}
+
+func NewCombo(name string, testIDs []string) *Combo {
+	comboId := GenerateRandomID("combo_")
+	now := time.Now()
+	return &Combo{
+		ID:        comboId,
+		Name:      name,
+		TestIDs:   testIDs,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
 }

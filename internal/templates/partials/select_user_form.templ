@@ -24,7 +24,7 @@ templ GenderInput(id string, checked bool) {
 templ PatientSuggestionList(patients []models.Patient) {
 	<div id="patient-suggestion-list" class="shadow bordered">
 		for _, patient := range patients {
-			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID.Hex() } hx-target="#select-user-form">
+			<div class="patient-option" hx-get={ "/api/patients/" + patient.ID } hx-target="#select-user-form">
 				{ patient.Name } - { patient.Phone }
 			</div>
 		}

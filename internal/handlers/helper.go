@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -31,7 +31,7 @@ type HandlerFuncReturnError = func(w http.ResponseWriter, r *http.Request) error
 func Make(fn HandlerFuncReturnError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := fn(w, r); err != nil {
-			log.Println(err)
+			slog.Error("error", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte(err.Error()))
 		}
