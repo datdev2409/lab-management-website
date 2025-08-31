@@ -8,7 +8,7 @@ import (
 templ PatientAutocomplete(patients []*models.Patient) {
 	<div x-show="open" @click.outside="open=false" id="patient-autocomplete" class="shadow bordered position-absolute autocomplete">
 		for _, patient := range patients {
-			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient('%s')", patient.ID.Hex()) }>
+			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient('%s')", patient.ID) }>
 				<div>
 					{ patient.Name } - { patient.Phone }
 				</div>
@@ -20,7 +20,7 @@ templ PatientAutocomplete(patients []*models.Patient) {
 templ TrackingPatientAutocomplete(patients []*models.Patient) {
 	<div x-show="open" @click.outside="open=false" id="tracking-patient-autocomplete" class="shadow bordered position-absolute autocomplete">
 		for _, patient := range patients {
-			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient({patientId: '%s', patientName: '%s'})", patient.ID.Hex(), patient.Name) }>
+			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient({patientId: '%s', patientName: '%s'})", patient.ID, patient.Name) }>
 				<div>
 					{ patient.Name } - { patient.Phone }
 				</div>

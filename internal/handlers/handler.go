@@ -10,16 +10,16 @@ import (
 )
 
 type Handler struct {
-	Router http.Handler
-	Store  storage.AppStorage
+	Router  http.Handler
+	StoreV2 storage.Storage
 }
 
-func NewHandler(store storage.AppStorage) *Handler {
+func NewHandler(store storage.Storage) *Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	h := &Handler{Router: r, Store: store}
+	h := &Handler{Router: r, StoreV2: store}
 
 	r.Use(middleware.Logger)
 

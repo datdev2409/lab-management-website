@@ -13,7 +13,7 @@ import (
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
-	tests, _, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
+	tests, _, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
 	if err != nil {
 		log.Println(err)
 	}
@@ -43,16 +43,17 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
 		w.Write([]byte(errorMessage))
 	}
-	test := models.Test{
-		Name:        r.FormValue("test_name"),
-		NormalValue: r.FormValue("test_normal_value"),
-		Unit:        r.FormValue("test_unit"),
-		LowerBound:  math.Round(testLowerBound*100) / 100,
-		UpperBound:  math.Round(testUpperBound*100) / 100,
-		Price:       testPrice,
-	}
 
-	err = h.Store.Tests().Insert(r.Context(), test)
+	test := models.NewTest(
+		r.FormValue("test_name"),
+		testPrice,
+		r.FormValue("test_normal_value"),
+		r.FormValue("test_unit"),
+		math.Round(testLowerBound*100)/100,
+		math.Round(testUpperBound*100)/100,
+	)
+
+	_, err = h.StoreV2.InsertTest(r.Context(), test)
 	if err != nil {
 		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
@@ -66,7 +67,7 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 
 func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
-	tests, _, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
+	tests, _, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
 	if err != nil {
 		return err
 	}
@@ -75,9 +76,7 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 	target := r.Header.Get("HX-Target")
 	switch target {
 	case "test-autocomplete":
-		// recordId := r.URL.Query().Get("record_id")
 		return nil
-		// return Render(r.Context(), w, pages.TestAutocomplete(tests, recordId))
 	case "test-table":
 		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
 	case "test-search-result-combo-page":
@@ -94,11 +93,10 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		page = 1
 	}
-	tests, pagination, err := h.Store.Tests().ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	tests, pagination, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
 	if err != nil {
 		return err
 	}
-
 	target := r.Header.Get("HX-Target")
 	switch target {
 	case "test-table":

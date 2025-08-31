@@ -2,56 +2,52 @@ package storage
 
 import (
 	"context"
-	"log"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type RecordStorage interface {
-	Insert(ctx context.Context, record models.Record) error
-	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
-	GetById(ctx context.Context, id string) (*models.Record, error)
-	GetByIds(ctx context.Context, ids []string) ([]*models.Record, error)
-	UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error
+func (m *MongoStorage) InsertRecord(ctx context.Context, record *models.Record) (string, error) {
+	col := m.getCollection("records")
+	return MongoInsert(ctx, col, record)
 }
 
-func (m *MongoRecordStorage) ListRecords(ctx context.Context, filterOpts models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error) {
-	filters := bson.D{}
-	if filterOpts.Keyword != "" {
-		filters = append(filters, bson.E{
+func (m *MongoStorage) ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error) {
+	mongoFilters := bson.D{}
+	if filters.Keyword != "" {
+		mongoFilters = append(mongoFilters, bson.E{
 			Key: "$or",
 			Value: bson.A{
-				bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
-				bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}}},
+				bson.D{{Key: "patient.name", Value: bson.D{{Key: "$regex", Value: filters.Keyword}, {Key: "$options", Value: "i"}}}},
+				bson.D{{Key: "patient.phone", Value: bson.D{{Key: "$regex", Value: filters.Keyword}, {Key: "$options", Value: "i"}}}},
 			},
 		})
 	}
-
-	if filterOpts.PatientID != "" {
-		patientOID, err := bson.ObjectIDFromHex(filterOpts.PatientID)
-		if err != nil {
-			log.Println("Error while converting patient ID to ObjectID:", err)
-			return nil, nil, err
-		}
-		filters = append(filters, bson.E{Key: "patient._id", Value: patientOID})
+	if filters.PatientID != "" {
+		mongoFilters = append(mongoFilters, bson.E{Key: "patient._id", Value: filters.PatientID})
 	}
-
-	if filterOpts.Status != "" {
-		filters = append(filters, bson.E{Key: "status", Value: filterOpts.Status})
+	if filters.Status != "" {
+		mongoFilters = append(mongoFilters, bson.E{Key: "status", Value: filters.Status})
 	}
-
-	return m.List(ctx, filters, opts)
-
+	col := m.getCollection("records")
+	return MongoList[models.Record](ctx, col, mongoFilters, opts)
 }
 
-func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
+func (m *MongoStorage) GetRecordById(ctx context.Context, id string) (*models.Record, error) {
+	col := m.getCollection("records")
+	return MongoGetById[models.Record](ctx, col, id)
+}
 
+func (m *MongoStorage) GetRecordsByIds(ctx context.Context, ids []string) ([]*models.Record, error) {
+	col := m.getCollection("records")
+	return MongoGetByIds[models.Record](ctx, col, ids)
+}
+
+func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
 	update := bson.M{}
 	if updateRequest.ComboName != "" {
 		update["combo_name"] = updateRequest.ComboName
 	}
-
 	if updateRequest.Patient != nil {
 		patientBSON, err := models.ToBSONDocument(updateRequest.Patient)
 		if err != nil {
@@ -59,16 +55,10 @@ func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, 
 		}
 		update["patient"] = patientBSON
 	}
-
 	updatedTestResults := []models.TestResult{}
 	for _, testResult := range updateRequest.TestResults {
-		testId, err := bson.ObjectIDFromHex(testResult.ID)
-		if err != nil {
-			log.Println("Error while converting test id to object id", err)
-			return err
-		}
 		updatedTestResults = append(updatedTestResults, models.TestResult{
-			ID:          testId,
+			ID:          testResult.ID,
 			Name:        testResult.Name,
 			Price:       testResult.Price,
 			NormalValue: testResult.NormalValue,
@@ -80,6 +70,11 @@ func (m *MongoRecordStorage) UpdateRecord(ctx context.Context, recordId string, 
 		})
 	}
 	update["test_results"] = updatedTestResults
+	col := m.getCollection("records")
+	return MongoUpdateById[models.Record](ctx, col, recordId, bson.M{"$set": update})
+}
 
-	return m.UpdateById(ctx, recordId, bson.M{"$set": update})
+func (m *MongoStorage) DeleteRecord(ctx context.Context, recordId string) error {
+	col := m.getCollection("records")
+	return MongoDeleteById[models.Record](ctx, col, recordId)
 }

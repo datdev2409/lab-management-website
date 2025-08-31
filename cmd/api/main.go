@@ -25,13 +25,11 @@ type Config struct {
 
 type Application struct {
 	Config  *Config
-	Store   storage.AppStorage
 	Handler http.Handler
 }
 
-func (app *Application) Init(config *Config, store storage.AppStorage, handler http.Handler) {
+func (app *Application) Init(config *Config, handler http.Handler) {
 	app.Config = config
-	app.Store = store
 	app.Handler = handler
 }
 
@@ -72,7 +70,7 @@ func main() {
 	store := storage.NewMongoStorage(mongoClient)
 	handler := handlers.NewHandler(store)
 
-	app.Init(config, store, handler.Router)
+	app.Init(config, handler.Router)
 
 	log.Println("Server is running on port", app.Config.Port)
 	log.Fatal(app.Start())

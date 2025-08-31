@@ -14,7 +14,6 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
@@ -37,19 +36,15 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	patient, err := h.Store.Patients().GetById(r.Context(), request.PatientID)
+	patient, err := h.StoreV2.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
 	}
 
 	recordTestResults := []models.TestResult{}
 	for _, testResult := range request.TestResults {
-		testId, err := bson.ObjectIDFromHex(testResult.ID)
-		if err != nil {
-			return err
-		}
 		recordTestResults = append(recordTestResults, models.TestResult{
-			ID:          testId,
+			ID:          testResult.ID,
 			Name:        testResult.Name,
 			Price:       testResult.Price,
 			NormalValue: testResult.NormalValue,
@@ -63,12 +58,12 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 
 	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
 
-	err = h.Store.Records().Insert(r.Context(), record)
+	_, err = h.StoreV2.InsertRecord(r.Context(), &record)
 	if err != nil {
 		return err
 	}
 
-	return WriteJSON(w, http.StatusCreated, map[string]string{"id": record.ID.Hex()})
+	return WriteJSON(w, http.StatusCreated, map[string]string{"id": record.ID})
 }
 
 func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
@@ -107,7 +102,7 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 		PageSize:  pageSize,
 	}
 
-	records, pagination, err := h.Store.Records().ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
+	records, pagination, err := h.StoreV2.ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
 	if err != nil {
 		return err
 	}
@@ -136,15 +131,14 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	if request.PatientID != "" {
-		patient, err := h.Store.Patients().GetById(r.Context(), request.PatientID)
+		patient, err := h.StoreV2.GetPatientById(r.Context(), request.PatientID)
 		if err != nil {
 			return err
 		}
-
 		request.Patient = patient
 	}
 
-	err := h.Store.Records().UpdateRecord(r.Context(), recordId, request)
+	err := h.StoreV2.UpdateRecord(r.Context(), recordId, request)
 	if err != nil {
 		return err
 	}
@@ -156,7 +150,7 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
-	record, err := h.Store.Records().GetById(r.Context(), recordId)
+	record, err := h.StoreV2.GetRecordById(r.Context(), recordId)
 	if err != nil {
 		return err
 	}
@@ -174,7 +168,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	record, err := h.Store.Records().GetById(r.Context(), req.RecordId)
+	record, err := h.StoreV2.GetRecordById(r.Context(), req.RecordId)
 	if err != nil {
 		return err
 	}

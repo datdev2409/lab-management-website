@@ -17,8 +17,8 @@ templ TestRow(test *models.Test, page string) {
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
 				<td style="width: 100px">
-					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex() + "/edit") } class="link-primary">Sửa</a>
-					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID.Hex()) } class="link-danger">Xoá</a>
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID + "/edit") } class="link-primary">Sửa</a>
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID) } class="link-danger">Xoá</a>
 				</td>
 			case "combo-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
