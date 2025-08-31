@@ -10,8 +10,8 @@ import (
 )
 
 type Handler struct {
-	Router  http.Handler
-	StoreV2 storage.Storage
+	Router http.Handler
+	Store  storage.Storage
 }
 
 func NewHandler(store storage.Storage) *Handler {
@@ -19,7 +19,7 @@ func NewHandler(store storage.Storage) *Handler {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	h := &Handler{Router: r, StoreV2: store}
+	h := &Handler{Router: r, Store: store}
 
 	r.Use(middleware.Logger)
 

@@ -29,9 +29,8 @@ func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
 	}
 	testIds := strings.Split(r.FormValue("test_ids"), ",")
 	combo := models.NewCombo(r.FormValue("combo_name"), testIds)
-	_, err := h.StoreV2.InsertCombo(r.Context(), combo)
+	_, err := h.Store.InsertCombo(r.Context(), combo)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
@@ -49,7 +48,7 @@ func (h *Handler) ListCombos(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		pageSize = 10
 	}
-	combos, pagination, err := h.StoreV2.ListCombos(r.Context(), models.ComboQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	combos, pagination, err := h.Store.ListCombos(r.Context(), models.ComboQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
@@ -68,7 +67,7 @@ func (h *Handler) ListCombos(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetComboDetails(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	combo, tests, err := h.StoreV2.GetTestsInCombo(r.Context(), id)
+	combo, tests, err := h.Store.GetTestsInCombo(r.Context(), id)
 	if err != nil {
 		log.Println(err)
 		return nil

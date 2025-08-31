@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -36,29 +35,19 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	patient, err := h.StoreV2.GetPatientById(r.Context(), request.PatientID)
+	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
 	}
 
 	recordTestResults := []models.TestResult{}
 	for _, testResult := range request.TestResults {
-		recordTestResults = append(recordTestResults, models.TestResult{
-			ID:          testResult.ID,
-			Name:        testResult.Name,
-			Price:       testResult.Price,
-			NormalValue: testResult.NormalValue,
-			Unit:        testResult.Unit,
-			LowerBound:  testResult.LowerBound,
-			UpperBound:  testResult.UpperBound,
-			Result:      testResult.Result,
-			ResultText:  testResult.ResultText,
-		})
+		recordTestResults = append(recordTestResults, models.TestResult(testResult))
 	}
 
 	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
 
-	_, err = h.StoreV2.InsertRecord(r.Context(), &record)
+	_, err = h.Store.InsertRecord(r.Context(), &record)
 	if err != nil {
 		return err
 	}
@@ -102,7 +91,7 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 		PageSize:  pageSize,
 	}
 
-	records, pagination, err := h.StoreV2.ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
+	records, pagination, err := h.Store.ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
 	if err != nil {
 		return err
 	}
@@ -126,19 +115,18 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 	var request models.UpdateRecordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		log.Println("Error while decoding request", err)
 		return err
 	}
 
 	if request.PatientID != "" {
-		patient, err := h.StoreV2.GetPatientById(r.Context(), request.PatientID)
+		patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 		if err != nil {
 			return err
 		}
 		request.Patient = patient
 	}
 
-	err := h.StoreV2.UpdateRecord(r.Context(), recordId, request)
+	err := h.Store.UpdateRecord(r.Context(), recordId, request)
 	if err != nil {
 		return err
 	}
@@ -150,7 +138,7 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
-	record, err := h.StoreV2.GetRecordById(r.Context(), recordId)
+	record, err := h.Store.GetRecordById(r.Context(), recordId)
 	if err != nil {
 		return err
 	}
@@ -168,7 +156,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	record, err := h.StoreV2.GetRecordById(r.Context(), req.RecordId)
+	record, err := h.Store.GetRecordById(r.Context(), req.RecordId)
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -29,7 +30,6 @@ func (h *Handler) HandleCreateTrackingListPage(w http.ResponseWriter, r *http.Re
 
 func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("keyword")
-	log.Println("Keyword:", keyword)
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		page = 1
@@ -38,13 +38,13 @@ func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		pageSize = 10
 	}
-	trackings, pagination, err := h.StoreV2.ListTrackings(r.Context(), models.TrackingQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	trackings, pagination, err := h.Store.ListTrackings(r.Context(), models.TrackingQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
 
 	target := r.Header.Get("HX-Target")
-	log.Println("HTMX Target:", target)
+	slog.Debug("HTMX Target:", slog.String("target", target))
 
 	switch target {
 	case "tracking-autocomplete":
@@ -67,7 +67,7 @@ func (h *Handler) ListTestsForTracking(w http.ResponseWriter, r *http.Request) e
 	}
 	log.Println(string(body))
 
-	records, err := h.StoreV2.GetRecordsByIds(r.Context(), r.Form["record_ids"])
+	records, err := h.Store.GetRecordsByIds(r.Context(), r.Form["record_ids"])
 	if err != nil {
 		return err
 	}
@@ -97,8 +97,6 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 
 	recordIds := r.Form["record_ids"]
 
-	log.Println("trackingId", r.FormValue("tracking_id"))
-
 	if len(recordIds) == 0 {
 		return fmt.Errorf("no record IDs provided for comparison")
 	}
@@ -106,7 +104,7 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 	// Fetch records from storage
 	var records []*models.Record
 	for _, id := range recordIds {
-		record, err := h.StoreV2.GetRecordById(r.Context(), id)
+		record, err := h.Store.GetRecordById(r.Context(), id)
 		if err != nil {
 			return fmt.Errorf("failed to fetch record %s: %v", id, err)
 		}
@@ -127,7 +125,7 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 			}
 		}
 	} else {
-		tracking, err := h.StoreV2.GetTrackingById(r.Context(), trackingId)
+		tracking, err := h.Store.GetTrackingById(r.Context(), trackingId)
 		if err != nil {
 			return err
 		}
@@ -144,7 +142,6 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 
 	filename, err := sheets.CreateRecordTrackingFile(records, testMap)
 	if err != nil {
-		log.Println("Error creating tracking file:", err)
 		return err
 	}
 
@@ -161,7 +158,7 @@ func (h *Handler) CreateTracking(w http.ResponseWriter, r *http.Request) error {
 
 	tracking := models.NewTracking(request.Name, request.Tests)
 
-	_, err := h.StoreV2.InsertTracking(r.Context(), &tracking)
+	_, err := h.Store.InsertTracking(r.Context(), &tracking)
 	if err != nil {
 		return err
 	}

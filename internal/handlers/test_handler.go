@@ -13,9 +13,9 @@ import (
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
-	tests, _, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
+	tests, _, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	messages := map[string]string{
 		"test:create:success": "Thêm xét nghiệm thành công",
@@ -27,19 +27,16 @@ func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
 func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error {
 	testLowerBound, err := strconv.ParseFloat(r.FormValue("test_lower_bound"), 32)
 	if err != nil {
-		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
 		w.Write([]byte(errorMessage))
 	}
 	testUpperBound, err := strconv.ParseFloat(r.FormValue("test_upper_bound"), 32)
 	if err != nil {
-		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
 		w.Write([]byte(errorMessage))
 	}
 	testPrice, err := strconv.Atoi(r.FormValue("test_price"))
 	if err != nil {
-		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
 		w.Write([]byte(errorMessage))
 	}
@@ -53,9 +50,8 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 		math.Round(testUpperBound*100)/100,
 	)
 
-	_, err = h.StoreV2.InsertTest(r.Context(), test)
+	_, err = h.Store.InsertTest(r.Context(), test)
 	if err != nil {
-		log.Println(err)
 		errorMessage := `<div class="alert alert-danger" role="alert">Đã có lỗi xảy ra khi thêm xét nghiệm.</div>`
 		w.Write([]byte(errorMessage))
 	}
@@ -67,7 +63,7 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 
 func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
-	tests, _, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
+	tests, _, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
 	if err != nil {
 		return err
 	}
@@ -93,7 +89,7 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		page = 1
 	}
-	tests, pagination, err := h.StoreV2.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
 	if err != nil {
 		return err
 	}

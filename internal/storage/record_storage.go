@@ -57,17 +57,7 @@ func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, update
 	}
 	updatedTestResults := []models.TestResult{}
 	for _, testResult := range updateRequest.TestResults {
-		updatedTestResults = append(updatedTestResults, models.TestResult{
-			ID:          testResult.ID,
-			Name:        testResult.Name,
-			Price:       testResult.Price,
-			NormalValue: testResult.NormalValue,
-			Unit:        testResult.Unit,
-			LowerBound:  testResult.LowerBound,
-			UpperBound:  testResult.UpperBound,
-			Result:      testResult.Result,
-			ResultText:  testResult.ResultText,
-		})
+		updatedTestResults = append(updatedTestResults, models.TestResult(testResult))
 	}
 	update["test_results"] = updatedTestResults
 	col := m.getCollection("records")
