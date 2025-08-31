@@ -3,8 +3,8 @@ package models
 import (
 	"regexp"
 	"strings"
-	"time"
 
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -25,22 +25,6 @@ func NormalizeString(s string) string {
 	return re.ReplaceAllString(strings.ToLower(s), "")
 }
 
-func GeneratePatientID(phone, name string) string {
-	return NormalizeString(phone) + NormalizeString(name)
-}
-
-func GenerateRecordID(patientID string, createdAt time.Time) string {
-	return patientID + createdAt.Format("060102") // YYMMDD
-}
-
-func GenerateTestID(testName string) string {
-	return NormalizeString(testName)
-}
-
-func GenerateComboID(comboName string) string {
-	return NormalizeString(comboName)
-}
-
-func GenerateTrackingID(patientID string, createdAt time.Time) string {
-	return patientID + createdAt.Format("060102")
+func GenerateRandomID(prefix string) string {
+	return prefix + uuid.NewString()
 }

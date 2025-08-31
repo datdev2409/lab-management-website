@@ -34,17 +34,11 @@ type TrackingQueryOptions struct {
 func NewTracking(name string, testRequests []TrackingTestRequest) Tracking {
 	var tests []TrackingTestData
 	for _, test := range testRequests {
-		tests = append(tests, TrackingTestData{
-			TestID:      test.TestID,
-			TestName:    test.TestName,
-			NormalValue: test.NormalValue,
-			Unit:        test.Unit,
-			Order:       test.Order, // Order starts from 1
-		})
+		tests = append(tests, TrackingTestData(test))
 	}
 
 	return Tracking{
-		ID:    GenerateComboID(name), // Use tracking name for ID
+		ID:    GenerateRandomID("tracking_"), // Use tracking name for ID
 		Name:  name,
 		Tests: tests,
 	}

@@ -27,10 +27,9 @@ type TestQueryOptions struct {
 }
 
 func NewTest(name string, price int, normalValue, unit string, lowerBound, upperBound float64) *Test {
-	testId := GenerateTestID(name)
 	now := time.Now()
 	return &Test{
-		ID:          testId,
+		ID:          GenerateRandomID("test_"),
 		Name:        name,
 		Price:       price,
 		NormalValue: normalValue,

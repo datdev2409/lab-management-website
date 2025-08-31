@@ -29,7 +29,7 @@ type Record struct {
 func NewRecord(patient Patient, comboName string, testResults []TestResult) Record {
 	now := time.Now()
 	record := Record{
-		ID:          GenerateRecordID(patient.ID, now),
+		ID:          GenerateRandomID("record_"),
 		Patient:     patient,
 		ComboName:   comboName,
 		TestResults: testResults,

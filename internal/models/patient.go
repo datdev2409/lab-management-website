@@ -17,7 +17,7 @@ type Patient struct {
 }
 
 func NewPatient(name string, yob string, gender string, address string, phone string) *Patient {
-	patientId := GeneratePatientID(phone, name)
+	patientId := GenerateRandomID("patient_")
 	now := time.Now()
 	return &Patient{
 		ID:        patientId,

@@ -50,7 +50,7 @@ func (c *Combo) MarshalJSON() ([]byte, error) {
 }
 
 func NewCombo(name string, testIDs []string) *Combo {
-	comboId := GenerateComboID(name)
+	comboId := GenerateRandomID("combo_")
 	now := time.Now()
 	return &Combo{
 		ID:        comboId,

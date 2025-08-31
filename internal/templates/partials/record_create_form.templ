@@ -119,10 +119,8 @@ templ RecordCreateForm(recordId string) {
 						}
 
 						const data = await response.json()
-						console.log(data)
 						if (this.flow === 'create-record') {
-							console.log(data)
-							// window.location.replace(`/phieu-xet-nghiem/${data.id}`)
+							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
 						}
 					}
 					catch (error) {
