@@ -1,0 +1,22 @@
+package partials
+
+templ TestTableHeader(page string) {
+	<thead class="position-sticky top-0">
+		<tr>
+			<th scope="col">Tên xét nghiệm</th>
+			<th style="width: 180px" scope="col">Đơn giá</th>
+			<th style="width: 200px" scope="col">GT bình thường</th>
+			<th style="width: 140px" scope="col">Đơn vị</th>
+			switch page {
+				case "test-page":
+					<th style="width: 120px" scope="col">Cận dưới</th>
+					<th style="width: 120px" scope="col">Cận trên</th>
+					<th style="width: 100px" scope="col"></th>
+				case "record-page":
+					<th style="width: 120px" scope="col">Kết quả</th>
+					<th style="width: 180px" scope="col">Kết quả (text)</th>
+					<th style="width: 30px" scope="col">Bất thường</th>
+			}
+		</tr>
+	</thead>
+}

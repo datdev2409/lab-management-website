@@ -1,0 +1,30 @@
+package partials
+
+templ ComboTableScript() {
+	<script>
+		function comboRowData() {
+			return {
+				deleting: false,
+				deleteCombo(comboId, comboName) {
+					if (confirm('Bạn có chắc chắn muốn xoá gói xét nghiệm: ' + comboName + '?')) {
+						this.deleting = true;
+						
+						fetch('/api/v1/combos/' + comboId, { method: 'DELETE' })
+							.then(response => {
+								if (response.ok) {
+									redirectWithMessage('/danh-muc-goi-xet-nghiem', 'combo_delete_success');
+								} else {
+									this.deleting = false;
+									alert('Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.');
+								}
+							})
+							.catch(error => {
+								this.deleting = false;
+								alert('Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.');
+							});
+					}
+				}
+			}
+		}
+	</script>
+}

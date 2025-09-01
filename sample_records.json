@@ -1,0 +1,640 @@
+[
+  {
+    "_id": "record_001",
+    "combo_name": "Tổng quát cơ bản",
+    "patient": {
+      "_id": "patient_001",
+      "name": "Nguyễn Văn An",
+      "yob": "1985",
+      "gender": "Nam",
+      "address": "123 Đường Lê Lợi, Quận 1, TP.HCM",
+      "phone": "0901234567",
+      "created_at": "2025-08-15T09:30:00Z",
+      "updated_at": "2025-08-15T09:30:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_001",
+        "name": "Complete Blood Count (CBC)",
+        "price": 150000,
+        "normal_value": "4.5-5.5 million/μL",
+        "unit": "million/μL",
+        "lower_bound": 4.5,
+        "upper_bound": 5.5,
+        "result": "5.2",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_002",
+        "name": "Blood Glucose",
+        "price": 80000,
+        "normal_value": "70-100 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 70.0,
+        "upper_bound": 100.0,
+        "result": "92",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_004",
+        "name": "Hemoglobin",
+        "price": 90000,
+        "normal_value": "12-16 g/dL",
+        "unit": "g/dL",
+        "lower_bound": 12.0,
+        "upper_bound": 16.0,
+        "result": "14.2",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_005",
+        "name": "White Blood Cell Count",
+        "price": 100000,
+        "normal_value": "4.0-11.0 thousand/μL",
+        "unit": "thousand/μL",
+        "lower_bound": 4.0,
+        "upper_bound": 11.0,
+        "result": "7.8",
+        "result_text": "Bình thường"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-30T09:00:00Z",
+    "updated_at": "2025-08-31T14:30:00Z"
+  },
+  {
+    "_id": "record_002",
+    "combo_name": "Kiểm tra tim mạch",
+    "patient": {
+      "_id": "patient_002",
+      "name": "Trần Thị Bình",
+      "yob": "1990",
+      "gender": "Nữ",
+      "address": "456 Đường Nguyễn Huệ, Quận 3, TP.HCM",
+      "phone": "0912345678",
+      "created_at": "2025-08-16T10:15:00Z",
+      "updated_at": "2025-08-16T10:15:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_003",
+        "name": "Cholesterol Total",
+        "price": 120000,
+        "normal_value": "< 200 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 200.0,
+        "result": "220",
+        "result_text": "Cao - cần theo dõi"
+      },
+      {
+        "_id": "test_012",
+        "name": "Triglycerides",
+        "price": 105000,
+        "normal_value": "< 150 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 150.0,
+        "result": "165",
+        "result_text": "Cao - cần điều chỉnh chế độ ăn"
+      },
+      {
+        "_id": "test_013",
+        "name": "HDL Cholesterol",
+        "price": 90000,
+        "normal_value": "> 40 mg/dL (M), > 50 mg/dL (F)",
+        "unit": "mg/dL",
+        "lower_bound": 40.0,
+        "upper_bound": 999.0,
+        "result": "45",
+        "result_text": "Thấp - nên tăng cường vận động"
+      },
+      {
+        "_id": "test_014",
+        "name": "LDL Cholesterol",
+        "price": 95000,
+        "normal_value": "< 100 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 100.0,
+        "result": "140",
+        "result_text": "Cao - cần tư vấn bác sĩ"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-29T10:30:00Z",
+    "updated_at": "2025-08-30T16:45:00Z"
+  },
+  {
+    "_id": "record_003",
+    "combo_name": "Tiểu đường",
+    "patient": {
+      "_id": "patient_003",
+      "name": "Lê Minh Cường",
+      "yob": "1978",
+      "gender": "Nam",
+      "address": "789 Đường Võ Văn Tần, Quận 5, TP.HCM",
+      "phone": "0923456789",
+      "created_at": "2025-08-17T14:20:00Z",
+      "updated_at": "2025-08-17T14:20:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_002",
+        "name": "Blood Glucose",
+        "price": 80000,
+        "normal_value": "70-100 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 70.0,
+        "upper_bound": 100.0,
+        "result": "145",
+        "result_text": "Cao - nghi ngờ tiểu đường"
+      },
+      {
+        "_id": "test_010",
+        "name": "HbA1c (Glycated Hemoglobin)",
+        "price": 200000,
+        "normal_value": "< 5.7%",
+        "unit": "%",
+        "lower_bound": 0.0,
+        "upper_bound": 5.7,
+        "result": "6.8",
+        "result_text": "Cao - tiểu đường type 2"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-28T14:00:00Z",
+    "updated_at": "2025-08-29T11:20:00Z"
+  },
+  {
+    "_id": "record_004",
+    "combo_name": "Chức năng gan",
+    "patient": {
+      "_id": "patient_004",
+      "name": "Phạm Thị Dung",
+      "yob": "1995",
+      "gender": "Nữ",
+      "address": "321 Đường Trần Hưng Đạo, Quận 7, TP.HCM",
+      "phone": "0934567890",
+      "created_at": "2025-08-18T08:45:00Z",
+      "updated_at": "2025-08-18T08:45:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_008",
+        "name": "Alanine Aminotransferase (ALT)",
+        "price": 95000,
+        "normal_value": "7-56 U/L",
+        "unit": "U/L",
+        "lower_bound": 7.0,
+        "upper_bound": 56.0,
+        "result": "32",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_015",
+        "name": "Blood Urea Nitrogen (BUN)",
+        "price": 80000,
+        "normal_value": "7-20 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 7.0,
+        "upper_bound": 20.0,
+        "result": "15",
+        "result_text": "Bình thường"
+      }
+    ],
+    "status": "pending",
+    "created_at": "2025-09-01T08:30:00Z",
+    "updated_at": "2025-09-01T08:30:00Z"
+  },
+  {
+    "_id": "record_005",
+    "combo_name": "Chức năng thận",
+    "patient": {
+      "_id": "patient_005",
+      "name": "Hoàng Văn Em",
+      "yob": "1972",
+      "gender": "Nam",
+      "address": "654 Đường Phan Xích Long, Quận Phú Nhuận, TP.HCM",
+      "phone": "0945678901",
+      "created_at": "2025-08-19T11:30:00Z",
+      "updated_at": "2025-08-19T11:30:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_007",
+        "name": "Creatinine",
+        "price": 85000,
+        "normal_value": "0.6-1.2 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.6,
+        "upper_bound": 1.2,
+        "result": "1.8",
+        "result_text": "Cao - suy giảm chức năng thận"
+      },
+      {
+        "_id": "test_015",
+        "name": "Blood Urea Nitrogen (BUN)",
+        "price": 80000,
+        "normal_value": "7-20 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 7.0,
+        "upper_bound": 20.0,
+        "result": "28",
+        "result_text": "Cao - cần theo dõi chức năng thận"
+      },
+      {
+        "_id": "test_011",
+        "name": "Uric Acid",
+        "price": 75000,
+        "normal_value": "3.5-7.2 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 3.5,
+        "upper_bound": 7.2,
+        "result": "8.5",
+        "result_text": "Cao - nguy cơ gout"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-27T09:15:00Z",
+    "updated_at": "2025-08-28T15:30:00Z"
+  },
+  {
+    "_id": "record_006",
+    "combo_name": "Tuyến giáp",
+    "patient": {
+      "_id": "patient_006",
+      "name": "Vũ Thị Giang",
+      "yob": "1988",
+      "gender": "Nữ",
+      "address": "987 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM",
+      "phone": "0956789012",
+      "created_at": "2025-08-20T16:10:00Z",
+      "updated_at": "2025-08-20T16:10:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_009",
+        "name": "Thyroid Stimulating Hormone (TSH)",
+        "price": 180000,
+        "normal_value": "0.4-4.0 mIU/L",
+        "unit": "mIU/L",
+        "lower_bound": 0.4,
+        "upper_bound": 4.0,
+        "result": "0.2",
+        "result_text": "Thấp - nghi ngờ cường giáp"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-26T13:45:00Z",
+    "updated_at": "2025-08-27T10:20:00Z"
+  },
+  {
+    "_id": "record_007",
+    "combo_name": "Xét nghiệm máu toàn diện",
+    "patient": {
+      "_id": "patient_007",
+      "name": "Đỗ Văn Hùng",
+      "yob": "1980",
+      "gender": "Nam",
+      "address": "147 Đường Điện Biên Phủ, Quận Bình Thạnh, TP.HCM",
+      "phone": "0967890123",
+      "created_at": "2025-08-21T13:25:00Z",
+      "updated_at": "2025-08-21T13:25:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_001",
+        "name": "Complete Blood Count (CBC)",
+        "price": 150000,
+        "normal_value": "4.5-5.5 million/μL",
+        "unit": "million/μL",
+        "lower_bound": 4.5,
+        "upper_bound": 5.5,
+        "result": "4.2",
+        "result_text": "Thấp - thiếu máu nhẹ"
+      },
+      {
+        "_id": "test_004",
+        "name": "Hemoglobin",
+        "price": 90000,
+        "normal_value": "12-16 g/dL",
+        "unit": "g/dL",
+        "lower_bound": 12.0,
+        "upper_bound": 16.0,
+        "result": "11.5",
+        "result_text": "Thấp - thiếu máu"
+      },
+      {
+        "_id": "test_005",
+        "name": "White Blood Cell Count",
+        "price": 100000,
+        "normal_value": "4.0-11.0 thousand/μL",
+        "unit": "thousand/μL",
+        "lower_bound": 4.0,
+        "upper_bound": 11.0,
+        "result": "6.5",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_006",
+        "name": "Platelet Count",
+        "price": 110000,
+        "normal_value": "150-450 thousand/μL",
+        "unit": "thousand/μL",
+        "lower_bound": 150.0,
+        "upper_bound": 450.0,
+        "result": "320",
+        "result_text": "Bình thường"
+      }
+    ],
+    "status": "in_progress",
+    "created_at": "2025-09-01T07:00:00Z",
+    "updated_at": "2025-09-01T12:30:00Z"
+  },
+  {
+    "_id": "record_008",
+    "combo_name": "Kiểm tra sức khỏe định kỳ",
+    "patient": {
+      "_id": "patient_008",
+      "name": "Bùi Thị Lan",
+      "yob": "1993",
+      "gender": "Nữ",
+      "address": "258 Đường Hoàng Văn Thụ, Quận Tân Bình, TP.HCM",
+      "phone": "0978901234",
+      "created_at": "2025-08-22T09:50:00Z",
+      "updated_at": "2025-08-22T09:50:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_001",
+        "name": "Complete Blood Count (CBC)",
+        "price": 150000,
+        "normal_value": "4.5-5.5 million/μL",
+        "unit": "million/μL",
+        "lower_bound": 4.5,
+        "upper_bound": 5.5,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_002",
+        "name": "Blood Glucose",
+        "price": 80000,
+        "normal_value": "70-100 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 70.0,
+        "upper_bound": 100.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_003",
+        "name": "Cholesterol Total",
+        "price": 120000,
+        "normal_value": "< 200 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 200.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_004",
+        "name": "Hemoglobin",
+        "price": 90000,
+        "normal_value": "12-16 g/dL",
+        "unit": "g/dL",
+        "lower_bound": 12.0,
+        "upper_bound": 16.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_008",
+        "name": "Alanine Aminotransferase (ALT)",
+        "price": 95000,
+        "normal_value": "7-56 U/L",
+        "unit": "U/L",
+        "lower_bound": 7.0,
+        "upper_bound": 56.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_009",
+        "name": "Thyroid Stimulating Hormone (TSH)",
+        "price": 180000,
+        "normal_value": "0.4-4.0 mIU/L",
+        "unit": "mIU/L",
+        "lower_bound": 0.4,
+        "upper_bound": 4.0,
+        "result": "",
+        "result_text": ""
+      }
+    ],
+    "status": "pending",
+    "created_at": "2025-09-01T09:00:00Z",
+    "updated_at": "2025-09-01T09:00:00Z"
+  },
+  {
+    "_id": "record_009",
+    "combo_name": "Chức năng thận",
+    "patient": {
+      "_id": "patient_001",
+      "name": "Nguyễn Văn An",
+      "yob": "1985",
+      "gender": "Nam",
+      "address": "123 Đường Lê Lợi, Quận 1, TP.HCM",
+      "phone": "0901234567",
+      "created_at": "2025-08-15T09:30:00Z",
+      "updated_at": "2025-08-15T09:30:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_007",
+        "name": "Creatinine",
+        "price": 85000,
+        "normal_value": "0.6-1.2 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.6,
+        "upper_bound": 1.2,
+        "result": "1.0",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_015",
+        "name": "Blood Urea Nitrogen (BUN)",
+        "price": 80000,
+        "normal_value": "7-20 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 7.0,
+        "upper_bound": 20.0,
+        "result": "16",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_011",
+        "name": "Uric Acid",
+        "price": 75000,
+        "normal_value": "3.5-7.2 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 3.5,
+        "upper_bound": 7.2,
+        "result": "6.5",
+        "result_text": "Bình thường"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-25T14:00:00Z",
+    "updated_at": "2025-08-26T10:30:00Z"
+  },
+  {
+    "_id": "record_010",
+    "combo_name": "Kiểm tra tim mạch",
+    "patient": {
+      "_id": "patient_001",
+      "name": "Nguyễn Văn An",
+      "yob": "1985",
+      "gender": "Nam",
+      "address": "123 Đường Lê Lợi, Quận 1, TP.HCM",
+      "phone": "0901234567",
+      "created_at": "2025-08-15T09:30:00Z",
+      "updated_at": "2025-08-15T09:30:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_003",
+        "name": "Cholesterol Total",
+        "price": 120000,
+        "normal_value": "< 200 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 200.0,
+        "result": "185",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_012",
+        "name": "Triglycerides",
+        "price": 105000,
+        "normal_value": "< 150 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 150.0,
+        "result": "120",
+        "result_text": "Bình thường"
+      },
+      {
+        "_id": "test_013",
+        "name": "HDL Cholesterol",
+        "price": 90000,
+        "normal_value": "> 40 mg/dL (M), > 50 mg/dL (F)",
+        "unit": "mg/dL",
+        "lower_bound": 40.0,
+        "upper_bound": 999.0,
+        "result": "52",
+        "result_text": "Tốt"
+      },
+      {
+        "_id": "test_014",
+        "name": "LDL Cholesterol",
+        "price": 95000,
+        "normal_value": "< 100 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.0,
+        "upper_bound": 100.0,
+        "result": "88",
+        "result_text": "Bình thường"
+      }
+    ],
+    "status": "completed",
+    "created_at": "2025-08-20T09:45:00Z",
+    "updated_at": "2025-08-21T15:20:00Z"
+  },
+  {
+    "_id": "record_011",
+    "combo_name": "Xét nghiệm trước phẫu thuật",
+    "patient": {
+      "_id": "patient_001",
+      "name": "Nguyễn Văn An",
+      "yob": "1985",
+      "gender": "Nam",
+      "address": "123 Đường Lê Lợi, Quận 1, TP.HCM",
+      "phone": "0901234567",
+      "created_at": "2025-08-15T09:30:00Z",
+      "updated_at": "2025-08-15T09:30:00Z"
+    },
+    "test_results": [
+      {
+        "_id": "test_001",
+        "name": "Complete Blood Count (CBC)",
+        "price": 150000,
+        "normal_value": "4.5-5.5 million/μL",
+        "unit": "million/μL",
+        "lower_bound": 4.5,
+        "upper_bound": 5.5,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_004",
+        "name": "Hemoglobin",
+        "price": 90000,
+        "normal_value": "12-16 g/dL",
+        "unit": "g/dL",
+        "lower_bound": 12.0,
+        "upper_bound": 16.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_005",
+        "name": "White Blood Cell Count",
+        "price": 100000,
+        "normal_value": "4.0-11.0 thousand/μL",
+        "unit": "thousand/μL",
+        "lower_bound": 4.0,
+        "upper_bound": 11.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_006",
+        "name": "Platelet Count",
+        "price": 110000,
+        "normal_value": "150-450 thousand/μL",
+        "unit": "thousand/μL",
+        "lower_bound": 150.0,
+        "upper_bound": 450.0,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_007",
+        "name": "Creatinine",
+        "price": 85000,
+        "normal_value": "0.6-1.2 mg/dL",
+        "unit": "mg/dL",
+        "lower_bound": 0.6,
+        "upper_bound": 1.2,
+        "result": "",
+        "result_text": ""
+      },
+      {
+        "_id": "test_008",
+        "name": "Alanine Aminotransferase (ALT)",
+        "price": 95000,
+        "normal_value": "7-56 U/L",
+        "unit": "U/L",
+        "lower_bound": 7.0,
+        "upper_bound": 56.0,
+        "result": "",
+        "result_text": ""
+      }
+    ],
+    "status": "in_progress",
+    "created_at": "2025-09-01T11:30:00Z",
+    "updated_at": "2025-09-01T14:15:00Z"
+  }
+]

@@ -24,12 +24,34 @@ type HandlerFuncReturnError = func(w http.ResponseWriter, r *http.Request) error
 func RespondJSON(w http.ResponseWriter, status int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
+	response := map[string]interface{}{
+		"status": "success",
+		"data":   data,
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+// RespondJSONWithPagination writes a JSON response with pagination for list endpoints
+func RespondJSONWithPagination(w http.ResponseWriter, status int, data interface{}, pagination interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	response := map[string]interface{}{
+		"status":     "success",
+		"data":       data,
+		"pagination": pagination,
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 // RespondError writes a JSON error response with the given status code and error
 func RespondError(w http.ResponseWriter, status int, err error) {
-	RespondJSON(w, status, map[string]string{"error": err.Error()})
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	response := map[string]interface{}{
+		"status": "error",
+		"error":  err.Error(),
+	}
+	json.NewEncoder(w).Encode(response)
 }
 
 // Utility functions to quickly raise common AppError types

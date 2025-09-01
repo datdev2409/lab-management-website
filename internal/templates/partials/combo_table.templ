@@ -1,9 +1,6 @@
 package partials
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"strconv"
-)
+import "github.com/datdev2409/lab-admin-go/internal/models"
 
 templ ComboTable(combos []*models.Combo) {
 	<table class="table table-bordered">
@@ -20,15 +17,5 @@ templ ComboTable(combos []*models.Combo) {
 			}
 		</tbody>
 	</table>
-}
-
-templ ComboRow(combo *models.Combo) {
-	<tr>
-		<td style="max-width: 130px">{ combo.Name }</td>
-		<td style="width: 700px" id={ "combo-tests" + combo.GetID() }>{ strconv.Itoa(len(combo.TestIDs)) + " xét nghiệm" }</td>
-		<td style="width: 130px">
-			<a class="me-2" hx-get={ "/api/combos/" + combo.GetID() } hx-target={ "#combo-tests" + combo.GetID() } hx-swap="innerHTML" class="link-primary">Chi tiết</a>
-			<a href={ templ.SafeURL("/danh-muc-goi-xet-nghiem/" + combo.GetID()) } class="link-danger">Xóa</a>
-		</td>
-	</tr>
+	@ComboTableScript()
 }

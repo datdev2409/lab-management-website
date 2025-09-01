@@ -43,10 +43,7 @@ func NewHandler(store storage.Storage) *Handler {
 
 	// Handle patients
 	r.Route("/api/patients", func(r chi.Router) {
-		r.Post("/", Make(h.HandleCreatePatient))
-		r.Get("/", Make(h.ListPatients))
 		r.Get("/{id}", Make(h.GetPatient))
-		r.Put("/{id}", Make(h.UpdatePatient))
 		r.Delete("/{id}", Make(h.DeletePatient))
 	})
 
@@ -57,6 +54,8 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/{id}", Make(h.GetPatientV1))
 		r.Put("/{id}", Make(h.UpdatePatientV1))
 		r.Delete("/{id}", Make(h.DeletePatientV1))
+		r.Get("/{id}/records", Make(h.GetPatientRecordsV1))
+		r.Post("/{id}/records/compare", Make(h.ComparePatientRecordsV1))
 	})
 
 	r.Route("/api/v1/tests", func(r chi.Router) {
@@ -67,10 +66,35 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Delete("/{id}", Make(h.DeleteTestV1))
 	})
 
+	// New: v1 combo routes
+	r.Route("/api/v1/combos", func(r chi.Router) {
+		r.Get("/", Make(h.ListCombosV1))
+		r.Post("/", Make(h.CreateComboV1))
+		r.Get("/{id}", Make(h.GetComboV1))
+		r.Put("/{id}", Make(h.UpdateComboV1))
+		r.Delete("/{id}", Make(h.DeleteComboV1))
+	})
+
+	// New: v1 tracking routes
+	r.Route("/api/v1/trackings", func(r chi.Router) {
+		r.Get("/", Make(h.ListTrackingsV1))
+		r.Post("/", Make(h.CreateTrackingV1))
+		r.Get("/{id}", Make(h.GetTrackingV1))
+		r.Delete("/{id}", Make(h.DeleteTrackingV1))
+	})
+
+	// New: v1 record routes
+	r.Route("/api/v1/records", func(r chi.Router) {
+		r.Get("/", Make(h.ListRecordsV1))
+		r.Post("/", Make(h.CreateRecordV1))
+		r.Get("/{id}", Make(h.GetRecordV1))
+		r.Put("/{id}", Make(h.UpdateRecordV1))
+		r.Delete("/{id}", Make(h.DeleteRecordV1))
+	})
+
 	// Handle tests
 	r.Route("/api/tests", func(r chi.Router) {
 		r.Get("/", Make(h.ListTests))
-		r.Get("/search", Make(h.SearchTestsByKeyword))
 		r.Post("/", Make(h.HandleCreateTest))
 		r.Delete("/{id}", Make(h.DeleteTest))
 	})

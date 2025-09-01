@@ -14,6 +14,7 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+	"github.com/go-chi/chi"
 )
 
 func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) error {
@@ -47,8 +48,6 @@ func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
 	slog.Debug("HTMX Target:", slog.String("target", target))
 
 	switch target {
-	case "tracking-autocomplete":
-		return Render(r.Context(), w, partials.TrackingAutocomplete(trackings))
 	default:
 		return RenderMultiComponents(r.Context(), w, []templ.Component{
 			partials.TrackingTable(trackings),
@@ -163,5 +162,71 @@ func (h *Handler) CreateTracking(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	return nil
+}
+
+// ListTrackingsV1 handles GET /api/v1/trackings
+func (h *Handler) ListTrackingsV1(w http.ResponseWriter, r *http.Request) error {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	keyword := r.URL.Query().Get("q")
+	trackings, pagination, err := h.Store.ListTrackings(r.Context(), models.TrackingQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	if err != nil {
+		return err
+	}
+	RespondJSONWithPagination(w, http.StatusOK, trackings, pagination)
+	return nil
+}
+
+// CreateTrackingV1 handles POST /api/v1/trackings
+func (h *Handler) CreateTrackingV1(w http.ResponseWriter, r *http.Request) error {
+	var req struct {
+		Name  string                       `json:"name"`
+		Tests []models.TrackingTestRequest `json:"tests"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return BadRequestError("invalid request body")
+	}
+	if req.Name == "" {
+		return BadRequestError("name is required")
+	}
+	tracking := models.NewTracking(req.Name, req.Tests)
+	id, err := h.Store.InsertTracking(r.Context(), &tracking)
+	if err != nil {
+		return err
+	}
+	// Return the created resource
+	created, err := h.Store.GetTrackingById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusCreated, created)
+	return nil
+}
+
+// GetTrackingV1 handles GET /api/v1/trackings/{id}
+func (h *Handler) GetTrackingV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	tracking, err := h.Store.GetTrackingById(r.Context(), id)
+	if err != nil {
+		return NotFoundError("tracking not found")
+	}
+	RespondJSON(w, http.StatusOK, tracking)
+	return nil
+}
+
+// DeleteTrackingV1 handles DELETE /api/v1/trackings/{id}
+func (h *Handler) DeleteTrackingV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if err := h.Store.DeleteTrackingById(r.Context(), id); err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
 	return nil
 }

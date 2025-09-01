@@ -5,6 +5,35 @@ import (
 	"strconv"
 )
 
+templ AlpinePagination() {
+	<div class="d-flex align-items-start justify-content-between mt-4" x-show="totalItems > 0">
+		<!-- Items info -->
+		<div class="text-muted">
+			Showing <span x-text="startItem"></span> to <span x-text="endItem"></span> of <span x-text="totalItems"></span> results
+		</div>
+		<!-- Bootstrap pagination -->
+		<nav aria-label="Page navigation" x-show="totalPages > 1">
+			<ul class="pagination AlpinePagination">
+				<!-- Previous page -->
+				<li class="page-item" :class="{'disabled': !hasPreviousPage}">
+					<a class="page-link" href="#" @click.prevent="previousPage()" :tabindex="!hasPreviousPage ? -1 : 0">Previous</a>
+				</li>
+				<!-- Page numbers -->
+				<template x-for="page in pageNumbers" :key="page">
+					<li class="page-item" :class="{'active': page === currentPage}">
+						<a class="page-link" href="#" @click.prevent="goToPage(page)" x-text="page"></a>
+					</li>
+				</template>
+				<!-- Next page -->
+				<li class="page-item" :class="{'disabled': !hasNextPage}">
+					<a class="page-link" href="#" @click.prevent="nextPage()" :tabindex="!hasNextPage ? -1 : 0">Next</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+}
+
+// Keep the old pagination for backward compatibility
 templ Pagination(pagination *models.PaginationResponse, page string) {
 	if pagination != nil && pagination.TotalPage > 1 {
 		<nav id="pagination" aria-label="Page navigation">
@@ -14,8 +43,6 @@ templ Pagination(pagination *models.PaginationResponse, page string) {
 						switch page {
 							case "test-page":
 								<a class="page-link" hx-get={ "/api/tests?page=" + strconv.Itoa(i) } hx-include="#test-search-form" hx-target="#test-table">{ strconv.Itoa(i) }</a>
-							case "patient-page":
-								<a class="page-link" hx-get={ "/api/patients?page=" + strconv.Itoa(i) } hx-include="#patient-search-form" hx-target="#patient-table">{ strconv.Itoa(i) }</a>
 							case "combo-page":
 								<a class="page-link" hx-get={ "/api/combos?page=" + strconv.Itoa(i) } hx-include="#combo-search-form" hx-target="#combo-table-wrapper">{ strconv.Itoa(i) }</a>
 							case "record-page":

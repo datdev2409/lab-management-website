@@ -1,0 +1,23 @@
+package partials
+
+templ PatientInput() {
+	<div x-show="patient == null" class="position-relative">
+		@PatientAutocomplete()
+	</div>
+	<div x-show="patient != null">
+		<div class="d-flex align-items-start justify-content-between">
+			<div class="d-flex flex-column gap-2">
+				<div><strong x-text="patient.name"></strong> - <span x-text="patient.yob"></span></div>
+				<div>
+					Số điện thoại:
+					<span x-text="patient.phone"></span>
+				</div>
+				<div>
+					Đia chỉ:
+					<span x-text="patient.address"></span>
+				</div>
+			</div>
+			<a @click="patient = null" class="link-primary">Chọn bệnh nhân khác</a>
+		</div>
+	</div>
+}

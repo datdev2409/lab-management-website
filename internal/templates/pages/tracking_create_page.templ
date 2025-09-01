@@ -1,9 +1,6 @@
 package pages
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-)
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
 templ TrackingCreatePage() {
 	@partials.Base() {
@@ -11,12 +8,8 @@ templ TrackingCreatePage() {
 			document.addEventListener('alpine:init', () => {
         Alpine.data('trackingCreatePageData', () => ({
 						trackingName: '',
-						open: false,
-						keyword: '',
 						chosenTests: [],
-						addTest(test) {
-							this.keyword = '';
-							this.open = false;
+						selectTest(test) {
 							if (this.chosenTests.filter(t => t.id == test.id).length > 0) {
 									alert('Xét nghiệm này đã được chọn');
 							} else {
@@ -65,10 +58,7 @@ templ TrackingCreatePage() {
 				</div>
 				<div class="mb-3 position-relative">
 					<label>Tìm xét nghiệm theo tên</label>
-					<input x-model="keyword" @keyup="open=true" autocomplete="off" class="form-control" name="test_name" hx-get="/api/tests" hx-trigger="keyup changed delay:500ms" hx-target="#test-search-result-combo-page" hx-swap="outerHTML"/>
-					<div x-show="open" @click.outside="open = false">
-						@partials.TestAutocomplete([]*models.Test{}, "combo-page")
-					</div>
+					@partials.TestAutocomplete()
 				</div>
 				<div class="mb-3">
 					<input style="display: none" name="tests"/>

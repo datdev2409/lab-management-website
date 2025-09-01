@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"log/slog"
 	"math"
 	"net/http"
@@ -64,28 +63,6 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("test_name")
-	tests, _, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
-	if err != nil {
-		return err
-	}
-
-	log.Println(r.Header.Get("HX-Target"))
-	target := r.Header.Get("HX-Target")
-	switch target {
-	case "test-autocomplete":
-		return nil
-	case "test-table":
-		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
-	case "test-search-result-combo-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
-	case "test-search-result-record-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "record-page"))
-	}
-	return nil
-}
-
 func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
 	slog.Debug("Listing tests with keyword", "keyword", keyword)
@@ -104,10 +81,6 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 			partials.TestTable(tests, "test-page", false),
 			partials.Pagination(pagination, "test-page"),
 		})
-	case "test-search-result-combo-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
-	case "test-autocomplete":
-		return Render(r.Context(), w, partials.RecordTestAutocomplete(tests))
 	}
 	return nil
 }
@@ -132,15 +105,12 @@ func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		pageSize = 10
 	}
-	keyword := r.URL.Query().Get("test_name")
+	keyword := r.URL.Query().Get("q")
 	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
 	}
-	RespondJSON(w, http.StatusOK, map[string]interface{}{
-		"tests":      tests,
-		"pagination": pagination,
-	})
+	RespondJSONWithPagination(w, http.StatusOK, tests, pagination)
 	return nil
 }
 

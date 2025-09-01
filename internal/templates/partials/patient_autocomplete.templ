@@ -1,30 +1,16 @@
 package partials
 
-import (
-	"fmt"
-	"github.com/datdev2409/lab-admin-go/internal/models"
-)
-
-templ PatientAutocomplete(patients []*models.Patient) {
-	<div x-show="open" @click.outside="open=false" id="patient-autocomplete" class="shadow bordered position-absolute autocomplete">
-		for _, patient := range patients {
-			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient('%s')", patient.ID) }>
-				<div>
-					{ patient.Name } - { patient.Phone }
+templ PatientAutocomplete() {
+	<div x-data="autocomplete('/api/v1/patients')">
+		<input class="form-control" x-model="searchTerm" x-on:input.debounce="search()" autocomplete="off"/>
+		<div x-show="open" @click.outside="open=false" class="shadow bordered position-absolute autocomplete">
+			<template x-for="result in results">
+				<div x-on:click="selectPatient(result.id);reset();searchTerm=result.name" class="autocomplete-option">
+					<span x-text="result.name"></span>
+					<span>-</span>
+					<span x-text="result.phone"></span>
 				</div>
-			</div>
-		}
-	</div>
-}
-
-templ TrackingPatientAutocomplete(patients []*models.Patient) {
-	<div x-show="open" @click.outside="open=false" id="tracking-patient-autocomplete" class="shadow bordered position-absolute autocomplete">
-		for _, patient := range patients {
-			<div class="autocomplete-option" @click={ fmt.Sprintf("selectPatient({patientId: '%s', patientName: '%s'})", patient.ID, patient.Name) }>
-				<div>
-					{ patient.Name } - { patient.Phone }
-				</div>
-			</div>
-		}
+			</template>
+		</div>
 	</div>
 }

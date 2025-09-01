@@ -34,7 +34,7 @@ templ RecordTestTable() {
 			<template x-for="i in number_of_empty_tests" x-key="i">
 				<tr>
 					<td>
-						@RecordTestSelect()
+						@TestAutocomplete()
 					</td>
 					<td style="width: 120px" x-text="test.price"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
