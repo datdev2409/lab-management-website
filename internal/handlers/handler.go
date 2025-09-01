@@ -50,6 +50,23 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Delete("/{id}", Make(h.DeletePatient))
 	})
 
+	// API v1 routes
+	r.Route("/api/v1/patients", func(r chi.Router) {
+		r.Get("/", Make(h.ListPatientsV1))
+		r.Post("/", Make(h.CreatePatientV1))
+		r.Get("/{id}", Make(h.GetPatientV1))
+		r.Put("/{id}", Make(h.UpdatePatientV1))
+		r.Delete("/{id}", Make(h.DeletePatientV1))
+	})
+
+	r.Route("/api/v1/tests", func(r chi.Router) {
+		r.Get("/", Make(h.ListTestsV1))
+		r.Post("/", Make(h.CreateTestV1))
+		r.Get("/{id}", Make(h.GetTestV1))
+		r.Put("/{id}", Make(h.UpdateTestV1))
+		r.Delete("/{id}", Make(h.DeleteTestV1))
+	})
+
 	// Handle tests
 	r.Route("/api/tests", func(r chi.Router) {
 		r.Get("/", Make(h.ListTests))

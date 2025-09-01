@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"log/slog"
 	"math"
@@ -118,5 +119,132 @@ func (h *Handler) DeleteTest(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
+// ListTestsV1 handles GET /api/v1/tests
+func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	keyword := r.URL.Query().Get("test_name")
+	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"tests":      tests,
+		"pagination": pagination,
+	})
+	return nil
+}
+
+// CreateTestV1 handles POST /api/v1/tests
+func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
+	var req struct {
+		Name        string  `json:"name"`
+		Price       int     `json:"price"`
+		NormalValue string  `json:"normal_value"`
+		Unit        string  `json:"unit"`
+		LowerBound  float64 `json:"lower_bound"`
+		UpperBound  float64 `json:"upper_bound"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return nil
+	}
+	test := models.NewTest(
+		req.Name,
+		req.Price,
+		req.NormalValue,
+		req.Unit,
+		math.Round(req.LowerBound*100)/100,
+		math.Round(req.UpperBound*100)/100,
+	)
+	newTest, err := h.Store.InsertTest(r.Context(), test)
+	if err != nil {
+		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create test"})
+		return nil
+	}
+	RespondJSON(w, http.StatusCreated, newTest)
+	return nil
+}
+
+// GetTestV1 handles GET /api/v1/tests/{id}
+func (h *Handler) GetTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	test, err := h.Store.GetTestById(r.Context(), id)
+	if err != nil {
+		RespondJSON(w, http.StatusNotFound, map[string]string{"error": "test not found"})
+		return nil
+	}
+	RespondJSON(w, http.StatusOK, test)
+	return nil
+}
+
+// UpdateTestV1 handles PUT /api/v1/tests/{id}
+func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	var req struct {
+		Name        *string  `json:"name"`
+		Price       *int     `json:"price"`
+		NormalValue *string  `json:"normal_value"`
+		Unit        *string  `json:"unit"`
+		LowerBound  *float64 `json:"lower_bound"`
+		UpperBound  *float64 `json:"upper_bound"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
+		return nil
+	}
+	update := make(map[string]interface{})
+	if req.Name != nil {
+		update["name"] = *req.Name
+	}
+	if req.Price != nil {
+		update["price"] = *req.Price
+	}
+	if req.NormalValue != nil {
+		update["normal_value"] = *req.NormalValue
+	}
+	if req.Unit != nil {
+		update["unit"] = *req.Unit
+	}
+	if req.LowerBound != nil {
+		update["lower_bound"] = *req.LowerBound
+	}
+	if req.UpperBound != nil {
+		update["upper_bound"] = *req.UpperBound
+	}
+	if len(update) == 0 {
+		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "no fields to update"})
+		return nil
+	}
+	if err := h.Store.UpdateTestById(r.Context(), id, update); err != nil {
+		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update test"})
+		return nil
+	}
+	test, err := h.Store.GetTestById(r.Context(), id)
+	if err != nil {
+		RespondJSON(w, http.StatusNotFound, map[string]string{"error": "test not found"})
+		return nil
+	}
+	RespondJSON(w, http.StatusOK, test)
+	return nil
+}
+
+// DeleteTestV1 handles DELETE /api/v1/tests/{id}
+func (h *Handler) DeleteTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if err := h.Store.DeleteTestById(r.Context(), id); err != nil {
+		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to delete test"})
+		return nil
+	}
+	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
 	return nil
 }

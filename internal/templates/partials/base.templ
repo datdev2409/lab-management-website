@@ -3,7 +3,7 @@ package partials
 import "github.com/datdev2409/lab-admin-go/internal/models"
 
 templ Notification(props models.NotificationProps) {
-	if props.Message != "" {
+	if (props.Message != "") {
 		<div id="alert" class="position-absolute bottom-0 end-0 alert alert-{ props.Type } alert-dismissible fade show" role="alert">
 			{ props.Message }
 		</div>
@@ -34,7 +34,6 @@ templ Base() {
 			/>
 			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
-			<script defer src="https://cdn.jsdelivr.net/npm/@imacrayon/alpine-ajax@0.12.2/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			<style>
 				[x-cloak] { display: none !important; }
@@ -77,6 +76,35 @@ templ Base() {
 					console.log(event)
 					alert("Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.")
 				});
+			</script>
+			<script>
+			// Notification handler for query string
+			document.addEventListener("DOMContentLoaded", function() {
+			  const params = new URLSearchParams(window.location.search);
+			  const code = params.get("noti_code");
+			  const type = params.get("noti_type");
+			  let msg = "";
+			  if (code === "patient_create_success" && type === "success") {
+			    msg = "Thêm bệnh nhân thành công";
+			  }
+			  if (msg) {
+			    const alert = document.createElement("div");
+			    alert.className = `alert alert-${type} alert-dismissible fade show`;
+			    alert.innerText = msg;
+			    alert.style.position = "fixed";
+			    alert.style.top = "20px";
+			    alert.style.right = "20px";
+			    alert.style.zIndex = "9999";
+			    alert.style.width = "500px";
+			    document.body.appendChild(alert);
+			    setTimeout(() => alert.remove(), 4000);
+
+			    params.delete("noti_code");
+			    params.delete("noti_type");
+			    const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+			    window.history.replaceState({}, '', newUrl);
+			  }
+			});
 			</script>
 		</body>
 	</html>

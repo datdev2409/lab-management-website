@@ -24,4 +24,19 @@ templ PatientsPage() {
 		@partials.PatientTable(nil)
 		@partials.Pagination(&models.PaginationResponse{}, "patient-page")
 	}
+	<script>
+	document.addEventListener("DOMContentLoaded", function() {
+	  const params = new URLSearchParams(window.location.search);
+	  const code = params.get("noti_code");
+	  const type = params.get("noti_type");
+	  if (code === "patient_create_success" && type === "success") {
+	    const msg = "Thêm bệnh nhân thành công";
+	    const alert = document.createElement("div");
+	    alert.className = "alert alert-success";
+	    alert.innerText = msg;
+	    document.body.prepend(alert); // Or insert in a specific container
+	    setTimeout(() => alert.remove(), 4000);
+	  }
+	});
+	</script>
 }

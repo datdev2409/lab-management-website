@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"strings"
 
@@ -24,18 +23,6 @@ func RenderMultiComponents(ctx context.Context, w http.ResponseWriter, comps []t
 	}
 	_, err := w.Write(strBuffer.Bytes())
 	return err
-}
-
-type HandlerFuncReturnError = func(w http.ResponseWriter, r *http.Request) error
-
-func Make(fn HandlerFuncReturnError) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := fn(w, r); err != nil {
-			slog.Error("error", "error", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte(err.Error()))
-		}
-	}
 }
 
 func HTMXRedirect(w http.ResponseWriter, path string) {

@@ -30,8 +30,7 @@ func (h *Handler) HandleCreatePatient(w http.ResponseWriter, r *http.Request) er
 		return err
 	}
 
-	SetFlashCookie(w, "patient:create:success")
-	HTMXRedirect(w, "/phieu-xet-nghiem")
+	HTMXRedirect(w, "/danh-muc-benh-nhan")
 	return nil
 }
 
@@ -118,5 +117,102 @@ func (h *Handler) DeletePatient(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
+// ListPatientsV1 handles GET /api/v1/patients
+func (h *Handler) ListPatientsV1(w http.ResponseWriter, r *http.Request) error {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+
+	keyword := r.URL.Query().Get("patient_name")
+	patients, pagination, err := h.Store.SearchPatientByNameOrPhone(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	if err != nil {
+		return err
+	}
+
+	RespondJSON(w, http.StatusOK, map[string]interface{}{
+		"patients":   patients,
+		"pagination": pagination,
+	})
+	return nil
+}
+
+// CreatePatientV1 handles POST /api/v1/patients
+func (h *Handler) CreatePatientV1(w http.ResponseWriter, r *http.Request) error {
+	var req struct {
+		Name    string `json:"name"`
+		YOB     string `json:"yob"`
+		Gender  string `json:"gender"`
+		Address string `json:"address"`
+		Phone   string `json:"phone"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return err
+	}
+	patient := models.NewPatient(req.Name, req.YOB, req.Gender, req.Address, req.Phone)
+	newPatient, err := h.Store.InsertPatient(r.Context(), patient)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusCreated, newPatient)
+	return nil
+}
+
+// GetPatientV1 handles GET /api/v1/patients/{id}
+func (h *Handler) GetPatientV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	patient, err := h.Store.GetPatientById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, patient)
+	return nil
+}
+
+// UpdatePatientV1 handles PUT /api/v1/patients/{id}
+func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	var req struct {
+		Name    *string `json:"name"`
+		YOB     *string `json:"yob"`
+		Gender  *string `json:"gender"`
+		Address *string `json:"address"`
+		Phone   *string `json:"phone"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return err
+	}
+	update := models.PatientUpdate{
+		Name:    req.Name,
+		YOB:     req.YOB,
+		Gender:  req.Gender,
+		Address: req.Address,
+		Phone:   req.Phone,
+	}
+	if err := h.Store.UpdatePatientById(r.Context(), id, update); err != nil {
+		return err
+	}
+	patient, err := h.Store.GetPatientById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, patient)
+	return nil
+}
+
+// DeletePatientV1 handles DELETE /api/v1/patients/{id}
+func (h *Handler) DeletePatientV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if err := h.Store.DeletePatientById(r.Context(), id); err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
 	return nil
 }
