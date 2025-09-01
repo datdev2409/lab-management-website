@@ -18,7 +18,13 @@ templ TestRow(test *models.Test, page string) {
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
 				<td style="width: 100px">
 					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID + "/edit") } class="link-primary">Sửa</a>
-					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID) } class="link-danger">Xoá</a>
+					<a
+						hx-delete={ "/api/tests/" + test.ID }
+						hx-target="closest tr"
+						hx-swap="outerHTML"
+						hx-confirm="Bạn có chắc chắn muốn xoá xét nghiệm này?"
+						class="link-danger"
+					>Xoá</a>
 				</td>
 			case "combo-page":
 				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
