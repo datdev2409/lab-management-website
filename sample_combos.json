@@ -1,0 +1,72 @@
+[
+  {
+    "_id": "combo_001",
+    "name": "Tổng quát cơ bản",
+    "test_ids": ["test_001", "test_002", "test_004", "test_005"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_002",
+    "name": "Kiểm tra tim mạch",
+    "test_ids": ["test_003", "test_012", "test_013", "test_014"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_003",
+    "name": "Chức năng gan",
+    "test_ids": ["test_008", "test_015"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_004",
+    "name": "Chức năng thận",
+    "test_ids": ["test_007", "test_015", "test_011"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_005",
+    "name": "Tiểu đường",
+    "test_ids": ["test_002", "test_010"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_006",
+    "name": "Tuyến giáp",
+    "test_ids": ["test_009"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_007",
+    "name": "Xét nghiệm máu toàn diện",
+    "test_ids": ["test_001", "test_004", "test_005", "test_006"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_008",
+    "name": "Kiểm tra sức khỏe định kỳ",
+    "test_ids": ["test_001", "test_002", "test_003", "test_004", "test_008", "test_009"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_009",
+    "name": "Xét nghiệm trước phẫu thuật",
+    "test_ids": ["test_001", "test_004", "test_005", "test_006", "test_007", "test_008"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  },
+  {
+    "_id": "combo_010",
+    "name": "Rối loạn chuyển hóa",
+    "test_ids": ["test_002", "test_003", "test_010", "test_011", "test_012", "test_013", "test_014"],
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z"
+  }
+]

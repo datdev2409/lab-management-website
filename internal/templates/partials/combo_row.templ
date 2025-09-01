@@ -1,0 +1,23 @@
+package partials
+
+import (
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"strconv"
+)
+
+templ ComboRow(combo *models.Combo) {
+	<tr x-data="comboRowData()">
+		<td style="max-width: 130px">{ combo.Name }</td>
+		<td style="width: 700px" id={ "combo-tests" + combo.GetID() }>{ strconv.Itoa(len(combo.TestIDs)) + " xét nghiệm" }</td>
+		<td style="width: 130px">
+			<a class="link-primary me-2" hx-get={ "/api/combos/" + combo.GetID() } hx-target={ "#combo-tests" + combo.GetID() } hx-swap="innerHTML">Chi tiết</a>
+			<a
+				@click={ "deleteCombo('" + combo.GetID() + "', '" + combo.Name + "')" }
+				:class="deleting ? 'link-secondary' : 'link-danger'"
+				class="link-danger"
+				style="cursor: pointer;"
+				x-text="deleting ? 'Đang xóa...' : 'Xóa'"
+			></a>
+		</td>
+	</tr>
+}

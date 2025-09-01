@@ -27,12 +27,12 @@ templ RecordCreateForm(recordId string) {
 					}
 
 					try {
-						const response = await fetch(`/api/records/${recordId}`)
+						const response = await fetch(`/api/v1/records/${recordId}`)
 						if (!response.ok) {
 							throw new Error("Failed to fetch record data")
 						}
 
-						const data = await response.json()
+						const { data } = await response.json()
 
 						this.patient = data.patient
 						this.test_results = data.test_results
@@ -48,12 +48,12 @@ templ RecordCreateForm(recordId string) {
 
 				async selectPatient(patientId) {
 					try {
-						const response = await fetch(`/api/patients/${patientId}`)
+						const response = await fetch(`/api/v1/patients/${patientId}`)
 						if (!response.ok) {
 							throw new Error("Failed to fetch patient data")
 						}
 
-						const data = await response.json()
+						const { data } = await response.json()
 						this.patient = data
 					}
 					catch (error) {
@@ -63,18 +63,22 @@ templ RecordCreateForm(recordId string) {
 
 				async selectCombo(comboId) {
 					try {
-						const response = await fetch(`/api/combos/${comboId}`)
+						const response = await fetch(`/api/v1/combos/${comboId}`)
 						if (!response.ok) {
 							throw new Error("Failed to fetch combo data")
 						}
 
-						const data = await response.json()
+						const { data } = await response.json()
 						this.combo_name = data.combo.name
 						this.test_results = data.tests
 					}
 					catch (error) {
 						console.error("Error fetching combo data:", error)
 					}
+				},
+
+				selectTest(test) {
+					this.test_results.push(test)
 				},
 
 				async addTest(data) {
@@ -149,7 +153,15 @@ templ RecordCreateForm(recordId string) {
 					<tr>
 						<td style="width: 200px">Tên gói xét nghiệm</td>
 						<td>
-							@ComboSelectInput()
+							<div x-show="combo_name == ''">
+								@ComboAutocomplete()
+							</div>
+							<div x-show="combo_name != ''">
+								<div class="d-flex align-items-center justify-content-between">
+									<div x-text="combo_name"></div>
+									<a @click="combo_name='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
+								</div>
+							</div>
 						</td>
 					</tr>
 				</tbody>

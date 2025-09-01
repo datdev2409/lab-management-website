@@ -1,0 +1,55 @@
+package partials
+
+templ PatientCreateForm() {
+	<div x-data="createUserForm()" class="pt-3">
+		<form @submit.prevent="createPatient" id="user_create_form">
+			<div class="alert alert-danger p-2" x-show="error" x-text="error" x-cloak></div>
+			@InputField("Bệnh nhân", "patient_name", "form.name", "", templ.Attributes{"type": "text", "required": "true"})
+			@InputField("Năm sinh", "patient_yob", "form.yob", "", templ.Attributes{"type": "text", "required": "true"})
+			<div class="d-flex align-items-center g-3 mt-2">
+				<label style="min-width: 120px" for="nam_sinh" class="form-label">Giới tính</label>
+				<div class="form-check me-4">
+					<input class="form-check-input" type="radio" name="patient_gender" id="male" value="Nam" x-model="form.gender"/>
+					<label class="form-check-label" for="male">Nam</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="patient_gender" id="female" value="Nữ" x-model="form.gender"/>
+					<label class="form-check-label" for="female">Nữ</label>
+				</div>
+			</div>
+			@InputField("Địa chỉ", "patient_address", "form.address", "", templ.Attributes{"type": "text", "required": "true"})
+			@InputField("Điện thoại", "patient_phone", "form.phone", "", templ.Attributes{"type": "text", "required": "true"})
+			<button type="submit" class="btn btn-primary my-2 text-right float-end" x-bind:disabled="loading">Thêm bệnh nhân</button>
+		</form>
+		<script>
+		function createUserForm() {
+			return {
+				form: { name: '', yob: '', gender: '', address: '', phone: '' },
+				loading: false,
+				error: '',
+				async createPatient() {
+					this.loading = true;
+					this.error = '';
+					try {
+						const res = await fetch('/api/v1/patients', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify(this.form)
+						});
+						this.loading = false;
+						if (res.ok) {
+							window.location.href = '/danh-muc-benh-nhan?noti_code=patient_create_success&noti_type=success';
+						} else {
+							const data = await res.json();
+							this.error = data.error || 'Có lỗi xảy ra';
+						}
+					} catch (e) {
+						this.loading = false;
+						this.error = 'Có lỗi xảy ra';
+					}
+				}
+			}
+		}
+		</script>
+	</div>
+}

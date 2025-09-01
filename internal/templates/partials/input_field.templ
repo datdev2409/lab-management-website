@@ -1,0 +1,15 @@
+package partials
+
+templ InputField(label string, name string, model string, extraClasses string, extraAttrs templ.Attributes) {
+	{{ id := name + "-input" }}
+	<div class="d-flex align-items-center g-3 mb-2">
+		<label style="min-width: 120px" for={ id } class="form-label">{ label }</label>
+		<input
+			id={ id }
+			name={ name }
+			x-model={ model }
+			class={ "form-control " + extraClasses }
+			{ extraAttrs... }
+		/>
+	</div>
+}

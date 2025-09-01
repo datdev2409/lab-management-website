@@ -98,8 +98,6 @@ func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
 
 	target := r.Header.Get("HX-Target")
 	switch target {
-	case "tracking-record-list":
-		return Render(r.Context(), w, partials.TrackingRecordTable(records))
 	default:
 		RenderMultiComponents(r.Context(), w, []templ.Component{
 			partials.RecordTable(records),
@@ -181,4 +179,122 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 	return WriteJSON(w, http.StatusOK, map[string]string{
 		"excel_path": filePath,
 	})
+}
+
+// ListRecordsV1 handles GET /api/v1/records
+func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
+	patientId := r.URL.Query().Get("patient_id")
+	keyword := r.URL.Query().Get("keyword")
+	status := r.URL.Query().Get("status")
+
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 20
+	}
+
+	sortBy := r.URL.Query().Get("sort_by")
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+	sortOrder := r.URL.Query().Get("sort_order")
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	recordsQueryOptions := models.RecordQueryOptions{
+		Keyword:   keyword,
+		Status:    status,
+		PatientID: patientId,
+	}
+
+	genericQueryOptions := models.GenericQueryOptions{
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
+		Page:      page,
+		PageSize:  pageSize,
+	}
+
+	records, pagination, err := h.Store.ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
+	if err != nil {
+		return err
+	}
+
+	RespondJSONWithPagination(w, http.StatusOK, records, pagination)
+	return nil
+}
+
+// CreateRecordV1 handles POST /api/v1/records
+func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
+	var request models.CreateRecordRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return BadRequestError("invalid request body")
+	}
+	if request.PatientID == "" || len(request.TestResults) == 0 {
+		return BadRequestError("patient_id and test_results are required")
+	}
+	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
+	if err != nil {
+		return err
+	}
+	recordTestResults := []models.TestResult{}
+	for _, tr := range request.TestResults {
+		recordTestResults = append(recordTestResults, models.TestResult(tr))
+	}
+	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
+	id, err := h.Store.InsertRecord(r.Context(), &record)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusCreated, map[string]string{"id": id})
+	return nil
+}
+
+// GetRecordV1 handles GET /api/v1/records/{id}
+func (h *Handler) GetRecordV1(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	record, err := h.Store.GetRecordById(r.Context(), recordId)
+	if err != nil {
+		return NotFoundError("record not found")
+	}
+	RespondJSON(w, http.StatusOK, record)
+	return nil
+}
+
+// UpdateRecordV1 handles PUT /api/v1/records/{id}
+func (h *Handler) UpdateRecordV1(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	var request models.UpdateRecordRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		return BadRequestError("invalid request body")
+	}
+	if request.PatientID != "" {
+		patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
+		if err != nil {
+			return err
+		}
+		request.Patient = patient
+	}
+	if err := h.Store.UpdateRecord(r.Context(), recordId, request); err != nil {
+		return err
+	}
+	record, err := h.Store.GetRecordById(r.Context(), recordId)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, record)
+	return nil
+}
+
+// DeleteRecordV1 handles DELETE /api/v1/records/{id}
+func (h *Handler) DeleteRecordV1(w http.ResponseWriter, r *http.Request) error {
+	recordId := chi.URLParam(r, "id")
+	if err := h.Store.DeleteRecord(r.Context(), recordId); err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
+	return nil
 }

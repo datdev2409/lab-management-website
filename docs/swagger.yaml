@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: Lab Admin API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+paths:
+  /patients:
+    get:
+      summary: List patients
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: page_size
+          schema: { type: integer }
+        - in: query
+          name: patient_name
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of patients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patients:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Patient"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+    post:
+      summary: Create a patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatientCreate"
+      responses:
+        "201":
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+  /patients/{id}:
+    get:
+      summary: Get patient by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Patient details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "404":
+          description: Not found
+    put:
+      summary: Update patient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatientUpdate"
+      responses:
+        "200":
+          description: Updated patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "404":
+          description: Not found
+    delete:
+      summary: Delete patient
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        "404":
+          description: Not found
+components:
+  schemas:
+    Patient:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        yob: { type: string }
+        gender: { type: string }
+        address: { type: string }
+        phone: { type: string }
+    PatientCreate:
+      type: object
+      properties:
+        name: { type: string }
+        yob: { type: string }
+        gender: { type: string }
+        address: { type: string }
+        phone: { type: string }
+      required: [name, yob, gender, address, phone]
+    PatientUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        yob: { type: string }
+        gender: { type: string }
+        address: { type: string }
+        phone: { type: string }
+    Pagination:
+      type: object
+      properties:
+        page: { type: integer }
+        page_size: { type: integer }
+        total: { type: integer }

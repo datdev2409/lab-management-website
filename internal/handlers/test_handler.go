@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"log"
+	"encoding/json"
 	"log/slog"
 	"math"
 	"net/http"
@@ -63,28 +63,6 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("test_name")
-	tests, _, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: 1, PageSize: 5})
-	if err != nil {
-		return err
-	}
-
-	log.Println(r.Header.Get("HX-Target"))
-	target := r.Header.Get("HX-Target")
-	switch target {
-	case "test-autocomplete":
-		return nil
-	case "test-table":
-		return Render(r.Context(), w, partials.TestTable(tests, "test-page", false))
-	case "test-search-result-combo-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
-	case "test-search-result-record-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "record-page"))
-	}
-	return nil
-}
-
 func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
 	slog.Debug("Listing tests with keyword", "keyword", keyword)
@@ -103,10 +81,6 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 			partials.TestTable(tests, "test-page", false),
 			partials.Pagination(pagination, "test-page"),
 		})
-	case "test-search-result-combo-page":
-		return Render(r.Context(), w, partials.TestAutocomplete(tests, "combo-page"))
-	case "test-autocomplete":
-		return Render(r.Context(), w, partials.RecordTestAutocomplete(tests))
 	}
 	return nil
 }
@@ -118,5 +92,142 @@ func (h *Handler) DeleteTest(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	w.WriteHeader(http.StatusOK)
+	return nil
+}
+
+// ListTestsV1 handles GET /api/v1/tests
+func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
+	page, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		page = 1
+	}
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		pageSize = 10
+	}
+	keyword := r.URL.Query().Get("q")
+	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	if err != nil {
+		return err
+	}
+	RespondJSONWithPagination(w, http.StatusOK, tests, pagination)
+	return nil
+}
+
+// CreateTestV1 handles POST /api/v1/tests
+func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
+	var req struct {
+		Name        string `json:"name"`
+		Price       string `json:"price"`
+		NormalValue string `json:"normal_value"`
+		Unit        string `json:"unit"`
+		LowerBound  string `json:"lower_bound"`
+		UpperBound  string `json:"upper_bound"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		slog.Debug("Failed to decode request body", "error", err)
+		return BadRequestError("invalid request body")
+	}
+
+	// Parse price
+	price, err := strconv.Atoi(req.Price)
+	if err != nil {
+		return BadRequestError("invalid price value")
+	}
+
+	// Parse lower bound
+	lowerBound, err := strconv.ParseFloat(req.LowerBound, 64)
+	if err != nil {
+		return BadRequestError("invalid lower_bound value")
+	}
+
+	// Parse upper bound
+	upperBound, err := strconv.ParseFloat(req.UpperBound, 64)
+	if err != nil {
+		return BadRequestError("invalid upper_bound value")
+	}
+
+	test := models.NewTest(
+		req.Name,
+		price,
+		req.NormalValue,
+		req.Unit,
+		math.Round(lowerBound*100)/100,
+		math.Round(upperBound*100)/100,
+	)
+	newTest, err := h.Store.InsertTest(r.Context(), test)
+	if err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusCreated, newTest)
+	return nil
+}
+
+// GetTestV1 handles GET /api/v1/tests/{id}
+func (h *Handler) GetTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	test, err := h.Store.GetTestById(r.Context(), id)
+	if err != nil {
+		return NotFoundError("test not found")
+	}
+	RespondJSON(w, http.StatusOK, test)
+	return nil
+}
+
+// UpdateTestV1 handles PUT /api/v1/tests/{id}
+func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	var req struct {
+		Name        *string  `json:"name"`
+		Price       *int     `json:"price"`
+		NormalValue *string  `json:"normal_value"`
+		Unit        *string  `json:"unit"`
+		LowerBound  *float64 `json:"lower_bound"`
+		UpperBound  *float64 `json:"upper_bound"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return BadRequestError("invalid request body")
+	}
+	update := make(map[string]interface{})
+	if req.Name != nil {
+		update["name"] = *req.Name
+	}
+	if req.Price != nil {
+		update["price"] = *req.Price
+	}
+	if req.NormalValue != nil {
+		update["normal_value"] = *req.NormalValue
+	}
+	if req.Unit != nil {
+		update["unit"] = *req.Unit
+	}
+	if req.LowerBound != nil {
+		update["lower_bound"] = *req.LowerBound
+	}
+	if req.UpperBound != nil {
+		update["upper_bound"] = *req.UpperBound
+	}
+	if len(update) == 0 {
+		RespondJSON(w, http.StatusNotModified, map[string]string{"message": "no fields to update"})
+		return nil
+	}
+	if err := h.Store.UpdateTestById(r.Context(), id, update); err != nil {
+		return err
+	}
+	test, err := h.Store.GetTestById(r.Context(), id)
+	if err != nil {
+		return NotFoundError("test not found")
+	}
+	RespondJSON(w, http.StatusOK, test)
+	return nil
+}
+
+// DeleteTestV1 handles DELETE /api/v1/tests/{id}
+func (h *Handler) DeleteTestV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	if err := h.Store.DeleteTestById(r.Context(), id); err != nil {
+		return err
+	}
+	RespondJSON(w, http.StatusNoContent, map[string]string{"result": "deleted"})
 	return nil
 }

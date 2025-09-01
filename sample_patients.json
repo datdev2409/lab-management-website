@@ -1,0 +1,152 @@
+[
+  {
+    "_id": "patient_001",
+    "name": "Nguyễn Văn An",
+    "yob": "1985",
+    "gender": "Nam",
+    "address": "123 Đường Lê Lợi, Quận 1, TP.HCM",
+    "phone": "0901234567",
+    "created_at": "2025-08-15T09:30:00Z",
+    "updated_at": "2025-08-15T09:30:00Z"
+  },
+  {
+    "_id": "patient_002",
+    "name": "Trần Thị Bình",
+    "yob": "1990",
+    "gender": "Nữ",
+    "address": "456 Đường Nguyễn Huệ, Quận 3, TP.HCM",
+    "phone": "0912345678",
+    "created_at": "2025-08-16T10:15:00Z",
+    "updated_at": "2025-08-16T10:15:00Z"
+  },
+  {
+    "_id": "patient_003",
+    "name": "Lê Minh Cường",
+    "yob": "1978",
+    "gender": "Nam",
+    "address": "789 Đường Võ Văn Tần, Quận 5, TP.HCM",
+    "phone": "0923456789",
+    "created_at": "2025-08-17T14:20:00Z",
+    "updated_at": "2025-08-17T14:20:00Z"
+  },
+  {
+    "_id": "patient_004",
+    "name": "Phạm Thị Dung",
+    "yob": "1995",
+    "gender": "Nữ",
+    "address": "321 Đường Trần Hưng Đạo, Quận 7, TP.HCM",
+    "phone": "0934567890",
+    "created_at": "2025-08-18T08:45:00Z",
+    "updated_at": "2025-08-18T08:45:00Z"
+  },
+  {
+    "_id": "patient_005",
+    "name": "Hoàng Văn Em",
+    "yob": "1972",
+    "gender": "Nam",
+    "address": "654 Đường Phan Xích Long, Quận Phú Nhuận, TP.HCM",
+    "phone": "0945678901",
+    "created_at": "2025-08-19T11:30:00Z",
+    "updated_at": "2025-08-19T11:30:00Z"
+  },
+  {
+    "_id": "patient_006",
+    "name": "Vũ Thị Giang",
+    "yob": "1988",
+    "gender": "Nữ",
+    "address": "987 Đường Cách Mạng Tháng 8, Quận 10, TP.HCM",
+    "phone": "0956789012",
+    "created_at": "2025-08-20T16:10:00Z",
+    "updated_at": "2025-08-20T16:10:00Z"
+  },
+  {
+    "_id": "patient_007",
+    "name": "Đỗ Văn Hùng",
+    "yob": "1980",
+    "gender": "Nam",
+    "address": "147 Đường Điện Biên Phủ, Quận Bình Thạnh, TP.HCM",
+    "phone": "0967890123",
+    "created_at": "2025-08-21T13:25:00Z",
+    "updated_at": "2025-08-21T13:25:00Z"
+  },
+  {
+    "_id": "patient_008",
+    "name": "Bùi Thị Lan",
+    "yob": "1993",
+    "gender": "Nữ",
+    "address": "258 Đường Hoàng Văn Thụ, Quận Tân Bình, TP.HCM",
+    "phone": "0978901234",
+    "created_at": "2025-08-22T09:50:00Z",
+    "updated_at": "2025-08-22T09:50:00Z"
+  },
+  {
+    "_id": "patient_009",
+    "name": "Ngô Văn Minh",
+    "yob": "1965",
+    "gender": "Nam",
+    "address": "369 Đường Lý Tự Trọng, Quận 1, TP.HCM",
+    "phone": "0989012345",
+    "created_at": "2025-08-23T15:40:00Z",
+    "updated_at": "2025-08-23T15:40:00Z"
+  },
+  {
+    "_id": "patient_010",
+    "name": "Đinh Thị Nga",
+    "yob": "1987",
+    "gender": "Nữ",
+    "address": "741 Đường Nguyễn Thị Minh Khai, Quận 3, TP.HCM",
+    "phone": "0990123456",
+    "created_at": "2025-08-24T12:15:00Z",
+    "updated_at": "2025-08-24T12:15:00Z"
+  },
+  {
+    "_id": "patient_011",
+    "name": "Cao Văn Phúc",
+    "yob": "1975",
+    "gender": "Nam",
+    "address": "852 Đường Hai Bà Trưng, Quận 1, TP.HCM",
+    "phone": "0901234568",
+    "created_at": "2025-08-25T10:30:00Z",
+    "updated_at": "2025-08-25T10:30:00Z"
+  },
+  {
+    "_id": "patient_012",
+    "name": "Lương Thị Quỳnh",
+    "yob": "1992",
+    "gender": "Nữ",
+    "address": "963 Đường Pasteur, Quận 1, TP.HCM",
+    "phone": "0912345679",
+    "created_at": "2025-08-26T14:45:00Z",
+    "updated_at": "2025-08-26T14:45:00Z"
+  },
+  {
+    "_id": "patient_013",
+    "name": "Trịnh Văn Sơn",
+    "yob": "1982",
+    "gender": "Nam",
+    "address": "174 Đường Nam Kỳ Khởi Nghĩa, Quận 3, TP.HCM",
+    "phone": "0923456780",
+    "created_at": "2025-08-27T08:20:00Z",
+    "updated_at": "2025-08-27T08:20:00Z"
+  },
+  {
+    "_id": "patient_014",
+    "name": "Phan Thị Thủy",
+    "yob": "1996",
+    "gender": "Nữ",
+    "address": "285 Đường Cộng Hòa, Quận Tân Bình, TP.HCM",
+    "phone": "0934567891",
+    "created_at": "2025-08-28T11:55:00Z",
+    "updated_at": "2025-08-28T11:55:00Z"
+  },
+  {
+    "_id": "patient_015",
+    "name": "Huỳnh Văn Tuấn",
+    "yob": "1970",
+    "gender": "Nam",
+    "address": "396 Đường Xô Viết Nghệ Tĩnh, Quận Bình Thạnh, TP.HCM",
+    "phone": "0945678902",
+    "created_at": "2025-08-29T16:35:00Z",
+    "updated_at": "2025-08-29T16:35:00Z"
+  }
+]

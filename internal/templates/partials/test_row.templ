@@ -1,0 +1,47 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"strconv"
+)
+
+templ TestRow(test *models.Test, page string) {
+	<tr>
+		<td>{ test.Name }</td>
+		<td style="width: 180px">{ strconv.Itoa(test.Price) }</td>
+		<td style="width: 200px">{ test.NormalValue }</td>
+		<td style="width: 140px">{ test. Unit }</td>
+		switch page {
+			case "test-page":
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
+				<td style="width: 100px">
+					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID + "/edit") } class="link-primary">Sửa</a>
+					<a
+						hx-delete={ "/api/tests/" + test.ID }
+						hx-target="closest tr"
+						hx-swap="outerHTML"
+						hx-confirm="Bạn có chắc chắn muốn xoá xét nghiệm này?"
+						class="link-danger"
+					>Xoá</a>
+				</td>
+			case "combo-page":
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.LowerBound) }</td>
+				<td style="width: 120px">{ fmt.Sprintf("%.2f", test.UpperBound) }</td>
+				<td style="width: 120px">
+					<button class="btn btn-sm btn-secondary">Thêm xét nghiệm</button>
+				</td>
+			case "record-page":
+				<td contenteditable="true" style="width: 120px">
+					<input/>
+				</td>
+				<td contenteditable="true" style="width: 180px">
+					<input/>
+				</td>
+				<td contenteditable="true" style="width: 30px">
+					<input type="checkbox"/>
+				</td>
+		}
+	</tr>
+}

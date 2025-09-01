@@ -17,14 +17,3 @@ templ TrackingTable(trackings []*models.Tracking) {
 		</tbody>
 	</table>
 }
-
-templ TrackingRow(tracking *models.Tracking) {
-	<tr>
-		<td>{ tracking.Name }</td>
-		<td>
-			for _, test := range tracking.Tests {
-				<span class="badge bg-secondary me-1">{ test.TestName }</span>
-			}
-		</td>
-	</tr>
-}

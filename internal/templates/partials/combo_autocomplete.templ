@@ -1,13 +1,14 @@
 package partials
 
-import "github.com/datdev2409/lab-admin-go/internal/models"
-
-templ ComboAutocomplete(combos []*models.Combo) {
-	<div x-show="open" @click.outside="open=false" id="combo-autocomplete" class="shadow bordered position-absolute autocomplete">
-		for _, combo := range combos {
-			<div class="autocomplete-option" @click={ "selectCombo('" + combo.ID + "')" }>
-				{ combo.Name }
-			</div>
-		}
+templ ComboAutocomplete() {
+	<div x-data="autocomplete('/api/v1/combos')">
+		<input class="form-control" x-model="searchTerm" x-on:input.debounce="search()" autocomplete="off"/>
+		<div x-show="open" @click.outside="open=false" class="shadow bordered position-absolute autocomplete">
+			<template x-for="result in results">
+				<div x-on:click="selectCombo(result.id);reset();searchTerm=result.name" class="autocomplete-option">
+					<span x-text="result.name"></span>
+				</div>
+			</template>
+		</div>
 	</div>
 }
