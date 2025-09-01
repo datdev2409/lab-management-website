@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -15,7 +16,7 @@ func (m *MongoStorage) InsertTest(ctx context.Context, test *models.Test) (strin
 func (m *MongoStorage) ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error) {
 	filters := bson.D{}
 	if filterOpts.Keyword != "" {
-		filters = append(filters, bson.E{Key: "name", Value: bson.D{{Key: "$regex", Value: filterOpts.Keyword}, {Key: "$options", Value: "i"}}})
+		filters = append(filters, bson.E{Key: "name", Value: bson.D{{Key: "$regex", Value: regexp.QuoteMeta(filterOpts.Keyword)}, {Key: "$options", Value: "i"}}})
 	}
 	col := m.getCollection("tests")
 	return MongoList[models.Test](ctx, col, filters, opts)

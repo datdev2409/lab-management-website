@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"log/slog"
 	"math"
 	"net/http"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
+	"github.com/go-chi/chi"
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
@@ -85,6 +87,7 @@ func (h *Handler) SearchTestsByKeyword(w http.ResponseWriter, r *http.Request) e
 
 func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("test_name")
+	slog.Debug("Listing tests with keyword", "keyword", keyword)
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		page = 1
@@ -108,15 +111,12 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-//func (h *Handler) SelectTest(w http.ResponseWriter, r *http.Request) error {
-//	id := chi.URLParam(r, "id")
-//
-//	test, err := h.Store.Tests().GetById(id)
-//	if err != nil {
-//		test = &models.Test{}
-//		return Render(r.Context(), w, pages.TestSearchRow(*test))
-//	}
-//
-//	log.Println(test)
-//	return Render(r.Context(), w, pages.TestSearchRow(*test))
-//}
+func (h *Handler) DeleteTest(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	err := h.Store.DeleteTestById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	return nil
+}

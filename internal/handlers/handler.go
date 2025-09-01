@@ -55,6 +55,7 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/", Make(h.ListTests))
 		r.Get("/search", Make(h.SearchTestsByKeyword))
 		r.Post("/", Make(h.HandleCreateTest))
+		r.Delete("/{id}", Make(h.DeleteTest))
 	})
 
 	r.Route("/api/combos", func(r chi.Router) {
