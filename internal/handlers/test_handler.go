@@ -147,29 +147,47 @@ func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
 // CreateTestV1 handles POST /api/v1/tests
 func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
 	var req struct {
-		Name        string  `json:"name"`
-		Price       int     `json:"price"`
-		NormalValue string  `json:"normal_value"`
-		Unit        string  `json:"unit"`
-		LowerBound  float64 `json:"lower_bound"`
-		UpperBound  float64 `json:"upper_bound"`
+		Name        string `json:"name"`
+		Price       string `json:"price"`
+		NormalValue string `json:"normal_value"`
+		Unit        string `json:"unit"`
+		LowerBound  string `json:"lower_bound"`
+		UpperBound  string `json:"upper_bound"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
-		return nil
+		slog.Debug("Failed to decode request body", "error", err)
+		return BadRequestError("invalid request body")
 	}
+
+	// Parse price
+	price, err := strconv.Atoi(req.Price)
+	if err != nil {
+		return BadRequestError("invalid price value")
+	}
+
+	// Parse lower bound
+	lowerBound, err := strconv.ParseFloat(req.LowerBound, 64)
+	if err != nil {
+		return BadRequestError("invalid lower_bound value")
+	}
+
+	// Parse upper bound
+	upperBound, err := strconv.ParseFloat(req.UpperBound, 64)
+	if err != nil {
+		return BadRequestError("invalid upper_bound value")
+	}
+
 	test := models.NewTest(
 		req.Name,
-		req.Price,
+		price,
 		req.NormalValue,
 		req.Unit,
-		math.Round(req.LowerBound*100)/100,
-		math.Round(req.UpperBound*100)/100,
+		math.Round(lowerBound*100)/100,
+		math.Round(upperBound*100)/100,
 	)
 	newTest, err := h.Store.InsertTest(r.Context(), test)
 	if err != nil {
-		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to create test"})
-		return nil
+		return err
 	}
 	RespondJSON(w, http.StatusCreated, newTest)
 	return nil
@@ -180,8 +198,7 @@ func (h *Handler) GetTestV1(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	test, err := h.Store.GetTestById(r.Context(), id)
 	if err != nil {
-		RespondJSON(w, http.StatusNotFound, map[string]string{"error": "test not found"})
-		return nil
+		return NotFoundError("test not found")
 	}
 	RespondJSON(w, http.StatusOK, test)
 	return nil
@@ -199,8 +216,7 @@ func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
 		UpperBound  *float64 `json:"upper_bound"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid request body"})
-		return nil
+		return BadRequestError("invalid request body")
 	}
 	update := make(map[string]interface{})
 	if req.Name != nil {
@@ -222,17 +238,15 @@ func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
 		update["upper_bound"] = *req.UpperBound
 	}
 	if len(update) == 0 {
-		RespondJSON(w, http.StatusBadRequest, map[string]string{"error": "no fields to update"})
+		RespondJSON(w, http.StatusNotModified, map[string]string{"message": "no fields to update"})
 		return nil
 	}
 	if err := h.Store.UpdateTestById(r.Context(), id, update); err != nil {
-		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to update test"})
-		return nil
+		return err
 	}
 	test, err := h.Store.GetTestById(r.Context(), id)
 	if err != nil {
-		RespondJSON(w, http.StatusNotFound, map[string]string{"error": "test not found"})
-		return nil
+		return NotFoundError("test not found")
 	}
 	RespondJSON(w, http.StatusOK, test)
 	return nil
@@ -242,9 +256,8 @@ func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
 func (h *Handler) DeleteTestV1(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	if err := h.Store.DeleteTestById(r.Context(), id); err != nil {
-		RespondJSON(w, http.StatusInternalServerError, map[string]string{"error": "failed to delete test"})
-		return nil
+		return err
 	}
-	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
+	RespondJSON(w, http.StatusNoContent, map[string]string{"result": "deleted"})
 	return nil
 }

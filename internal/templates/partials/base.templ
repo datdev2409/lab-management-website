@@ -87,6 +87,9 @@ templ Base() {
 			  if (code === "patient_create_success" && type === "success") {
 			    msg = "Thêm bệnh nhân thành công";
 			  }
+			  if (code === "create_test_success" && type === "success") {
+			    msg = "Thêm xét nghiệm thành công";
+			  }
 			  if (msg) {
 			    const alert = document.createElement("div");
 			    alert.className = `alert alert-${type} alert-dismissible fade show`;

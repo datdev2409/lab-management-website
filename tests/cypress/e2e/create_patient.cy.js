@@ -31,6 +31,11 @@ describe('Create patient flow', () => {
 
   it('should edit patient details', () => {
     cy.visit('http://127.0.0.1:7331/danh-muc-benh-nhan');
+    // Search for the patient first
+    cy.get('#patient-search').clear().type('Nguyen Van Test');
+    cy.get('#patient-search-form').submit();
+    cy.contains('Nguyen Van Test').should('exist');
+    
     cy.contains('Nguyen Van Test').parents('tr').within(() => {
       cy.contains('Sửa').click();
       cy.get('input[name="patient_name"]').clear().type('Nguyen Van Updated');
@@ -46,6 +51,11 @@ describe('Create patient flow', () => {
 
   it('should delete patient', () => {
     cy.visit('http://127.0.0.1:7331/danh-muc-benh-nhan');
+    // Search for the updated patient first
+    cy.get('#patient-search').clear().type('Nguyen Van Updated');
+    cy.get('#patient-search-form').submit();
+    cy.contains('Nguyen Van Updated').should('exist');
+    
     cy.contains('Nguyen Van Updated').parents('tr').within(() => {
       cy.contains('Xoá').click();
     });
