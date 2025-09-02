@@ -101,12 +101,6 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Delete("/{id}", Make(h.DeleteTest))
 	})
 
-	r.Route("/api/combos", func(r chi.Router) {
-		r.Post("/", Make(h.CreateCombo))
-		r.Get("/", Make(h.ListCombos))
-		r.Get("/{id}", Make(h.GetComboDetails))
-	})
-
 	r.Route("/api/records", func(r chi.Router) {
 		r.Post("/", Make(h.CreateRecord))
 		r.Get("/{id}", Make(h.GetRecord))

@@ -2,16 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
-	"log"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
 )
 
@@ -26,72 +21,6 @@ func (h *Handler) HandleComboCreatePage(w http.ResponseWriter, r *http.Request) 
 func (h *Handler) HandleComboEditPage(w http.ResponseWriter, r *http.Request) error {
 	comboId := chi.URLParam(r, "id")
 	return Render(r.Context(), w, pages.ComboCreatePage(comboId))
-}
-
-func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
-	if r.FormValue("test_ids") == "" {
-		return errors.New("test_ids is required")
-	}
-	testIds := strings.Split(r.FormValue("test_ids"), ",")
-	combo := models.NewCombo(r.FormValue("combo_name"), testIds)
-	_, err := h.Store.InsertCombo(r.Context(), combo)
-	if err != nil {
-		return err
-	}
-
-	HTMXRedirect(w, "/danh-muc-goi-xet-nghiem")
-	return nil
-}
-
-func (h *Handler) ListCombos(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("combo_name")
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		pageSize = 10
-	}
-	combos, pagination, err := h.Store.ListCombos(r.Context(), models.ComboQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
-	if err != nil {
-		return err
-	}
-
-	return RenderMultiComponents(r.Context(), w, []templ.Component{
-		partials.ComboTable(combos),
-		partials.Pagination(pagination, "combo-page"),
-	})
-}
-
-func (h *Handler) GetComboDetails(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
-	combo, tests, err := h.Store.GetTestsInCombo(r.Context(), id)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-
-	target := r.Header.Get("HX-Target")
-
-	if strings.HasPrefix(target, "combo-tests") {
-		test_names := []string{}
-		for _, test := range tests {
-			test_names = append(test_names, test.Name)
-		}
-		w.Write([]byte(strings.Join(test_names, ", ")))
-		return nil
-	}
-
-	response := models.ComboDetailsResponse{
-		Combo: combo,
-		Tests: tests,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
-	return nil
 }
 
 // ListCombosV1 handles GET /api/v1/combos
