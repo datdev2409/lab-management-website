@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/xuri/excelize/v2"
 )
 
 func CreateRecordBillingFile(record *models.Record) (string, error) {
@@ -67,6 +68,20 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	f.SetCellValue("Sheet1", "E3", record.Patient.YOB)
 	f.SetCellValue("Sheet1", "E4", record.Patient.Gender)
 
+	// Create style for abnormal results (bold + underline + center)
+	abnormalStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true,
+		},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	startTestRow := 8
 	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
@@ -84,7 +99,14 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
 
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), testFieldValue)
+		resultCell := fmt.Sprintf("D%d", row)
+		f.SetCellValue("Sheet1", resultCell, testFieldValue)
+
+		// Apply bold and underline style if result is abnormal
+		// Manual override has higher priority than automatic detection
+		if testResult.Abnormal {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
 
@@ -113,6 +135,21 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
 
+	// Create style for abnormal results (bold + underline + center)
+	abnormalStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold:      true,
+			Underline: "single",
+		},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	startTestRow := 15
 	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
@@ -130,7 +167,14 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
 
-		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), testFieldValue)
+		resultCell := fmt.Sprintf("D%d", row)
+		f.SetCellValue("Sheet1", resultCell, testFieldValue)
+
+		// Apply bold and underline style if result is abnormal
+		// Manual override has higher priority than automatic detection
+		if testResult.Abnormal {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
 
@@ -186,6 +230,21 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 	if err != nil {
 		return "", err
 	}
+
+	// Create style for abnormal results (bold + underline + center)
+	abnormalStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true,
+		},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	tableCellStyle, _ := f.GetCellStyle("Sheet1", "A7")
 	for j, record := range records {
 		col := string(startRecordCol + rune(j))
@@ -200,6 +259,12 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 			row := rowMap[testResult.Name]
 			cell := fmt.Sprintf("%s%d", col, row)
 			f.SetCellValue("Sheet1", cell, testResult.Result)
+
+			// Apply bold and underline style if result is abnormal
+			// Manual override has higher priority than automatic detection
+			if testResult.Abnormal {
+				f.SetCellStyle("Sheet1", cell, cell, abnormalStyle)
+			}
 		}
 
 		if len(testMap) > 0 {
