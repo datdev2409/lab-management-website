@@ -1,43 +1,52 @@
 package partials
 
-import "strings"
-
-type NavItem struct {
-	Title string
-	Href  string
-}
-
-func isActive(currentPath, href string) bool {
-	return strings.HasPrefix(currentPath, href)
-}
-
-var routers = []NavItem{
-	{Title: "Phiếu xét nghiệm", Href: "/phieu-xet-nghiem"},
-	{Title: "Sổ theo dõi kết quả", Href: "/so-sanh-ket-qua"},
-	{Title: "hr", Href: ""},
-	{Title: "Danh mục bệnh nhân", Href: "/danh-muc-benh-nhan"},
-	{Title: "Danh mục bác sĩ", Href: "/danh-muc-bac-si"},
-	{Title: "Danh mục xét nghiệm", Href: "/danh-muc-xet-nghiem"},
-	{Title: "Danh mục gói xét nghiệm", Href: "/danh-muc-goi-xet-nghiem"},
-	{Title: "Danh mục so sánh", Href: "/danh-muc-so-sanh"},
-}
-
-templ Sidebar(currentPath string) {
-	<nav class="navbar bg-body-tertiary border-end border-body flex-column align-items-start justify-content-start p-3" style="height: 100vh;">
+templ Sidebar() {
+	<nav
+		x-data="sidebar()"
+		class="navbar bg-body-tertiary border-end border-body flex-column align-items-start justify-content-start p-3"
+		style="height: 100vh;"
+	>
 		<h3 class="ps-2">Anh Quan Lab</h3>
 		<hr class="w-100"/>
-		<ul class="navbar-nav">
-			for _, item := range routers {
-				if item.Title == "hr" {
-					<hr class="w-100"/>
-				} else {
-					<li class="nav-item">
-						<a class={ "nav-link", templ.KV("active", isActive(currentPath, item.Href)) } href={ templ.SafeURL(item.Href) }>
-							<span class="ms-2">{ item.Title }</span>
+		<ul class="navbar-nav w-100">
+			<template x-for="(item, index) in menuItems" :key="item.href || 'divider-' + index">
+				<div>
+					<hr x-show="item.type === 'divider'" class="w-100 my-2"/>
+					<li x-show="item.type === 'link'" class="nav-item w-100">
+						<a
+							:href="item.href"
+							:class="isActive(item.href) ? 'nav-link active bg-primary text-white rounded' : 'nav-link text-dark'"
+						>
+							<span class="ms-2" x-text="item.title"></span>
 						</a>
 					</li>
-				}
-			}
+				</div>
+			</template>
 		</ul>
 	</nav>
+	<script>
+		document.addEventListener('alpine:init', () => {
+			Alpine.data('sidebar', () => ({
+				currentPath: '',
+				menuItems: [
+					{ type: 'link', title: 'Phiếu xét nghiệm', href: '/phieu-xet-nghiem' },
+					{ type: 'link', title: 'Sổ theo dõi kết quả', href: '/so-sanh-ket-qua' },
+					{ type: 'divider' },
+					{ type: 'link', title: 'Bệnh nhân', href: '/danh-muc-benh-nhan' },
+					{ type: 'link', title: 'Xét nghiệm', href: '/danh-muc-xet-nghiem' },
+					{ type: 'link', title: 'Gói xét nghiệm', href: '/danh-muc-goi-xet-nghiem' },
+					{ type: 'link', title: 'So sánh', href: '/danh-muc-so-sanh' }
+				],
+				
+				init() {
+					// Get current path from browser for highlighting
+					this.currentPath = window.location.pathname;
+				},
+				
+				isActive(href) {
+					return this.currentPath.startsWith(href) && href !== '';
+				},
+			}));
+		});
+	</script>
 }
