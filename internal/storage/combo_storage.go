@@ -49,3 +49,17 @@ func (m *MongoStorage) GetTestsInCombo(ctx context.Context, comboId string) (*mo
 	}
 	return combo, tests, nil
 }
+
+func (m *MongoStorage) GetTestsByComboId(ctx context.Context, comboId string) ([]*models.Test, error) {
+	combo, err := m.GetComboById(ctx, comboId)
+	if err != nil {
+		return nil, err
+	}
+	col := m.getCollection("tests")
+	tests, err := MongoGetByIdsOrdered[models.Test](ctx, col, combo.TestIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return tests, nil
+}

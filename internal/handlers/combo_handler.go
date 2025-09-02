@@ -132,11 +132,22 @@ func (h *Handler) CreateComboV1(w http.ResponseWriter, r *http.Request) error {
 // GetComboV1 handles GET /api/v1/combos/{id}
 func (h *Handler) GetComboV1(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	combo, tests, err := h.Store.GetTestsInCombo(r.Context(), id)
+	combo, err := h.Store.GetComboById(r.Context(), id)
 	if err != nil {
 		return NotFoundError("combo not found")
 	}
-	RespondJSON(w, http.StatusOK, models.ComboDetailsResponse{Combo: combo, Tests: tests})
+	RespondJSON(w, http.StatusOK, combo)
+	return nil
+}
+
+// GetComboTestsV1 handles GET /api/v1/combos/{id}/tests
+func (h *Handler) GetComboTestsV1(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	tests, err := h.Store.GetTestsByComboId(r.Context(), id)
+	if err != nil {
+		return NotFoundError("combo not found")
+	}
+	RespondJSON(w, http.StatusOK, tests)
 	return nil
 }
 

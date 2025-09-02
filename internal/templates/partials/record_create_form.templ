@@ -61,16 +61,18 @@ templ RecordCreateForm(recordId string) {
 					}
 				},
 
-				async selectCombo(comboId) {
+				async selectCombo(combo) {
 					try {
-						const response = await fetch(`/api/v1/combos/${comboId}`)
-						if (!response.ok) {
-							throw new Error("Failed to fetch combo data")
+						console.log(combo)
+						// Fetch tests in combo (with preserved order)
+						const testsResponse = await fetch(`/api/v1/combos/${combo.id}/tests`)
+						if (!testsResponse.ok) {
+							throw new Error("Failed to fetch combo tests")
 						}
+						const { data: tests } = await testsResponse.json()
 
-						const { data } = await response.json()
-						this.combo_name = data.combo.name
-						this.test_results = data.tests
+						this.combo_name = combo.name
+						this.test_results = tests
 					}
 					catch (error) {
 						console.error("Error fetching combo data:", error)

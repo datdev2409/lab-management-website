@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"math"
+	"sort"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -50,6 +51,29 @@ func MongoGetByIds[T interface{}](ctx context.Context, col *mongo.Collection, id
 	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
+
+	return results, nil
+}
+
+type IDGetter interface {
+	GetID() string
+}
+
+func MongoGetByIdsOrdered[T IDGetter](ctx context.Context, col *mongo.Collection, ids []string) ([]*T, error) {
+	results, err := MongoGetByIds[T](ctx, col, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	idOrderMap := make(map[string]int)
+	for i, id := range ids {
+		idOrderMap[id] = i
+	}
+
+	// Sort results based on the order of IDs
+	sort.Slice(results, func(i, j int) bool {
+		return idOrderMap[(*results[i]).GetID()] < idOrderMap[(*results[j]).GetID()]
+	})
 
 	return results, nil
 }

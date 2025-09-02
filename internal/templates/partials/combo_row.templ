@@ -8,11 +8,11 @@ import (
 templ ComboRow(combo *models.Combo) {
 	<tr x-data="comboRowData()">
 		<td style="max-width: 130px">{ combo.Name }</td>
-		<td style="width: 700px" id={ "combo-tests" + combo.GetID() }>{ strconv.Itoa(len(combo.TestIDs)) + " xét nghiệm" }</td>
+		<td style="width: 700px" id={ "combo-tests" + combo.ID }>{ strconv.Itoa(len(combo.TestIDs)) + " xét nghiệm" }</td>
 		<td style="width: 130px">
-			<a class="link-primary me-2" hx-get={ "/api/combos/" + combo.GetID() } hx-target={ "#combo-tests" + combo.GetID() } hx-swap="innerHTML">Chi tiết</a>
+			<a class="link-primary me-2" hx-get={ "/api/combos/" + combo.ID } hx-target={ "#combo-tests" + combo.ID } hx-swap="innerHTML">Chi tiết</a>
 			<a
-				@click={ "deleteCombo('" + combo.GetID() + "', '" + combo.Name + "')" }
+				@click={ "deleteCombo('" + combo.ID + "', '" + combo.Name + "')" }
 				:class="deleting ? 'link-secondary' : 'link-danger'"
 				class="link-danger"
 				style="cursor: pointer;"

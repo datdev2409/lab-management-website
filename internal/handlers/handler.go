@@ -71,6 +71,7 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/", Make(h.ListCombosV1))
 		r.Post("/", Make(h.CreateComboV1))
 		r.Get("/{id}", Make(h.GetComboV1))
+		r.Get("/{id}/tests", Make(h.GetComboTestsV1))
 		r.Put("/{id}", Make(h.UpdateComboV1))
 		r.Delete("/{id}", Make(h.DeleteComboV1))
 	})

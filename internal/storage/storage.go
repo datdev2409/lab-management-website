@@ -27,6 +27,7 @@ type Storage interface {
 	UpdateComboById(ctx context.Context, id string, update map[string]interface{}) error
 	DeleteComboById(ctx context.Context, id string) error
 	GetTestsInCombo(ctx context.Context, comboId string) (*models.Combo, []*models.Test, error)
+	GetTestsByComboId(ctx context.Context, comboId string) ([]*models.Test, error)
 	// Record
 	InsertRecord(ctx context.Context, record *models.Record) (string, error)
 	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
