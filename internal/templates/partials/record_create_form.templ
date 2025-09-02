@@ -103,12 +103,40 @@ templ RecordCreateForm(recordId string) {
 				},
 
 				selectTest(test) {
+					// Check if test with the same ID already exists
+					const existingTest = this.test_results.find(t => t.id === test.id)
+					if (existingTest) {
+						// Show notification that test already exists
+						if (typeof showNotification === 'function') {
+							showCustomNotification('Xét nghiệm "' + test.name + '" đã có trong danh sách', 'warning')
+						} else {
+							alert('Xét nghiệm "' + test.name + '" đã có trong danh sách')
+						}
+						return
+					}
+					
+					// Initialize abnormal status and manual override flag
+					test.abnormal = false
+					test.manual_abnormal_override = false
+					
 					this.test_results.push(test)
 				},
 
 				async addTest(data) {
 					if (typeof data === 'string') {
 						data = JSON.parse(data)
+					}
+					
+					// Check if test with the same ID already exists
+					const existingTest = this.test_results.find(t => t.id === data.id)
+					if (existingTest) {
+						// Show notification that test already exists
+						if (typeof showNotification === 'function') {
+							showNotification('Xét nghiệm "' + data.name + '" đã có trong danh sách', 'warning')
+						} else {
+							alert('Xét nghiệm "' + data.name + '" đã có trong danh sách')
+						}
+						return
 					}
 					
 					// Initialize abnormal status and manual override flag
