@@ -108,7 +108,6 @@ func NewHandler(store storage.Storage) *Handler {
 
 	r.Route("/api/records", func(r chi.Router) {
 		r.Post("/", Make(h.CreateRecord))
-		r.Get("/", Make(h.ListRecords))
 		r.Get("/{id}", Make(h.GetRecord))
 		r.Patch("/{id}", Make(h.UpdateRecord))
 	})

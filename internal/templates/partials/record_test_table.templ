@@ -4,7 +4,6 @@ templ RecordTestTable() {
 	<table id="record-test-table" class="table table-bordered mb-0">
 		<thead class="position-sticky top-0">
 			<tr>
-				<th scope="col"></th>
 				<th scope="col">Tên xét nghiệm</th>
 				<th style="width: 120px" scope="col">Đơn giá</th>
 				<th style="width: 200px" scope="col">GT bình thường</th>
@@ -14,10 +13,9 @@ templ RecordTestTable() {
 				<th style="width: 30px" scope="col">Bất thường</th>
 			</tr>
 		</thead>
-		<tbody x-sort>
+		<tbody>
 			<template x-for="test in test_results" x-key="test.id">
 				<tr>
-					<td x-sort:item>-</td>
 					<td x-text="test.name"></td>
 					<td style="width: 120px" x-text="test.price"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
@@ -35,7 +33,6 @@ templ RecordTestTable() {
 			</template>
 			<template x-for="i in number_of_empty_tests" x-key="i">
 				<tr>
-					<td></td>
 					<td>
 						@TestAutocomplete()
 					</td>

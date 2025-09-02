@@ -45,8 +45,6 @@ templ Pagination(pagination *models.PaginationResponse, page string) {
 								<a class="page-link" hx-get={ "/api/tests?page=" + strconv.Itoa(i) } hx-include="#test-search-form" hx-target="#test-table">{ strconv.Itoa(i) }</a>
 							case "combo-page":
 								<a class="page-link" hx-get={ "/api/combos?page=" + strconv.Itoa(i) } hx-include="#combo-search-form" hx-target="#combo-table-wrapper">{ strconv.Itoa(i) }</a>
-							case "record-page":
-								<a class="page-link" hx-get={ "/api/records?page=" + strconv.Itoa(i) } hx-include="#record-search-form" hx-target="#record-table-wrapper">{ strconv.Itoa(i) }</a>
 							case "tracking-page":
 								<a class="page-link" hx-get={ "/api/tracking?page=" + strconv.Itoa(i) } hx-include="#tracking-search-form" hx-target="#tracking-list">{ strconv.Itoa(i) }</a>
 						}
