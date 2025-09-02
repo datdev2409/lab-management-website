@@ -29,7 +29,20 @@ func (m *MongoStorage) GetComboById(ctx context.Context, id string) (*models.Com
 
 func (m *MongoStorage) UpdateComboById(ctx context.Context, id string, update map[string]interface{}) error {
 	col := m.getCollection("combos")
-	return MongoUpdateById[models.Combo](ctx, col, id, bson.M{"$set": update})
+	updateDoc := bson.M{}
+	for k, v := range update {
+		updateDoc[k] = v
+	}
+	return MongoUpdateById[models.Combo](ctx, col, id, bson.M{"$set": updateDoc})
+}
+
+func (m *MongoStorage) UpdateComboByIdAndReturn(ctx context.Context, id string, update map[string]interface{}) (*models.Combo, error) {
+	col := m.getCollection("combos")
+	updateDoc := bson.M{}
+	for k, v := range update {
+		updateDoc[k] = v
+	}
+	return MongoUpdateByIdAndReturn[models.Combo](ctx, col, id, bson.M{"$set": updateDoc})
 }
 
 func (m *MongoStorage) DeleteComboById(ctx context.Context, id string) error {

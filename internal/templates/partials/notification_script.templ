@@ -1,0 +1,96 @@
+package partials
+
+templ NotificationScript() {
+	<script>
+    function createNotificationElement(message, type) {
+      const alert = document.createElement("div");
+			  alert.className = `alert alert-${type} alert-dismissible fade show`;
+			  alert.innerHTML = `
+			    ${message}
+			    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+			  `;
+			  alert.style.position = "fixed";
+			  alert.style.top = "20px";
+			  alert.style.right = "20px";
+			  alert.style.zIndex = "9999";
+			  alert.style.width = "500px";
+			  document.body.appendChild(alert);
+			  
+			  // Auto-remove after 4 seconds
+			  setTimeout(() => {
+			    if (alert.parentNode) {
+			      alert.remove();
+			    }
+			  }, 4000);
+    }
+
+    function generateNotificationByCode(code) {
+      const parts = code.split('_');
+      if (parts.length !== 3) return null;
+      
+      const [entity, action, result] = parts;
+      
+      // Entity translations
+      const entityMap = {
+        'patient': 'bệnh nhân',
+        'combo': 'gói xét nghiệm',
+        'test': 'xét nghiệm',
+        'record': 'phiếu xét nghiệm',
+        'tracking': 'theo dõi'
+      };
+      
+      // Action translations
+      const actionMap = {
+        'create': 'Thêm',
+        'update': 'Cập nhật',
+        'delete': 'Xóa'
+      };
+      
+      // Result translations
+      const resultMap = {
+        'success': 'thành công',
+        'error': 'thất bại'
+      };
+      
+      const entityText = entityMap[entity];
+      const actionText = actionMap[action];
+      const resultText = resultMap[result];
+      
+      if (!entityText || !actionText || !resultText) {
+        return null;
+      }
+      
+      const message = `${actionText} ${entityText} ${resultText}`;
+      const alertType = result === 'success' ? 'success' : 'danger';
+
+      return { message, type: alertType }
+    }
+
+    // Listener
+    document.addEventListener("DOMContentLoaded", function() {
+			  const params = new URLSearchParams(window.location.search);
+			  const code = params.get("noti_code");
+			  
+			  if (code) {
+          const {message, type} = generateNotificationByCode(code);
+          createNotificationElement(message, type);
+			    params.delete("noti_code");
+			    const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
+			    window.history.replaceState({}, '', newUrl);
+			  }
+    });
+    
+    document.addEventListener('show-notification', function(event) {
+      const { code, message, type } = event.detail;
+
+      if (code) {
+        const notification = generateNotificationByCode(code);
+        if (notification) {
+          createNotificationElement(notification.message, notification.type);
+        }
+      } else if (message && type) {
+        createNotificationElement(message, type);
+      }
+    });
+		</script>
+}

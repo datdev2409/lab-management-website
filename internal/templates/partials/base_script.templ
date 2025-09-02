@@ -8,6 +8,20 @@ templ BaseScript() {
     window.location.href = url.toString();
   }
 
+  // New function to show notification without page reload
+  function showNotification(code) {
+    document.dispatchEvent(new CustomEvent('show-notification', {
+      detail: { code }
+    }));
+  }
+
+  // Function to show custom notification with message and type
+  function showCustomNotification(message, type = 'success') {
+    document.dispatchEvent(new CustomEvent('show-notification', {
+      detail: { message, type }
+    }));
+  }
+
   function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);

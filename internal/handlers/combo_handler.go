@@ -20,7 +20,12 @@ func (h *Handler) HandleComboPage(w http.ResponseWriter, r *http.Request) error 
 }
 
 func (h *Handler) HandleComboCreatePage(w http.ResponseWriter, r *http.Request) error {
-	return Render(r.Context(), w, pages.ComboCreatePage())
+	return Render(r.Context(), w, pages.ComboCreatePage(""))
+}
+
+func (h *Handler) HandleComboEditPage(w http.ResponseWriter, r *http.Request) error {
+	comboId := chi.URLParam(r, "id")
+	return Render(r.Context(), w, pages.ComboCreatePage(comboId))
 }
 
 func (h *Handler) CreateCombo(w http.ResponseWriter, r *http.Request) error {
@@ -172,14 +177,11 @@ func (h *Handler) UpdateComboV1(w http.ResponseWriter, r *http.Request) error {
 		RespondJSON(w, http.StatusNotModified, map[string]string{"message": "no fields to update"})
 		return nil
 	}
-	if err := h.Store.UpdateComboById(r.Context(), id, update); err != nil {
+	combo, err := h.Store.UpdateComboByIdAndReturn(r.Context(), id, update)
+	if err != nil {
 		return err
 	}
-	combo, tests, err := h.Store.GetTestsInCombo(r.Context(), id)
-	if err != nil {
-		return NotFoundError("combo not found")
-	}
-	RespondJSON(w, http.StatusOK, models.ComboDetailsResponse{Combo: combo, Tests: tests})
+	RespondJSON(w, http.StatusOK, combo)
 	return nil
 }
 

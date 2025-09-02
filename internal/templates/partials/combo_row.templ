@@ -11,6 +11,7 @@ templ ComboRow(combo *models.Combo) {
 		<td style="width: 700px" id={ "combo-tests" + combo.ID }>{ strconv.Itoa(len(combo.TestIDs)) + " xét nghiệm" }</td>
 		<td style="width: 130px">
 			<a class="link-primary me-2" hx-get={ "/api/combos/" + combo.ID } hx-target={ "#combo-tests" + combo.ID } hx-swap="innerHTML">Chi tiết</a>
+			<a href={ templ.SafeURL("/danh-muc-goi-xet-nghiem/" + combo.ID + "/edit") } class="link-success me-2">Sửa</a>
 			<a
 				@click={ "deleteCombo('" + combo.ID + "', '" + combo.Name + "')" }
 				:class="deleting ? 'link-secondary' : 'link-danger'"

@@ -9,6 +9,7 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func (m *MongoStorage) getCollection(collectionName string) *mongo.Collection {
@@ -125,6 +126,39 @@ func MongoUpdateById[T interface{}](ctx context.Context, col *mongo.Collection, 
 
 	_, err := col.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": setDocMap})
 	return err
+}
+
+func MongoUpdateByIdAndReturn[T interface{}](ctx context.Context, col *mongo.Collection, id string, update interface{}) (*T, error) {
+	updateDoc, ok := update.(bson.M)
+	if !ok {
+		return nil, errors.New("update must be a bson.M type")
+	}
+
+	setDoc, ok := updateDoc["$set"]
+	if !ok {
+		return nil, errors.New("$set operator is required in update")
+	}
+
+	setDocMap, ok := setDoc.(bson.M)
+	if !ok {
+		return nil, errors.New("$set must be a bson.M type")
+	}
+
+	setDocMap["updated_at"] = GetCurrentTime()
+
+	var result T
+	err := col.FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": setDocMap},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func MongoDeleteById[T interface{}](ctx context.Context, col *mongo.Collection, id string) error {
