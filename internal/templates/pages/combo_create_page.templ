@@ -2,13 +2,19 @@ package pages
 
 import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
-templ ComboCreatePage() {
+templ ComboCreatePage(comboId string) {
 	@partials.Base() {
 		<div class="d-flex align-items-center justify-content-between">
-			<h3 class="pt-3">Tạo gói xét nghiệm mới</h3>
+			<h3 class="pt-3">
+				if comboId != "" {
+					Chỉnh sửa gói xét nghiệm
+				} else {
+					Tạo gói xét nghiệm mới
+				}
+			</h3>
 		</div>
 		<div class="my-3">
-			@partials.ComboCreateForm()
+			@partials.ComboCreateForm(comboId)
 		</div>
 	}
 }

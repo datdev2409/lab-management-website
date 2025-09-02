@@ -36,6 +36,7 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
 		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
+		r.Get("/danh-muc-goi-xet-nghiem/{id}/edit", Make(h.HandleComboEditPage))
 		r.Get("/so-sanh-ket-qua", Make(h.HandleTrackingPage))
 		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingListPage))
 		r.Get("/danh-muc-so-sanh/new", Make(h.HandleCreateTrackingListPage))
@@ -71,6 +72,7 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/", Make(h.ListCombosV1))
 		r.Post("/", Make(h.CreateComboV1))
 		r.Get("/{id}", Make(h.GetComboV1))
+		r.Get("/{id}/tests", Make(h.GetComboTestsV1))
 		r.Put("/{id}", Make(h.UpdateComboV1))
 		r.Delete("/{id}", Make(h.DeleteComboV1))
 	})
@@ -99,15 +101,8 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Delete("/{id}", Make(h.DeleteTest))
 	})
 
-	r.Route("/api/combos", func(r chi.Router) {
-		r.Post("/", Make(h.CreateCombo))
-		r.Get("/", Make(h.ListCombos))
-		r.Get("/{id}", Make(h.GetComboDetails))
-	})
-
 	r.Route("/api/records", func(r chi.Router) {
 		r.Post("/", Make(h.CreateRecord))
-		r.Get("/", Make(h.ListRecords))
 		r.Get("/{id}", Make(h.GetRecord))
 		r.Patch("/{id}", Make(h.UpdateRecord))
 	})

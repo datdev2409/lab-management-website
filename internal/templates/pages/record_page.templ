@@ -1,9 +1,6 @@
 package pages
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-)
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
 templ RecordPage() {
 	@partials.Base() {
@@ -11,45 +8,51 @@ templ RecordPage() {
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
 		</div>
-		<div class="mb-3 mt-3">
-			<form class="row" hx-get="/api/records" hx-target="#record-list" hx-trigger="load, submit">
+		<div x-data="table('/api/v1/records', { pageSize: 10 })" class="mb-3 mt-3">
+			<div x-show="error" class="alert alert-danger" x-text="error" x-cloak></div>
+			<div class="row mb-3">
 				<div class="col-md-auto" style="width: 400px;">
-					<input placeholder="Tên hoặc số điện thoại" class="form-control" name="keyword"/>
-				</div>
-				<div class="col-md-auto">
-					<select class="form-select" aria-label="Trạng thái" name="status">
-						<option selected value="">Tất cả trạng thái</option>
-						<option value="new">Mới</option>
-						<option value="2">Đã thanh toán</option>
-						<option value="3">Đã xuất kết quả</option>
-						<option value="4">Đã nhận kết quả</option>
-					</select>
+					<input
+						type="text"
+						class="form-control"
+						placeholder="Tên bệnh nhân hoặc số điện thoại"
+						x-model="searchQuery"
+						@input.debounce.300ms="search()"
+					/>
 				</div>
 				<div class="col-md-auto">
 					<button type="submit" class="btn btn-primary">Tìm kiếm</button>
 				</div>
-			</form>
-		</div>
-		<div id="record-list">
-			@partials.RecordTable([]*models.Record{})
-		</div>
-		@partials.Pagination(&models.PaginationResponse{}, "record-page")
-	}
-}
-
-templ RecordList(records []models.Record) {
-	for _, record := range records {
-		<div class="card" style="width: 18rem;">
-			<div class="card-header">
-				<span class="badge text-bg-secondary">{ record.Status }</span>
-				{ record.ComboName }
 			</div>
-			<div class="card-body">
-				<h5 class="card-title">{ record.Patient.Name }</h5>
-				<h6 class="card-subtitle mb-2 text-body-secondary">{ record.Patient.Phone }</h6>
-				<a href={ templ.SafeURL("/phieu-xet-nghiem/" + record.ID) } class="card-link">Chỉnh sửa</a>
-				<a href="#" class="card-link">Đã thanh toán</a>
-			</div>
+			<table x-show="!isLoading" class="table table-bordered">
+				<thead>
+					<tr>
+						<th>Tên bệnh nhân</th>
+						<th>Số điện thoại</th>
+						<th>Tên gói xét nghiệm</th>
+						<th>Trạng thái</th>
+						<th>Ngày tạo</th>
+						<th>Ngày cập nhật</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<template x-for="record in data" :key="record.id">
+						<tr :id="'record-' + record.id">
+							<td x-text="record.patient.name"></td>
+							<td x-text="record.patient.phone"></td>
+							<td x-text="record.combo_name"></td>
+							<td x-text="record.status"></td>
+							<td x-text="formatDate(record.created_at)"></td>
+							<td x-text="formatDate(record.updated_at)"></td>
+							<td>
+								<a :href="'/phieu-xet-nghiem/' + record.id" class="link-primary">Xem</a>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+			@partials.AlpinePagination()
 		</div>
 	}
 }

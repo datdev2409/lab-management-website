@@ -13,7 +13,6 @@ templ Base() {
 				crossorigin="anonymous"
 			/>
 			<script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-			<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.x.x/dist/cdn.min.js"></script>
 			<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 			<style>
 				[x-cloak] { display: none !important; }
@@ -42,7 +41,7 @@ templ Base() {
 			<div class="container-fluid" style="min-height: 100vh;">
 				<div class="row">
 					<div class="col-2 px-0 position-fixed top-0 left-0 bottom-0">
-						@Sidebar("/")
+						@Sidebar()
 					</div>
 					<div class="col-2"></div>
 					<div class="col-10 position-relative">
@@ -57,77 +56,7 @@ templ Base() {
 					alert("Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.")
 				});
 			</script>
-			<script>
-			// Notification handler for query string
-			document.addEventListener("DOMContentLoaded", function() {
-			  const params = new URLSearchParams(window.location.search);
-			  const code = params.get("noti_code");
-			  
-			  if (code) {
-			    const msg = generateNotificationMessage(code);
-			    
-			    if (msg) {
-			      const parts = code.split('_');
-			      const result = parts[parts.length - 1]; // Get last part (success/error)
-			      const alertType = result === 'success' ? 'success' : 'danger';
-			      
-			      const alert = document.createElement("div");
-			      alert.className = `alert alert-${alertType} alert-dismissible fade show`;
-			      alert.innerText = msg;
-			      alert.style.position = "fixed";
-			      alert.style.top = "20px";
-			      alert.style.right = "20px";
-			      alert.style.zIndex = "9999";
-			      alert.style.width = "500px";
-			      document.body.appendChild(alert);
-			      setTimeout(() => alert.remove(), 4000);
-
-			      params.delete("noti_code");
-			      const newUrl = window.location.pathname + (params.toString() ? "?" + params.toString() : "");
-			      window.history.replaceState({}, '', newUrl);
-			    }
-			  }
-			});
-			
-			function generateNotificationMessage(code) {
-			  const parts = code.split('_');
-			  if (parts.length !== 3) return null;
-			  
-			  const [entity, action, result] = parts;
-			  
-			  // Entity translations
-			  const entityMap = {
-			    'patient': 'bệnh nhân',
-			    'combo': 'gói xét nghiệm',
-			    'test': 'xét nghiệm',
-			    'record': 'phiếu xét nghiệm',
-			    'tracking': 'theo dõi'
-			  };
-			  
-			  // Action translations
-			  const actionMap = {
-			    'create': 'Thêm',
-			    'update': 'Cập nhật',
-			    'delete': 'Xóa'
-			  };
-			  
-			  // Result translations
-			  const resultMap = {
-			    'success': 'thành công',
-			    'error': 'thất bại'
-			  };
-			  
-			  const entityText = entityMap[entity];
-			  const actionText = actionMap[action];
-			  const resultText = resultMap[result];
-			  
-			  if (!entityText || !actionText || !resultText) {
-			    return null;
-			  }
-			  
-			  return `${actionText} ${entityText} ${resultText}`;
-			}
-			</script>
+			@NotificationScript()
 			@BaseScript()
 		</body>
 	</html>

@@ -1,0 +1,137 @@
+package partials
+
+templ ComboFormScript() {
+	<script>
+	document.addEventListener('alpine:init', () => {
+		Alpine.data('comboFormData', (comboId) => ({
+			mode: 'create',
+			comboId: null,
+			combo_name: '',
+			chosenTests: [],
+			loading: false,
+			
+			init() {
+				console.log('Component initialized with:', { comboId, chosenTests: this.chosenTests });
+				if (comboId && comboId !== '') {
+					this.mode = 'edit';
+					this.comboId = comboId;
+					this.loadCombo(comboId);
+				}
+			},
+			
+			async loadCombo(id) {
+				try {
+					this.loading = true;
+					
+					// Fetch combo details
+					const comboResponse = await fetch(`/api/v1/combos/${id}`);
+					if (!comboResponse.ok) throw new Error('Failed to fetch combo');
+					const { data: combo } = await comboResponse.json();
+					
+					// Fetch combo tests
+					const testsResponse = await fetch(`/api/v1/combos/${id}/tests`);
+					if (!testsResponse.ok) throw new Error('Failed to fetch tests');
+					const { data: tests } = await testsResponse.json();
+					
+					this.combo_name = combo.name;
+					this.chosenTests = tests;
+					console.log('Loaded combo with tests:', this.chosenTests.map((t, idx) => `${idx + 1}. ${t.name}`));
+					
+				} catch (error) {
+					console.error('Error loading combo:', error);
+					alert('Không thể tải thông tin gói xét nghiệm');
+				} finally {
+					this.loading = false;
+				}
+			},
+			
+			selectTest(test) {
+				// Check if test already exists
+				if (this.chosenTests.find(t => t.id === test.id)) {
+					alert('Xét nghiệm này đã được chọn');
+					return;
+				}
+				this.chosenTests.push(test);
+			},
+			
+			removeTest(index) {
+				this.chosenTests.splice(index, 1);
+			},
+			
+			async submitCombo() {
+				if (!this.combo_name.trim()) {
+					alert('Vui lòng nhập tên gói xét nghiệm');
+					return;
+				}
+				
+				if (this.chosenTests.length === 0) {
+					alert('Vui lòng chọn ít nhất một xét nghiệm');
+					return;
+				}
+				
+				try {
+					this.loading = true;
+					
+					const payload = {
+						name: this.combo_name,
+						test_ids: this.chosenTests.map(t => t.id)
+					};
+					
+					console.log('Submitting combo with tests:', this.chosenTests.map((t, idx) => `${idx + 1}. ${t.name}`));
+					
+					const url = this.mode === 'edit' 
+						? `/api/v1/combos/${this.comboId}`
+						: '/api/v1/combos';
+					
+					const method = this.mode === 'edit' ? 'PUT' : 'POST';
+					
+					const response = await fetch(url, {
+						method: method,
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify(payload)
+					});
+					
+					if (!response.ok) {
+						const error = await response.json();
+						throw new Error(error.message || 'Failed to save combo');
+					}
+					
+					// Success - handle based on mode
+					if (this.mode === 'edit') {
+						// Edit mode: use optimistic update with state comparison
+						const {data: updatedCombo} = await response.json();
+
+						// Compare local state with API response (preserve order)
+						const localTestIds = this.chosenTests.map(t => t.id);
+						const remoteTestIds = updatedCombo.test_ids || [];
+						
+						const nameMatches = this.combo_name === updatedCombo.name;
+						const testIdsMatch = JSON.stringify(localTestIds) === JSON.stringify(remoteTestIds);
+
+						if (nameMatches && testIdsMatch) {
+							// Local state matches remote state - just show success notification without reload
+							showNotification('combo_update_success');
+						} else {
+							// State differs - reload page to sync with server
+							console.log('State mismatch detected, reloading page');
+							redirectWithMessage(window.location.pathname, 'combo_update_success');
+						}
+					} else {
+						// Create mode: redirect to combo list with success notification
+						redirectWithMessage('/danh-muc-goi-xet-nghiem', 'combo_create_success');
+					}
+					
+				} catch (error) {
+					console.error('Error saving combo:', error);
+					// Show error notification without reload
+					showCustomNotification('Có lỗi xảy ra: ' + error.message, 'danger');
+				} finally {
+					this.loading = false;
+				}
+			}
+		}));
+	});
+	</script>
+}

@@ -1,36 +1,39 @@
 package partials
 
-templ ComboCreateForm() {
-	<form hx-post="/api/combos" x-data="{chosenTests: [], selectTest(test) {this.chosenTests.filter(t => t.id == test.id).length > 0 ? alert('Xét nghiệm này đã được chọn') : this.chosenTests.push(test)}}">
-		<div class="mb-3">
-			<label for="combo_name" class="form-label">Tên gói xét nghiệm</label>
-			<input class="form-control" id="combo_name" name="combo_name"/>
-		</div>
-		<div class="mb-3 position-relative">
-			<label>Tìm xét nghiệm theo tên</label>
-			@TestAutocomplete()
-		</div>
-		<div class="mb-3">
-			<input style="display: none" name="test_ids" x-bind:value="chosenTests.map(t => t.id)"/>
-			<table id="test-table" class="table table-bordered">
-				@TestTableHeader("test-page")
-				<tbody id="test-table-body">
-					<template x-for="(item, index) in chosenTests" :key="item.id">
-						<tr>
-							<td x-text="item.name"></td>
-							<td x-text="item.price" style="width: 180px"></td>
-							<td x-text="item.normal_value" style="width: 200px"></td>
-							<td x-text="item.unit" style="width: 140px"></td>
-							<td x-text="item.lower_bound" style="width: 120px"></td>
-							<td x-text="item.upper_bound" style="width: 120px"></td>
-							<td style="width: 120px">
-								<button x-on:click="chosenTests.splice(index, 1)" class="btn btn-sm btn-secondary">Xoá</button>
-							</td>
-						</tr>
-					</template>
-				</tbody>
-			</table>
-		</div>
-		<button type="submit" class="btn btn-primary">Tạo gói xét nghiệm</button>
-	</form>
+templ ComboCreateForm(comboId string) {
+	<div x-data={ "comboFormData('" + comboId + "')" }>
+		<form @submit.prevent="submitCombo()">
+			<div class="mb-3">
+				<label for="combo_name" class="form-label">Tên gói xét nghiệm</label>
+				<input class="form-control" id="combo_name" x-model="combo_name" :disabled="loading"/>
+			</div>
+			<div class="mb-3 position-relative">
+				<label>Tìm xét nghiệm theo tên</label>
+				@TestAutocomplete()
+			</div>
+			<div class="mb-3">
+				<table id="test-table" class="table table-bordered">
+					@TestTableHeader("test-page")
+					<tbody id="test-table-body">
+						<template x-for="(item, index) in chosenTests" :key="item.id">
+							<tr>
+								<td x-text="item.name"></td>
+								<td x-text="item.price" style="width: 180px"></td>
+								<td x-text="item.normal_value" style="width: 200px"></td>
+								<td x-text="item.unit" style="width: 140px"></td>
+								<td x-text="item.lower_bound" style="width: 120px"></td>
+								<td x-text="item.upper_bound" style="width: 120px"></td>
+								<td style="width: 120px">
+									<button @click="removeTest(index)" type="button" class="btn btn-sm btn-secondary">Xoá</button>
+								</td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<button type="button" class="btn btn-secondary" @click="window.location.replace(`/danh-muc-goi-xet-nghiem`)">Trở lại</button>
+			<button type="submit" class="btn btn-primary" :disabled="loading" x-text="loading ? 'Đang xử lý...' : (mode === 'edit' ? 'Cập nhật gói xét nghiệm' : 'Tạo gói xét nghiệm')"></button>
+		</form>
+	</div>
+	@ComboFormScript()
 }

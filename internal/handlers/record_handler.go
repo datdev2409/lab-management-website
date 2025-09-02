@@ -7,11 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
 )
 
@@ -53,58 +51,6 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	return WriteJSON(w, http.StatusCreated, map[string]string{"id": record.ID})
-}
-
-func (h *Handler) ListRecords(w http.ResponseWriter, r *http.Request) error {
-	patientId := r.URL.Query().Get("patient_id")
-	keyword := r.URL.Query().Get("keyword")
-	status := r.URL.Query().Get("status")
-
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		pageSize = 20
-	}
-
-	sortBy := r.URL.Query().Get("sort_by")
-	if sortBy == "" {
-		sortBy = "created_at"
-	}
-	sortOrder := r.URL.Query().Get("sort_order")
-	if sortOrder == "" {
-		sortOrder = "desc"
-	}
-
-	recordsQueryOptions := models.RecordQueryOptions{
-		Keyword:   keyword,
-		Status:    status,
-		PatientID: patientId,
-	}
-
-	genericQueryOptions := models.GenericQueryOptions{
-		SortBy:    sortBy,
-		SortOrder: sortOrder,
-		Page:      page,
-		PageSize:  pageSize,
-	}
-
-	records, pagination, err := h.Store.ListRecords(r.Context(), recordsQueryOptions, genericQueryOptions)
-	if err != nil {
-		return err
-	}
-
-	target := r.Header.Get("HX-Target")
-	switch target {
-	default:
-		RenderMultiComponents(r.Context(), w, []templ.Component{
-			partials.RecordTable(records),
-			partials.Pagination(pagination, "record-page"),
-		})
-	}
-	return nil
 }
 
 func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
@@ -183,8 +129,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 
 // ListRecordsV1 handles GET /api/v1/records
 func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
-	patientId := r.URL.Query().Get("patient_id")
-	keyword := r.URL.Query().Get("keyword")
+	keyword := r.URL.Query().Get("q")
 	status := r.URL.Query().Get("status")
 
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
@@ -206,9 +151,8 @@ func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	recordsQueryOptions := models.RecordQueryOptions{
-		Keyword:   keyword,
-		Status:    status,
-		PatientID: patientId,
+		Keyword: keyword,
+		Status:  status,
 	}
 
 	genericQueryOptions := models.GenericQueryOptions{

@@ -29,7 +29,20 @@ func (m *MongoStorage) GetComboById(ctx context.Context, id string) (*models.Com
 
 func (m *MongoStorage) UpdateComboById(ctx context.Context, id string, update map[string]interface{}) error {
 	col := m.getCollection("combos")
-	return MongoUpdateById[models.Combo](ctx, col, id, bson.M{"$set": update})
+	updateDoc := bson.M{}
+	for k, v := range update {
+		updateDoc[k] = v
+	}
+	return MongoUpdateById[models.Combo](ctx, col, id, bson.M{"$set": updateDoc})
+}
+
+func (m *MongoStorage) UpdateComboByIdAndReturn(ctx context.Context, id string, update map[string]interface{}) (*models.Combo, error) {
+	col := m.getCollection("combos")
+	updateDoc := bson.M{}
+	for k, v := range update {
+		updateDoc[k] = v
+	}
+	return MongoUpdateByIdAndReturn[models.Combo](ctx, col, id, bson.M{"$set": updateDoc})
 }
 
 func (m *MongoStorage) DeleteComboById(ctx context.Context, id string) error {
@@ -48,4 +61,18 @@ func (m *MongoStorage) GetTestsInCombo(ctx context.Context, comboId string) (*mo
 		return combo, nil, err
 	}
 	return combo, tests, nil
+}
+
+func (m *MongoStorage) GetTestsByComboId(ctx context.Context, comboId string) ([]*models.Test, error) {
+	combo, err := m.GetComboById(ctx, comboId)
+	if err != nil {
+		return nil, err
+	}
+	col := m.getCollection("tests")
+	tests, err := MongoGetByIdsOrdered[models.Test](ctx, col, combo.TestIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	return tests, nil
 }

@@ -40,3 +40,7 @@ func NewTest(name string, price int, normalValue, unit string, lowerBound, upper
 		UpdatedAt:   now,
 	}
 }
+
+func (t Test) GetID() string {
+	return t.ID
+}

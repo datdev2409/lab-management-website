@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"math"
+	"sort"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func (m *MongoStorage) getCollection(collectionName string) *mongo.Collection {
@@ -50,6 +52,29 @@ func MongoGetByIds[T interface{}](ctx context.Context, col *mongo.Collection, id
 	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
 	}
+
+	return results, nil
+}
+
+type IDGetter interface {
+	GetID() string
+}
+
+func MongoGetByIdsOrdered[T IDGetter](ctx context.Context, col *mongo.Collection, ids []string) ([]*T, error) {
+	results, err := MongoGetByIds[T](ctx, col, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	idOrderMap := make(map[string]int)
+	for i, id := range ids {
+		idOrderMap[id] = i
+	}
+
+	// Sort results based on the order of IDs
+	sort.Slice(results, func(i, j int) bool {
+		return idOrderMap[(*results[i]).GetID()] < idOrderMap[(*results[j]).GetID()]
+	})
 
 	return results, nil
 }
@@ -101,6 +126,39 @@ func MongoUpdateById[T interface{}](ctx context.Context, col *mongo.Collection, 
 
 	_, err := col.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": setDocMap})
 	return err
+}
+
+func MongoUpdateByIdAndReturn[T interface{}](ctx context.Context, col *mongo.Collection, id string, update interface{}) (*T, error) {
+	updateDoc, ok := update.(bson.M)
+	if !ok {
+		return nil, errors.New("update must be a bson.M type")
+	}
+
+	setDoc, ok := updateDoc["$set"]
+	if !ok {
+		return nil, errors.New("$set operator is required in update")
+	}
+
+	setDocMap, ok := setDoc.(bson.M)
+	if !ok {
+		return nil, errors.New("$set must be a bson.M type")
+	}
+
+	setDocMap["updated_at"] = GetCurrentTime()
+
+	var result T
+	err := col.FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": id},
+		bson.M{"$set": setDocMap},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func MongoDeleteById[T interface{}](ctx context.Context, col *mongo.Collection, id string) error {

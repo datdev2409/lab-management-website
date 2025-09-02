@@ -5,7 +5,7 @@ templ ComboAutocomplete() {
 		<input class="form-control" x-model="searchTerm" x-on:input.debounce="search()" autocomplete="off"/>
 		<div x-show="open" @click.outside="open=false" class="shadow bordered position-absolute autocomplete">
 			<template x-for="result in results">
-				<div x-on:click="selectCombo(result.id);reset();searchTerm=result.name" class="autocomplete-option">
+				<div x-on:click="selectCombo(result);reset();searchTerm=result.name" class="autocomplete-option">
 					<span x-text="result.name"></span>
 				</div>
 			</template>

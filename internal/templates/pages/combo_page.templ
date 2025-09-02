@@ -1,9 +1,6 @@
 package pages
 
-import (
-	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
-)
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
 
 templ ComboPage(message string) {
 	@partials.Base() {
@@ -11,19 +8,88 @@ templ ComboPage(message string) {
 			<h3 class="pt-3">Danh mục gói xét nghiệm</h3>
 			<a href="/danh-muc-goi-xet-nghiem/new"><button class="btn btn-primary">Tạo gói xét nghiệm mới</button></a>
 		</div>
-		<div class="my-3 d-flex align-items-center">
-			<form id="combo-search-form" class="row" hx-get="/api/combos" hx-target="#combo-table-wrapper" hx-trigger="load, submit">
-				<div class="col-md-auto" style="width: 400px;">
-					<input placeholder="Tên gói xét nghiệm" class="form-control" name="combo_name" id="combo-search"/>
+		<div x-data="table('/api/v1/combos', { pageSize: 10 })" class="mt-4">
+			<!-- Error state -->
+			<div x-show="error" class="alert alert-danger" x-text="error" x-cloak></div>
+			<!-- Search input -->
+			<div class="mb-3">
+				<div class="row">
+					<div class="col-md-auto" style="width: 400px;">
+						<input
+							type="text"
+							class="form-control"
+							placeholder="Tên gói xét nghiệm"
+							x-model="searchQuery"
+							@input.debounce.300ms="search($event.target.value)"
+						/>
+					</div>
+					<div class="col-md-auto">
+						<button type="button" @click="clearSearch()" class="btn btn-outline-secondary">Clear</button>
+					</div>
 				</div>
-				<div class="col-md-auto">
-					<button type="submit" class="btn btn-primary">Tìm kiếm</button>
-				</div>
-			</form>
+			</div>
+			<!-- Table -->
+			<div x-show="!isLoading">
+				<table class="table table-bordered table-hover">
+					<thead class="position-sticky top-0">
+						<tr>
+							<th style="max-width: 130px" scope="col">Tên gói xét nghiệm</th>
+							<th scope="col">Xét nghiệm</th>
+							<th style="width: 130px" scope="col">Thao tác</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!-- No data state -->
+						<tr x-show="!hasData && !isLoading">
+							<td colspan="3" class="text-center py-4 text-muted">
+								<span x-show="searchQuery">Không tìm thấy gói xét nghiệm nào</span>
+								<span x-show="!searchQuery">Không có dữ liệu</span>
+							</td>
+						</tr>
+						<!-- Data rows -->
+						<template x-for="combo in data" :key="combo.id">
+							<tr :id="'combo' + combo.id">
+								<td class="text-truncate" style="max-width: 130px" x-text="combo.name"></td>
+								<td x-text="(combo.test_ids ? combo.test_ids.length : 0) + ' xét nghiệm'"></td>
+								<td style="width: 130px">
+									<div class="d-flex align-items-start gap-2">
+										<a :href="`/danh-muc-goi-xet-nghiem/${combo.id}/edit`" class="link-primary me-2">Chi tiết</a>
+										<a
+											@click="deleteCombo(combo.id, combo.name)"
+											class="link-danger"
+											style="cursor: pointer;"
+										>Xóa</a>
+									</div>
+								</td>
+							</tr>
+						</template>
+					</tbody>
+				</table>
+			</div>
+			<!-- Pagination -->
+			@partials.AlpinePagination()
 		</div>
-		<div id="combo-table-wrapper">
-			@partials.ComboTable([]*models.Combo{})
-		</div>
-		@partials.Pagination(nil, "combo-page")
+		<script>
+		async function deleteCombo(comboId, comboName) {
+			if (!confirm(`Bạn có chắc chắn muốn xoá gói xét nghiệm: ${comboName}`)) {
+				return;
+			}
+			
+			try {
+				const response = await fetch(`/api/v1/combos/${comboId}`, {
+					method: 'DELETE'
+				});
+				
+				if (response.ok) {
+					redirectWithMessage('/danh-muc-goi-xet-nghiem', 'combo_delete_success');
+				} else {
+					alert('Xoá thất bại');
+				}
+			} catch (error) {
+				console.error('Delete error:', error);
+				alert('Xoá thất bại');
+			}
+		}
+		</script>
 	}
 }
