@@ -11,6 +11,7 @@ templ RecordTestTable() {
 				<th style="width: 120px" scope="col">Kết quả</th>
 				<th style="width: 180px" scope="col">Kết quả (text)</th>
 				<th style="width: 30px" scope="col">Bất thường</th>
+				<th style="width: 50px" scope="col"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -18,16 +19,58 @@ templ RecordTestTable() {
 				<tr>
 					<td x-text="test.name"></td>
 					<td style="width: 120px" x-text="test.price"></td>
-					<td style="width: 200px" x-text="test.normal_value"></td>
+					<td style="width: 200px">
+						<div x-text="test.normal_value"></div>
+						<small class="text-muted" x-show="test.lower_bound !== undefined && test.upper_bound !== undefined" x-text="`[${test.lower_bound} - ${test.upper_bound}]`"></small>
+					</td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
-						<input x-model="test.result"/>
+						<input x-model="test.result" @input="checkAbnormalWithPrompt(test)" :class="test.abnormal ? 'form-control border-danger' : 'form-control'"/>
 					</td>
 					<td style="width: 180px">
 						<input x-model="test.result_text"/>
 					</td>
 					<td style="width: 30px">
-						<input type="checkbox" x-model="test.abnormal"/>
+						<div class="d-flex align-items-center">
+							<input
+								type="checkbox"
+								x-model="test.abnormal"
+								@change="markManualOverride(test)"
+								:class="test.abnormal ? 'text-danger' : ''"
+								:title="test.manual_abnormal_override ? 
+									   'Đã đánh dấu thủ công (ưu tiên cao hơn tự động)' :
+									   (test.abnormal && test.lower_bound !== undefined && test.upper_bound !== undefined ? 
+									   `Kết quả ${test.result} nằm ngoài khoảng bình thường [${test.lower_bound} - ${test.upper_bound}]` : 
+									   'Đánh dấu kết quả bất thường')"
+							/>
+							<span
+								x-show="test.abnormal"
+								class="text-danger ms-1"
+								:title="test.manual_abnormal_override ? 'Đánh dấu thủ công' : 'Tự động phát hiện bất thường'"
+							>⚠️</span>
+						</div>
+						<div class="d-flex align-items-center mt-1">
+							<small x-show="test.manual_abnormal_override" class="text-info" style="font-size: 0.7em;">Thủ công</small>
+							<button
+								x-show="test.manual_abnormal_override"
+								@click="clearManualOverride(test)"
+								class="btn btn-outline-secondary btn-sm ms-1"
+								style="font-size: 0.6em; padding: 1px 4px;"
+								title="Chuyển về chế độ tự động"
+							>
+								Auto
+							</button>
+						</div>
+					</td>
+					<td style="width: 50px">
+						<button
+							@click="removeTest(test)"
+							class="btn btn-outline-danger btn-sm"
+							style="font-size: 0.7em; padding: 2px 6px;"
+							title="Xóa xét nghiệm này"
+						>
+							✕
+						</button>
 					</td>
 				</tr>
 			</template>
@@ -47,6 +90,16 @@ templ RecordTestTable() {
 					</td>
 					<td style="width: 30px">
 						<input type="checkbox" x-model="test.abnormal"/>
+					</td>
+					<td style="width: 50px">
+						<button
+							@click="number_of_empty_tests -= 1"
+							class="btn btn-outline-secondary btn-sm"
+							style="font-size: 0.7em; padding: 2px 6px;"
+							title="Xóa dòng trống này"
+						>
+							✕
+						</button>
 					</td>
 				</tr>
 			</template>

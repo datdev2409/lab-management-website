@@ -5,15 +5,17 @@ import (
 )
 
 type TestResult struct {
-	ID          string  `json:"id" bson:"_id"`
-	Name        string  `json:"name" bson:"name"`
-	Price       int     `json:"price" bson:"price"`
-	NormalValue string  `json:"normal_value" bson:"normal_value"`
-	Unit        string  `json:"unit" bson:"unit"`
-	LowerBound  float64 `json:"lower_bound" bson:"lower_bound"`
-	UpperBound  float64 `json:"upper_bound" bson:"upper_bound"`
-	Result      string  `json:"result" bson:"result"`
-	ResultText  string  `json:"result_text" bson:"result_text"`
+	ID                     string  `json:"id" bson:"_id"`
+	Name                   string  `json:"name" bson:"name"`
+	Price                  int     `json:"price" bson:"price"`
+	NormalValue            string  `json:"normal_value" bson:"normal_value"`
+	Unit                   string  `json:"unit" bson:"unit"`
+	LowerBound             float64 `json:"lower_bound" bson:"lower_bound"`
+	UpperBound             float64 `json:"upper_bound" bson:"upper_bound"`
+	Result                 string  `json:"result" bson:"result"`
+	ResultText             string  `json:"result_text" bson:"result_text"`
+	Abnormal               bool    `json:"abnormal" bson:"abnormal"`
+	ManualAbnormalOverride bool    `json:"manual_abnormal_override" bson:"manual_abnormal_override"`
 }
 
 type Record struct {
@@ -41,15 +43,17 @@ func NewRecord(patient Patient, comboName string, testResults []TestResult) Reco
 }
 
 type TestResultRequest struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name" bson:"name"`
-	Price       int     `json:"price" bson:"price"`
-	NormalValue string  `json:"normal_value" bson:"normal_value"`
-	Unit        string  `json:"unit" bson:"unit"`
-	LowerBound  float64 `json:"lower_bound" bson:"lower_bound"`
-	UpperBound  float64 `json:"upper_bound" bson:"upper_bound"`
-	Result      string  `json:"result"`
-	ResultText  string  `json:"result_text"`
+	ID                     string  `json:"id"`
+	Name                   string  `json:"name" bson:"name"`
+	Price                  int     `json:"price" bson:"price"`
+	NormalValue            string  `json:"normal_value" bson:"normal_value"`
+	Unit                   string  `json:"unit" bson:"unit"`
+	LowerBound             float64 `json:"lower_bound" bson:"lower_bound"`
+	UpperBound             float64 `json:"upper_bound" bson:"upper_bound"`
+	Result                 string  `json:"result"`
+	ResultText             string  `json:"result_text"`
+	Abnormal               bool    `json:"abnormal"`
+	ManualAbnormalOverride bool    `json:"manual_abnormal_override"`
 }
 
 type CreateRecordResponse struct {

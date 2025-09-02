@@ -38,6 +38,19 @@ templ RecordCreateForm(recordId string) {
 						this.test_results = data.test_results
 						this.combo_name = data.combo_name
 						this.flow = "update-record"
+						
+						// Check abnormal status for existing results
+						this.test_results.forEach(test => {
+							// Initialize manual override flag if not present
+							if (test.manual_abnormal_override === undefined) {
+								test.manual_abnormal_override = false
+							}
+							
+							if (test.result) {
+								this.checkAbnormal(test)
+							}
+						})
+						
 						console.log(data)
 					}
 					catch (error) {
@@ -73,6 +86,16 @@ templ RecordCreateForm(recordId string) {
 
 						this.combo_name = combo.name
 						this.test_results = tests
+						
+						// Initialize abnormal status for all tests
+						this.test_results.forEach(test => {
+							// Initialize manual override flag
+							test.manual_abnormal_override = false
+							
+							if (test.result) {
+								this.checkAbnormal(test)
+							}
+						})
 					}
 					catch (error) {
 						console.error("Error fetching combo data:", error)
@@ -87,8 +110,18 @@ templ RecordCreateForm(recordId string) {
 					if (typeof data === 'string') {
 						data = JSON.parse(data)
 					}
+					
+					// Initialize abnormal status and manual override flag
+					data.abnormal = false
+					data.manual_abnormal_override = false
+					
 					this.test_results.push(data)
 					this.$refs.testSearchInput.value = ''
+					
+					// If the test already has a result, check if it's abnormal
+					if (data.result) {
+						this.checkAbnormal(data)
+					}
 				},
 
 				async submit() {
@@ -125,13 +158,92 @@ templ RecordCreateForm(recordId string) {
 						}
 
 						const data = await response.json()
+						
 						if (this.flow === 'create-record') {
-							window.location.replace(`/phieu-xet-nghiem/${data.id}`)
+							// Show success notification and redirect
+							showCustomNotification('Tạo phiếu xét nghiệm thành công!', 'success')
+							// Wait a bit for notification to show before redirecting
+							setTimeout(() => {
+								window.location.replace(`/phieu-xet-nghiem/${data.id}`)
+							}, 1500)
+						} else {
+							// Show success notification for update
+							showCustomNotification('Cập nhật phiếu xét nghiệm thành công!', 'success')
 						}
 					}
 					catch (error) {
 						console.error('Error submitting record:', error)
-						alert('Lỗi khi tạo phiếu xét nghiệm. Vui lòng thử lại.')
+						// Show error notification instead of alert
+						showCustomNotification(
+							this.flow === 'create-record' ? 
+								'Lỗi khi tạo phiếu xét nghiệm. Vui lòng thử lại.' : 
+								'Lỗi khi cập nhật phiếu xét nghiệm. Vui lòng thử lại.', 
+							'error'
+						)
+					}
+				},
+
+				checkAbnormalWithPrompt(test) {
+					// If there's a manual override and the user is changing the result,
+					// give them the option to keep manual mode or switch back to auto
+					if (test.manual_abnormal_override && test.result && test.result !== '') {
+						// Just check automatically without prompting for better UX
+						// The user can use the "Auto" button if they want to revert
+						return
+					}
+					
+					// Otherwise, proceed with normal automatic checking
+					this.checkAbnormal(test)
+				},
+
+				checkAbnormal(test) {
+					// Don't override if user has manually set the abnormal status
+					if (test.manual_abnormal_override) {
+						return
+					}
+
+					if (!test.result || test.result === '') {
+						test.abnormal = false
+						return
+					}
+
+					const resultValue = parseFloat(test.result)
+					if (isNaN(resultValue)) {
+						// If result is not a number, don't mark as abnormal automatically
+						// User can manually check if needed
+						return
+					}
+
+					// Check if result is outside the normal range
+					if (test.lower_bound !== undefined && test.upper_bound !== undefined) {
+						const isOutsideRange = resultValue < test.lower_bound || resultValue > test.upper_bound
+						test.abnormal = isOutsideRange
+						
+						// Optional: Log for debugging
+						if (isOutsideRange) {
+							console.log(`Test "${test.name}": Result ${resultValue} is outside normal range [${test.lower_bound}, ${test.upper_bound}] - Auto-marked as abnormal`)
+						}
+					}
+				},
+
+				markManualOverride(test) {
+					// Mark that the user has manually overridden the abnormal status
+					test.manual_abnormal_override = true
+					console.log(`Test "${test.name}": Manual abnormal override set to ${test.abnormal}`)
+				},
+
+				clearManualOverride(test) {
+					// Clear manual override and re-check automatically
+					test.manual_abnormal_override = false
+					this.checkAbnormal(test)
+				},
+
+				removeTest(testToRemove) {
+					// Find and remove the test from the test_results array
+					const index = this.test_results.findIndex(test => test.id === testToRemove.id)
+					if (index !== -1) {
+						this.test_results.splice(index, 1)
+						console.log(`Removed test "${testToRemove.name}" from record`)
 					}
 				},
 			}))
