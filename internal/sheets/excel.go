@@ -27,17 +27,17 @@ func getTemplateMargins(reportType models.ReportType) MarginConfig {
 		return MarginConfig{
 			Top:    float64(0),        // Smaller top margin for billing
 			Bottom: 0.511811023622047, // Smaller bottom margin
-			Left:   0.236220472440945, // Narrow left margin
-			Right:  float64(0),        // Narrow right margin
+			Left:   0.4,               // Narrow left margin
+			Right:  0.4,               // Narrow right margin
 			Header: 0.236220472440945, // Minimal header
 			Footer: 0.511811023622047, // Minimal footer
 		}
 	case models.ResultsReport: // Result template
 		return MarginConfig{
-			Top:    1.8503937007874,   // Standard top margin
+			Top:    1.9,               // Standard top margin
 			Bottom: float64(0),        // Standard bottom margin
-			Left:   0.118110236220472, // Medium left margin
-			Right:  float64(0),        // Medium right margin
+			Left:   0.4,               // Medium left margin
+			Right:  0.4,               // Medium right margin
 			Header: 0.236220472440945, // Standard header
 			Footer: float64(0),        // Standard footer
 		}
@@ -45,8 +45,8 @@ func getTemplateMargins(reportType models.ReportType) MarginConfig {
 		return MarginConfig{
 			Top:    0.31496063,        // Larger top margin for signature space
 			Bottom: float64(0),        // Larger bottom margin for signature space
-			Left:   0.118110236220472, // Wider left margin
-			Right:  float64(0),        // Wider right margin
+			Left:   0.4,               // Wider left margin
+			Right:  0.4,               // Wider right margin
 			Header: 0.511811023622047, // Standard header
 			Footer: float64(0),        // Larger footer for signature
 		}
@@ -131,15 +131,72 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 	}
 	defer f.Close()
 
+	// Create font styles
+	patientNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 14},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	now := time.Now()
 	f.SetCellValue("Sheet1", "B4", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+
 	f.SetCellValue("Sheet1", "B6", record.Patient.Name)
+	f.SetCellStyle("Sheet1", "B6", "B6", patientNameStyle)
+
 	f.SetCellValue("Sheet1", "B7", record.Patient.Address)
+	f.SetCellStyle("Sheet1", "B7", "B7", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "D6", record.Patient.YOB)
+	f.SetCellStyle("Sheet1", "D6", "D6", patientInfoStyle)
 
 	startTestRow := 10
 	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
+	}
+
+	// Create test result style with borders
+	testResultStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test name style (left aligned)
+	testNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "left",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
 	}
 
 	totalPrice := 0
@@ -148,12 +205,19 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", row), i+1)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), testResult.Name)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testNameStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), 1)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), testResult.Price)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("D%d", row), fmt.Sprintf("D%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Price)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
+
+		// Set row height for better spacing (in points, default is usually ~15)
+		f.SetRowHeight("Sheet1", row, 19.0)
 
 		totalPrice += testResult.Price * 1
 	}
@@ -183,21 +247,83 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	}
 	defer f.Close()
 
+	// Create font styles
+	patientNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 14},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C2", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+
 	f.SetCellValue("Sheet1", "C3", record.Patient.Name)
+	f.SetCellStyle("Sheet1", "C3", "C3", patientNameStyle)
+
 	f.SetCellValue("Sheet1", "C4", record.Patient.Address)
+	f.SetCellStyle("Sheet1", "C4", "C4", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E2", record.Patient.Phone)
+	f.SetCellStyle("Sheet1", "E2", "E2", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E3", record.Patient.YOB)
+	f.SetCellStyle("Sheet1", "E3", "E3", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E4", record.Patient.Gender)
+	f.SetCellStyle("Sheet1", "E4", "E4", patientInfoStyle)
 
 	// Create style for abnormal results (bold + center + borders)
 	abnormalStyle, err := f.NewStyle(&excelize.Style{
 		Font: &excelize.Font{
 			Bold: true,
+			Size: 13,
 		},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test result style with borders
+	testResultStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test name style (left aligned)
+	testNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "left",
 			Vertical:   "center",
 		},
 		Border: []excelize.Border{
@@ -225,21 +351,30 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
 
 		resultCell := fmt.Sprintf("D%d", row)
 		f.SetCellValue("Sheet1", resultCell, testFieldValue)
 
-		// Apply bold and underline style if result is abnormal
+		// Apply bold and underline style if result is abnormal, otherwise normal style
 		// Manual override has higher priority than automatic detection
 		if testResult.Abnormal {
 			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+		} else {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
+
+		// Set row height for better spacing (in points, default is usually ~15)
+		f.SetRowHeight("Sheet1", row, 19.0)
 	}
 
 	// Calculate print area based on content (A1 to F + last row with data)
@@ -265,21 +400,83 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 	}
 	defer f.Close()
 
+	// Create font styles
+	patientNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 14},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C9", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+
 	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
+	f.SetCellStyle("Sheet1", "C10", "C10", patientNameStyle)
+
 	f.SetCellValue("Sheet1", "C11", record.Patient.Address)
+	f.SetCellStyle("Sheet1", "C11", "C11", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E9", record.Patient.Phone)
+	f.SetCellStyle("Sheet1", "E9", "E9", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
+	f.SetCellStyle("Sheet1", "E10", "E10", patientInfoStyle)
+
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
+	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
 
 	// Create style for abnormal results (bold + center + borders)
 	abnormalStyle, err := f.NewStyle(&excelize.Style{
 		Font: &excelize.Font{
 			Bold: true,
+			Size: 13,
 		},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test result style with borders
+	testResultStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test name style (left aligned)
+	testNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "left",
 			Vertical:   "center",
 		},
 		Border: []excelize.Border{
@@ -307,21 +504,30 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
 
 		resultCell := fmt.Sprintf("D%d", row)
 		f.SetCellValue("Sheet1", resultCell, testFieldValue)
 
-		// Apply bold and underline style if result is abnormal
+		// Apply bold and underline style if result is abnormal, otherwise normal style
 		// Manual override has higher priority than automatic detection
 		if testResult.Abnormal {
 			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+		} else {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
+
+		// Set row height for better spacing (in points, default is usually ~15)
+		f.SetRowHeight("Sheet1", row, 19.0)
 	}
 
 	// Calculate print area based on content (A1 to F + last row with data)
@@ -349,7 +555,17 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 
 	startDate := records[0].CreatedAt.Format("02/01/2006")
 	f.SetCellValue("Sheet1", "A4", fmt.Sprintf(" Từ ngày: %s đến ngày: %s", startDate, time.Now().Format("02/01/2006")))
+
 	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
+
+	// Create font style for patient name
+	patientNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 14},
+	})
+	if err != nil {
+		return "", err
+	}
+	f.SetCellStyle("Sheet1", "A5", "A5", patientNameStyle)
 
 	now := time.Now()
 	startTestRow := 7
@@ -371,6 +587,42 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 		}
 	}
 
+	// Create test result style with borders
+	testResultStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test name style (left aligned)
+	testNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "left",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
 	rowMap := make(map[string]int)
 	i := 0
 	for testName, testInfo := range testMap {
@@ -378,6 +630,7 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 		f.DuplicateRow("Sheet1", startTestRow+i)
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", startTestRow+i), i+1)
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", startTestRow+i), testName)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", startTestRow+i), fmt.Sprintf("B%d", startTestRow+i), testNameStyle)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", startTestRow+i), testInfo.NormalValue)
 		i += 1
 	}
@@ -403,6 +656,7 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 	abnormalStyle, err := f.NewStyle(&excelize.Style{
 		Font: &excelize.Font{
 			Bold: true,
+			Size: 13,
 		},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
@@ -445,10 +699,12 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 			cell := fmt.Sprintf("%s%d", col, row)
 			f.SetCellValue("Sheet1", cell, testResult.Result)
 
-			// Apply abnormal style if result is abnormal
+			// Apply abnormal style if result is abnormal, otherwise normal style
 			// Manual override has higher priority than automatic detection
 			if testResult.Abnormal {
 				f.SetCellStyle("Sheet1", cell, cell, abnormalStyle)
+			} else {
+				f.SetCellStyle("Sheet1", cell, cell, testResultStyle)
 			}
 		}
 	}

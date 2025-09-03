@@ -12,7 +12,7 @@ templ TrackingAutocomplete() {
 		/>
 		<div x-show="open" @click.outside="open=false" class="shadow bordered position-absolute autocomplete">
 			<template x-for="result in results">
-				<div @click="$parent.selectTracking(result);reset();searchTerm=result.name" class="autocomplete-option">
+				<div @click="selectTracking(result);reset();searchTerm=result.name" class="autocomplete-option">
 					<span x-text="result.name"></span>
 				</div>
 			</template>

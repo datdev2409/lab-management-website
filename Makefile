@@ -29,5 +29,8 @@ start:
 deploy:
 	scp -i ~/Documents/AnhQuanLab/anhquanlab-mainserver.pem bin/main ec2-user@18.138.255.12:/home/ec2-user
 
+deploy-new:
+	scp -i ~/Documents/AnhQuanLab/anhquanlab-ssh-key bin/main root@178.128.105.192:/root/application
+
 copy-template:
 	scp -i ~/Documents/AnhQuanLab/anhquanlab-mainserver.pem -r templates/ ec2-user@18.138.255.12:/home/ec2-user
