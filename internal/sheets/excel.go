@@ -133,7 +133,7 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 
 	// Create font styles
 	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14},
+		Font: &excelize.Font{Size: 14, Bold: true},
 	})
 	if err != nil {
 		return "", err
@@ -148,6 +148,7 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "B4", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellStyle("Sheet1", "B4", "B4", patientInfoStyle)
 
 	f.SetCellValue("Sheet1", "B6", record.Patient.Name)
 	f.SetCellStyle("Sheet1", "B6", "B6", patientNameStyle)
@@ -249,7 +250,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 
 	// Create font styles
 	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14},
+		Font: &excelize.Font{Size: 14, Bold: true},
 	})
 	if err != nil {
 		return "", err
@@ -264,6 +265,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C2", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellStyle("Sheet1", "C2", "C2", patientInfoStyle)
 
 	f.SetCellValue("Sheet1", "C3", record.Patient.Name)
 	f.SetCellStyle("Sheet1", "C3", "C3", patientNameStyle)
@@ -379,7 +381,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 
 	// Calculate print area based on content (A1 to F + last row with data)
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
-	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow)
+	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)
 
 	// Setup page layout for A4 printing with template-specific margins and print area
 	if err := setupPageLayoutWithCustomMarginsAndPrintArea(f, "Sheet1", "portrait", models.ResultsReport, printArea); err != nil {
@@ -402,7 +404,7 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 
 	// Create font styles
 	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14},
+		Font: &excelize.Font{Size: 14, Bold: true},
 	})
 	if err != nil {
 		return "", err
@@ -417,6 +419,7 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C9", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellStyle("Sheet1", "C9", "C9", patientInfoStyle)
 
 	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
 	f.SetCellStyle("Sheet1", "C10", "C10", patientNameStyle)
@@ -558,13 +561,23 @@ func CreateRecordTrackingFile(records []*models.Record, testMap map[string]model
 
 	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
 
-	// Create font style for patient name
+	// Create font styles
 	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14},
+		Font: &excelize.Font{Size: 14, Bold: true},
 	})
 	if err != nil {
 		return "", err
 	}
+
+	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Apply styles
+	f.SetCellStyle("Sheet1", "A4", "A4", patientInfoStyle)
 	f.SetCellStyle("Sheet1", "A5", "A5", patientNameStyle)
 
 	now := time.Now()
