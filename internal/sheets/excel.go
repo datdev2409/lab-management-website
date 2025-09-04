@@ -2,6 +2,7 @@ package sheets
 
 import (
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 	"time"
@@ -116,6 +117,13 @@ func setupPageLayoutWithCustomMarginsAndPrintArea(f *excelize.File, sheetName st
 	}
 
 	// Set print area
+	// First, try to delete any existing print area to avoid conflicts
+	f.DeleteDefinedName(&excelize.DefinedName{
+		Name:  "_xlnm.Print_Area",
+		Scope: sheetName,
+	})
+
+	// Now set the new print area
 	err = f.SetDefinedName(&excelize.DefinedName{
 		Name:     "_xlnm.Print_Area",
 		RefersTo: fmt.Sprintf("%s!%s", sheetName, printArea),
@@ -139,8 +147,15 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 		return "", err
 	}
 
-	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+	patientInfoStyle, _ := f.NewStyle(&excelize.Style{
 		Font: &excelize.Font{Size: 12},
+	})
+	dateCenterStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
 	})
 	if err != nil {
 		return "", err
@@ -148,7 +163,7 @@ func CreateRecordBillingFile(record *models.Record) (string, error) {
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "B4", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
-	f.SetCellStyle("Sheet1", "B4", "B4", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "B4", "B4", dateCenterStyle)
 
 	f.SetCellValue("Sheet1", "B6", record.Patient.Name)
 	f.SetCellStyle("Sheet1", "B6", "B6", patientNameStyle)
@@ -264,7 +279,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	}
 
 	now := time.Now()
-	f.SetCellValue("Sheet1", "C2", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellValue("Sheet1", "C2", now.Format("02/01/2006"))
 	f.SetCellStyle("Sheet1", "C2", "C2", patientInfoStyle)
 
 	f.SetCellValue("Sheet1", "C3", record.Patient.Name)
@@ -349,7 +364,7 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 
 		testFieldValue := testResult.Result
 		if testResult.ResultText != "" {
-			testFieldValue += " (" + testResult.ResultText + ")"
+			testFieldValue += testResult.ResultText
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
@@ -395,9 +410,10 @@ func CreateRecordResultFile(record *models.Record) (string, error) {
 	return filename, nil
 }
 
-func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) {
-	f, err := OpenTemplate("phieu_ket_qua_chu_ky")
+func CreateRecordResultPDF(record *models.Record) (string, error) {
+	f, err := OpenTemplate(models.ResultsWithSignaturePDF)
 	if err != nil {
+		log.Println(err)
 		return "", err
 	}
 	defer f.Close()
@@ -418,7 +434,7 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 	}
 
 	now := time.Now()
-	f.SetCellValue("Sheet1", "C9", fmt.Sprintf("Ngày: %s", now.Format("02/01/2006")))
+	f.SetCellValue("Sheet1", "C9", now.Format("02/01/2006"))
 	f.SetCellStyle("Sheet1", "C9", "C9", patientInfoStyle)
 
 	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
@@ -503,7 +519,162 @@ func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) 
 
 		testFieldValue := testResult.Result
 		if testResult.ResultText != "" {
-			testFieldValue += " (" + testResult.ResultText + ")"
+			testFieldValue += testResult.ResultText
+		}
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
+
+		resultCell := fmt.Sprintf("D%d", row)
+		f.SetCellValue("Sheet1", resultCell, testFieldValue)
+
+		// Apply bold and underline style if result is abnormal, otherwise normal style
+		// Manual override has higher priority than automatic detection
+		if testResult.Abnormal {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+		} else {
+			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
+		}
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
+
+		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
+
+		// Set row height for better spacing (in points, default is usually ~15)
+		f.SetRowHeight("Sheet1", row, 19.0)
+	}
+
+	// Calculate print area based on content (A1 to F + last row with data)
+	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
+	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)     // Add +7 to the last row to handle the signature image
+
+	// Setup page layout for A4 printing with template-specific margins and print area
+	if err := setupPageLayoutWithCustomMarginsAndPrintArea(f, "Sheet1", "portrait", models.ResultsWithSignature, printArea); err != nil {
+		return "", err
+	}
+
+	filename := fmt.Sprintf("reports/%s-%s-ket-qua-online.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
+	if err := f.SaveAs(filename); err != nil {
+		return "", err
+	}
+	return filename, nil
+}
+
+func CreateRecordResultWithSignatureFile(record *models.Record) (string, error) {
+	f, err := OpenTemplate(models.ResultsWithSignature)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	defer f.Close()
+
+	// Create font styles
+	patientNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 14, Bold: true},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	patientInfoStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 12},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	now := time.Now()
+	f.SetCellValue("Sheet1", "C9", now.Format("02/01/2006"))
+	f.SetCellStyle("Sheet1", "C9", "C9", patientInfoStyle)
+
+	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
+	f.SetCellStyle("Sheet1", "C10", "C10", patientNameStyle)
+
+	f.SetCellValue("Sheet1", "C11", record.Patient.Address)
+	f.SetCellStyle("Sheet1", "C11", "C11", patientInfoStyle)
+
+	f.SetCellValue("Sheet1", "E9", record.Patient.Phone)
+	f.SetCellStyle("Sheet1", "E9", "E9", patientInfoStyle)
+
+	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
+	f.SetCellStyle("Sheet1", "E10", "E10", patientInfoStyle)
+
+	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
+	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
+
+	// Create style for abnormal results (bold + center + borders)
+	abnormalStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{
+			Bold: true,
+			Size: 13,
+		},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test result style with borders
+	testResultStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// Create test name style (left aligned)
+	testNameStyle, err := f.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13},
+		Alignment: &excelize.Alignment{
+			Horizontal: "left",
+			Vertical:   "center",
+		},
+		Border: []excelize.Border{
+			{Type: "left", Color: "000000", Style: 1},
+			{Type: "right", Color: "000000", Style: 1},
+			{Type: "top", Color: "000000", Style: 1},
+			{Type: "bottom", Color: "000000", Style: 1},
+		},
+	})
+	if err != nil {
+		return "", err
+	}
+
+	startTestRow := 15
+	for range len(record.TestResults) - 1 {
+		f.DuplicateRow("Sheet1", startTestRow)
+	}
+
+	for i, testResult := range record.TestResults {
+		row := startTestRow + i
+
+		testFieldValue := testResult.Result
+		if testResult.ResultText != "" {
+			testFieldValue += testResult.ResultText
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)

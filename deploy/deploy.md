@@ -6,7 +6,7 @@
 
 ```
 sudo systemctl daemon-reload
-sudo systemctl start goweb
+sudo systemctl restart goweb
 sudo systemctl status goweb
 ```
 

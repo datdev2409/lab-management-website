@@ -11,10 +11,11 @@ import (
 
 func OpenTemplate(name models.ReportType) (*excelize.File, error) {
 	supportedTemplates := map[models.ReportType]string{
-		models.BillingReport:        "templates/PhieuThu.xlsx",
-		models.ResultsReport:        "templates/PhieuKetQua.xlsx",
-		models.ResultsWithSignature: "templates/PhieuKetQuaChuKy.xlsx",
-		models.TrackingReport:       "templates/PhieuTheoDoi.xlsx",
+		models.BillingReport:           "templates/PhieuThu.xlsx",
+		models.ResultsReport:           "templates/PhieuKetQua.xlsx",
+		models.ResultsWithSignature:    "templates/PhieuKetQuaChuKy.xlsx",
+		models.ResultsWithSignaturePDF: "templates/PhieuKetQuaOnlinePDF.xlsx",
+		models.TrackingReport:          "templates/PhieuTheoDoi.xlsx",
 	}
 
 	templatePath, ok := supportedTemplates[name]

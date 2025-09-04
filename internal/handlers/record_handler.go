@@ -106,6 +106,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	var filePath string
+	var pdfPath string
 
 	switch models.ReportType(req.ReportType) {
 	case models.BillingReport:
@@ -114,6 +115,18 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		filePath, err = sheets.CreateRecordResultFile(record)
 	case models.ResultsWithSignature:
 		filePath, err = sheets.CreateRecordResultWithSignatureFile(record)
+	case models.ResultsWithSignaturePDF:
+		filePath, err = sheets.CreateRecordResultPDF(record)
+		if err != nil {
+			return err
+		}
+		pdfPath, err = sheets.ConvertExcelToPDF(filePath)
+		if err != nil {
+			return err
+		}
+		return WriteJSON(w, http.StatusOK, map[string]string{
+			"pdf_path": pdfPath,
+		})
 	default:
 		return errors.New("invalid export type")
 	}
