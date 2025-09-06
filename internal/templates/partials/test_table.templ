@@ -1,21 +1,154 @@
 package partials
 
-import "github.com/datdev2409/lab-admin-go/internal/models"
-
-templ TestTable(tests []*models.Test, page string, outOfBand bool) {
-	<div
-		id="test-table"
-		if outOfBand {
-			hx-swap-oob="true"
-		}
-	>
-		<table class="table table-bordered table-hover">
-			@TestTableHeader(page)
-			<tbody>
-				for _, test := range tests {
-					@TestRow(test, page)
-				}
-			</tbody>
-		</table>
+templ TestTable() {
+	<div x-data="table('/api/v1/tests', { pageSize: 10 })" class="mt-4">
+		<!-- Error state -->
+		<div x-show="error" class="alert alert-danger" x-text="error" x-cloak></div>
+		<!-- Search input -->
+		<div class="mb-3">
+			<div class="row">
+				<div class="col-md-auto" style="width: 400px;">
+					<input
+						type="text"
+						class="form-control"
+						placeholder="Tên xét nghiệm"
+						x-model="searchQuery"
+						@input.debounce.300ms="search($event.target.value)"
+					/>
+				</div>
+				<div class="col-md-auto">
+					<button type="button" @click="clearSearch()" class="btn btn-outline-secondary">Clear</button>
+				</div>
+			</div>
+		</div>
+		<!-- Table -->
+		<div x-show="!isLoading">
+			<table class="table table-bordered table-hover">
+				<thead class="position-sticky top-0">
+					<tr>
+						<th scope="col">Tên xét nghiệm</th>
+						<th style="width: 180px" scope="col">Đơn giá</th>
+						<th style="width: 200px" scope="col">GT bình thường</th>
+						<th style="width: 140px" scope="col">Đơn vị</th>
+						<th style="width: 120px" scope="col">Cận dưới</th>
+						<th style="width: 120px" scope="col">Cận trên</th>
+						<th style="width: 150px" scope="col"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- No data state -->
+					<tr x-show="!hasData && !isLoading">
+						<td colspan="7" class="text-center py-4 text-muted">
+							<span x-show="searchQuery">Không tìm thấy xét nghiệm nào</span>
+							<span x-show="!searchQuery">Không có dữ liệu</span>
+						</td>
+					</tr>
+					<!-- Data rows -->
+					<template x-for="test in data" :key="test.id">
+						<tr :id="'test' + test.id" x-data="{editable: false}">
+							<td class="text-truncate">
+								<p x-show="!editable" x-text="test.name"></p>
+								<input x-show="editable" name="test_name" class="form-control" :value="test.name"/>
+							</td>
+							<td style="width: 180px">
+								<p x-show="!editable" x-text="test.price"></p>
+								<input x-show="editable" name="test_price" type="number" class="form-control" :value="test.price"/>
+							</td>
+							<td style="width: 200px">
+								<p x-show="!editable" x-text="test.normal_value"></p>
+								<input x-show="editable" name="test_normal_value" class="form-control" :value="test.normal_value"/>
+							</td>
+							<td style="width: 140px">
+								<p x-show="!editable" x-text="test.unit"></p>
+								<input x-show="editable" name="test_unit" class="form-control" :value="test.unit"/>
+							</td>
+							<td style="width: 120px">
+								<p x-show="!editable" x-text="parseFloat(test.lower_bound).toFixed(2)"></p>
+								<input x-show="editable" name="test_lower_bound" type="number" step="0.01" class="form-control" :value="test.lower_bound"/>
+							</td>
+							<td style="width: 120px">
+								<p x-show="!editable" x-text="parseFloat(test.upper_bound).toFixed(2)"></p>
+								<input x-show="editable" name="test_upper_bound" type="number" step="0.01" class="form-control" :value="test.upper_bound"/>
+							</td>
+							<td style="width: 150px">
+								<div class="d-flex align-items-start gap-2">
+									<div x-show="editable">
+										<a @click="editable=false" class="link-secondary me-2">Huỷ</a>
+										<a
+											@click="updateTest(test.id, $el)"
+											class="link-primary"
+										>Lưu</a>
+									</div>
+									<div x-show="!editable">
+										<a @click="editable=true" class="link-primary me-2">Sửa</a>
+										<a
+											@click="deleteTest(test.id, test.name)"
+											class="link-danger"
+										>Xoá</a>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+		<!-- Pagination -->
+		@AlpinePagination()
 	</div>
+	<script>
+	async function updateTest(testId, saveButton) {
+		const row = saveButton.closest('tr');
+		
+		// Build JSON payload
+		const payload = {
+			name: row.querySelector('[name="test_name"]').value,
+			price: parseInt(row.querySelector('[name="test_price"]').value),
+			normal_value: row.querySelector('[name="test_normal_value"]').value,
+			unit: row.querySelector('[name="test_unit"]').value,
+			lower_bound: parseFloat(row.querySelector('[name="test_lower_bound"]').value),
+			upper_bound: parseFloat(row.querySelector('[name="test_upper_bound"]').value)
+		};
+		
+		try {
+			const response = await fetch(`/api/v1/tests/${testId}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(payload)
+			});
+			
+			if (response.ok) {
+				redirectWithMessage('/danh-muc-xet-nghiem', 'test_update_success');
+			} else {
+				alert('Cập nhật thất bại');
+			}
+		} catch (error) {
+			console.error('Update error:', error);
+			alert('Cập nhật thất bại');
+		}
+	}
+	
+	async function deleteTest(testId, testName) {
+		if (!confirm(`Bạn có chắc chắn muốn xoá xét nghiệm: ${testName}`)) {
+			return;
+		}
+		
+		try {
+			const response = await fetch(`/api/v1/tests/${testId}`, {
+				method: 'DELETE'
+			});
+			
+			if (response.ok) {
+				redirectWithMessage('/danh-muc-xet-nghiem', 'test_delete_success');
+			} else {
+				alert('Xoá thất bại');
+			}
+		} catch (error) {
+			console.error('Delete error:', error);
+			alert('Xoá thất bại');
+		}
+	}
+	</script>
 }

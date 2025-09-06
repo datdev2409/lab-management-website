@@ -84,8 +84,9 @@ type RecordQueryOptions struct {
 type ReportType string
 
 const (
-	BillingReport        ReportType = "phieu_thu"
-	ResultsReport        ReportType = "phieu_ket_qua"
-	ResultsWithSignature ReportType = "phieu_ket_qua_chu_ky"
-	TrackingReport       ReportType = "phieu_theo_doi"
+	BillingReport           ReportType = "phieu_thu"
+	ResultsReport           ReportType = "phieu_ket_qua"
+	ResultsWithSignature    ReportType = "phieu_ket_qua_chu_ky"
+	ResultsWithSignaturePDF ReportType = "phieu_ket_qua_chu_ky_pdf"
+	TrackingReport          ReportType = "phieu_theo_doi"
 )

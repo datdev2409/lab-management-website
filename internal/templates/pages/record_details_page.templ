@@ -22,9 +22,12 @@ templ RecordDetailsPage(recordId string) {
 							throw new Error("Failed to export report")
 						}
 
-						const { excel_path } = await response.json()
+						const { excel_path, pdf_path } = await response.json()
 						if (excel_path) {
 							window.open(`/${excel_path}`, '_blank')
+						}
+						if (pdf_path) {
+							window.open(`/${pdf_path}`, '_blank')
 						}
 					}
 					catch (error) {
@@ -48,6 +51,11 @@ templ RecordDetailsPage(recordId string) {
 						<button class="dropdown-item" @click="exportReport('phieu_ket_qua_chu_ky')">
 							Xuất phiếu kết quả có chữ
 							ký
+						</button>
+					</li>
+					<li>
+						<button class="dropdown-item" @click="exportReport('phieu_ket_qua_chu_ky_pdf')">
+							Xuất phiếu kết quả PDF
 						</button>
 					</li>
 				</ul>

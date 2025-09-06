@@ -15,15 +15,7 @@ import (
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
-	tests, _, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{}, models.GenericQueryOptions{Page: 1, PageSize: 10})
-	if err != nil {
-		return err
-	}
-	messages := map[string]string{
-		"test:create:success": "Thêm xét nghiệm thành công",
-	}
-	redirectCode := GetAndDeleteFlashCookie(w, r)
-	return Render(r.Context(), w, pages.TestPage(tests, messages[redirectCode]))
+	return Render(r.Context(), w, pages.TestPage())
 }
 
 func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error {
@@ -70,7 +62,7 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		page = 1
 	}
-	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
+	_, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
 	if err != nil {
 		return err
 	}
@@ -78,7 +70,7 @@ func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
 	switch target {
 	case "test-table":
 		return RenderMultiComponents(r.Context(), w, []templ.Component{
-			partials.TestTable(tests, "test-page", false),
+			partials.TestTable(),
 			partials.Pagination(pagination, "test-page"),
 		})
 	}

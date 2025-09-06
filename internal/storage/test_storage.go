@@ -29,7 +29,7 @@ func (m *MongoStorage) GetTestById(ctx context.Context, id string) (*models.Test
 
 func (m *MongoStorage) UpdateTestById(ctx context.Context, id string, update map[string]interface{}) error {
 	col := m.getCollection("tests")
-	return MongoUpdateById[models.Test](ctx, col, id, bson.M{"$set": update})
+	return MongoUpdateById[models.Test](ctx, col, id, bson.M{"$set": bson.M(update)})
 }
 
 func (m *MongoStorage) DeleteTestById(ctx context.Context, id string) error {
