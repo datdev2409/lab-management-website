@@ -34,3 +34,6 @@ deploy-new:
 
 copy-template:
 	scp -i ~/Documents/AnhQuanLab/anhquanlab-mainserver.pem -r templates/ ec2-user@18.138.255.12:/home/ec2-user
+
+start-pdf-server:
+	sudo docker run -p 3000:3000 -d gotenberg/gotenberg:8
