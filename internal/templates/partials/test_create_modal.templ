@@ -22,7 +22,7 @@ templ TestCreateModal() {
 								@InputField("Cận trên", "test_upper_bound", "form.upper_bound", "", templ.Attributes{"type": "number", "step": "0.001"})
 							</div>
 						</div>
-						@InputField("Giá tiền", "test_price", "form.price", "", templ.Attributes{"type": "number", "required": "true", "x-mask:dynamic": "$money($input)"})
+						@InputField("Giá tiền", "test_price", "form.price", "", templ.Attributes{"type": "number", "required": "true"})
 						<button style="float: right;" type="submit" class="btn btn-primary" x-bind:disabled="loading">
 							<span x-show="loading">Đang tạo...</span>
 							<span x-show="!loading">Thêm xét nghiệm</span>
