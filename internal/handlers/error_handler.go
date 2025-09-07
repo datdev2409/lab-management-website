@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
-	"log/slog"
 	"net/http"
+
+	"github.com/datdev2409/lab-admin-go/internal/logger"
+	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 )
 
 // AppError is a custom error type for business logic errors
@@ -44,12 +48,15 @@ func RespondJSONWithPagination(w http.ResponseWriter, status int, data interface
 }
 
 // RespondError writes a JSON error response with the given status code and error
-func RespondError(w http.ResponseWriter, status int, err error) {
+func RespondError(ctx context.Context, w http.ResponseWriter, status int, err error) {
+	log := logger.FromCtx(ctx)
+	log.Error("Handling error", zap.Error(err))
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	response := map[string]interface{}{
-		"status": "error",
-		"error":  err.Error(),
+		"status":    "error",
+		"requestId": middleware.GetReqID(ctx),
+		"error":     err.Error(),
 	}
 	json.NewEncoder(w).Encode(response)
 }
@@ -94,11 +101,10 @@ func InternalServerError(message string) error {
 func Make(fn HandlerFuncReturnError) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := fn(w, r); err != nil {
-			slog.Error("error", "error", err)
 			if appErr, ok := err.(*AppError); ok {
-				RespondError(w, appErr.StatusCode, appErr)
+				RespondError(r.Context(), w, appErr.StatusCode, appErr)
 			} else {
-				RespondError(w, http.StatusInternalServerError, err)
+				RespondError(r.Context(), w, http.StatusInternalServerError, err)
 			}
 		}
 	}

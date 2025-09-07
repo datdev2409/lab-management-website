@@ -110,17 +110,17 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 
 	switch models.ReportType(req.ReportType) {
 	case models.BillingReport:
-		filePath, err = sheets.CreateRecordBillingFile(record)
+		filePath, err = sheets.CreateRecordBillingFile(r.Context(), record)
 	case models.ResultsReport:
-		filePath, err = sheets.CreateRecordResultFile(record)
+		filePath, err = sheets.CreateRecordResultFile(r.Context(), record)
 	case models.ResultsWithSignature:
-		filePath, err = sheets.CreateRecordResultWithSignatureFile(record)
+		filePath, err = sheets.CreateRecordResultWithSignatureFile(r.Context(), record)
 	case models.ResultsWithSignaturePDF:
-		filePath, err = sheets.CreateRecordResultPDF(record)
+		filePath, err = sheets.CreateRecordResultPDF(r.Context(), record)
 		if err != nil {
 			return err
 		}
-		pdfPath, err = sheets.ConvertExcelToPDF(filePath)
+		pdfPath, err = sheets.ConvertExcelToPDF(r.Context(), filePath)
 		if err != nil {
 			return err
 		}

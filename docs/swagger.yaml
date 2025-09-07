@@ -1,26 +1,35 @@
 openapi: 3.0.0
 info:
   title: Lab Admin API
+  description: API for laboratory management system
   version: 1.0.0
+  
 servers:
   - url: /api/v1
+    description: API v1 server
+  - url: /api
+    description: Legacy API server
+
 paths:
+  # Patients API v1
   /patients:
     get:
+      tags: ["Patients"]
       summary: List patients
       parameters:
         - in: query
           name: page
-          schema: { type: integer }
+          schema: { type: integer, default: 1 }
         - in: query
           name: page_size
-          schema: { type: integer }
+          schema: { type: integer, default: 20 }
         - in: query
-          name: patient_name
+          name: q
           schema: { type: string }
+          description: Search keyword for patient name
       responses:
         "200":
-          description: List of patients
+          description: List of patients with pagination
           content:
             application/json:
               schema:
@@ -33,6 +42,7 @@ paths:
                   pagination:
                     $ref: "#/components/schemas/Pagination"
     post:
+      tags: ["Patients"]
       summary: Create a patient
       requestBody:
         required: true
@@ -47,8 +57,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Patient"
+  
   /patients/{id}:
     get:
+      tags: ["Patients"]
       summary: Get patient by ID
       parameters:
         - in: path
@@ -63,8 +75,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Patient"
         "404":
-          description: Not found
+          description: Patient not found
     put:
+      tags: ["Patients"]
       summary: Update patient
       parameters:
         - in: path
@@ -85,8 +98,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/Patient"
         "404":
-          description: Not found
+          description: Patient not found
     delete:
+      tags: ["Patients"]
       summary: Delete patient
       parameters:
         - in: path
@@ -95,7 +109,7 @@ paths:
           schema: { type: string }
       responses:
         "200":
-          description: Deleted
+          description: Patient deleted
           content:
             application/json:
               schema:
@@ -104,7 +118,522 @@ paths:
                   result:
                     type: string
         "404":
-          description: Not found
+          description: Patient not found
+
+  /patients/{id}/records:
+    get:
+      tags: ["Patients"]
+      summary: Get patient records
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Patient records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Record"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+  /patients/{id}/records/compare:
+    post:
+      tags: ["Patients"]
+      summary: Compare patient records and generate tracking report
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                record_ids:
+                  type: array
+                  items:
+                    type: string
+                tracking_id:
+                  type: string
+                  description: Optional tracking template ID
+      responses:
+        "200":
+          description: Excel file generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  excel_file_path:
+                    type: string
+
+  # Tests API v1
+  /tests:
+    get:
+      tags: ["Tests"]
+      summary: List tests
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search keyword for test name
+      responses:
+        "200":
+          description: List of tests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Test"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+    post:
+      tags: ["Tests"]
+      summary: Create a test
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestCreate"
+      responses:
+        "201":
+          description: Test created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Test"
+
+  /tests/{id}:
+    get:
+      tags: ["Tests"]
+      summary: Get test by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Test details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Test"
+        "404":
+          description: Test not found
+    put:
+      tags: ["Tests"]
+      summary: Update test
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestUpdate"
+      responses:
+        "200":
+          description: Updated test
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Test"
+        "404":
+          description: Test not found
+    delete:
+      tags: ["Tests"]
+      summary: Delete test
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Test deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        "404":
+          description: Test not found
+
+  # Combos API v1
+  /combos:
+    get:
+      tags: ["Combos"]
+      summary: List combos (test packages)
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search keyword for combo name
+      responses:
+        "200":
+          description: List of combos
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  combos:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Combo"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+    post:
+      tags: ["Combos"]
+      summary: Create a combo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComboCreate"
+      responses:
+        "201":
+          description: Combo created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Combo"
+
+  /combos/{id}:
+    get:
+      tags: ["Combos"]
+      summary: Get combo by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Combo details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ComboDetailsResponse"
+        "404":
+          description: Combo not found
+    put:
+      tags: ["Combos"]
+      summary: Update combo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ComboUpdate"
+      responses:
+        "200":
+          description: Updated combo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Combo"
+        "404":
+          description: Combo not found
+    delete:
+      tags: ["Combos"]
+      summary: Delete combo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Combo deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        "404":
+          description: Combo not found
+
+  /combos/{id}/tests:
+    get:
+      tags: ["Combos"]
+      summary: Get tests in a combo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tests in combo
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Test"
+
+  # Trackings API v1
+  /trackings:
+    get:
+      tags: ["Trackings"]
+      summary: List tracking templates
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 10 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search keyword for tracking name
+      responses:
+        "200":
+          description: List of tracking templates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trackings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tracking"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+    post:
+      tags: ["Trackings"]
+      summary: Create a tracking template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrackingCreate"
+      responses:
+        "201":
+          description: Tracking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tracking"
+
+  /trackings/{id}:
+    get:
+      tags: ["Trackings"]
+      summary: Get tracking template by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tracking details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tracking"
+        "404":
+          description: Tracking not found
+    delete:
+      tags: ["Trackings"]
+      summary: Delete tracking template
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tracking deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        "404":
+          description: Tracking not found
+
+  # Records API v1
+  /records:
+    get:
+      tags: ["Records"]
+      summary: List records
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: q
+          schema: { type: string }
+          description: Search keyword
+        - in: query
+          name: status
+          schema: { type: string }
+          description: Filter by status
+        - in: query
+          name: sort_by
+          schema: { type: string, default: "created_at" }
+          description: Sort field
+        - in: query
+          name: sort_order
+          schema: { type: string, enum: ["asc", "desc"], default: "desc" }
+          description: Sort order
+      responses:
+        "200":
+          description: List of records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  records:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Record"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+    post:
+      tags: ["Records"]
+      summary: Create a record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordCreate"
+      responses:
+        "201":
+          description: Record created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+
+  /records/{id}:
+    get:
+      tags: ["Records"]
+      summary: Get record by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Record details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Record"
+        "404":
+          description: Record not found
+    put:
+      tags: ["Records"]
+      summary: Update record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordUpdate"
+      responses:
+        "200":
+          description: Updated record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Record"
+        "404":
+          description: Record not found
+    delete:
+      tags: ["Records"]
+      summary: Delete record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Record deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        "404":
+          description: Record not found
+
 components:
   schemas:
     Patient:
@@ -116,6 +645,9 @@ components:
         gender: { type: string }
         address: { type: string }
         phone: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
     PatientCreate:
       type: object
       properties:
@@ -125,6 +657,7 @@ components:
         address: { type: string }
         phone: { type: string }
       required: [name, yob, gender, address, phone]
+
     PatientUpdate:
       type: object
       properties:
@@ -133,9 +666,166 @@ components:
         gender: { type: string }
         address: { type: string }
         phone: { type: string }
+
+    Test:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        price: { type: integer }
+        normal_value: { type: string }
+        unit: { type: string }
+        lower_bound: { type: number, format: float }
+        upper_bound: { type: number, format: float }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    TestCreate:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: integer }
+          normal_value: { type: string }
+        unit: { type: string }
+        lower_bound: { type: number, format: float }
+        upper_bound: { type: number, format: float }
+      required: [name, price, normal_value, unit, lower_bound, upper_bound]
+
+    TestUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        price: { type: integer }
+        normal_value: { type: string }
+        unit: { type: string }
+        lower_bound: { type: number, format: float }
+        upper_bound: { type: number, format: float }
+
+    Combo:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        test_ids: 
+          type: array
+          items:
+            type: string
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    ComboDetailsResponse:
+      type: object
+      properties:
+        combo: 
+          $ref: "#/components/schemas/Combo"
+        tests:
+          type: array
+          items:
+            $ref: "#/components/schemas/Test"
+
+    ComboCreate:
+      type: object
+      properties:
+        name: { type: string }
+        test_ids:
+          type: array
+          items:
+            type: string
+      required: [name, test_ids]
+
+    ComboUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        test_ids:
+          type: array
+          items:
+            type: string
+
+    TestResult:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        price: { type: integer }
+        normal_value: { type: string }
+        unit: { type: string }
+        lower_bound: { type: number, format: float }
+        upper_bound: { type: number, format: float }
+        result: { type: string }
+        result_text: { type: string }
+        abnormal: { type: boolean }
+        manual_abnormal_override: { type: boolean }
+
+    Record:
+      type: object
+      properties:
+        id: { type: string }
+        combo_name: { type: string }
+        patient: 
+          $ref: "#/components/schemas/Patient"
+        test_results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestResult"
+        status: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    RecordCreate:
+      type: object
+      properties:
+        patient_id: { type: string }
+        combo_name: { type: string }
+        test_results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestResult"
+      required: [patient_id, test_results]
+
+    RecordUpdate:
+      type: object
+      properties:
+        combo_name: { type: string }
+        patient_id: { type: string }
+        test_results:
+          type: array
+          items:
+            $ref: "#/components/schemas/TestResult"
+
+    TrackingTestData:
+      type: object
+      properties:
+        test_id: { type: string }
+        test_name: { type: string }
+        normal_value: { type: string }
+        unit: { type: string }
+        order: { type: integer }
+
+    Tracking:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        tests:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackingTestData"
+
+    TrackingCreate:
+      type: object
+      properties:
+        name: { type: string }
+        tests:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackingTestData"
+      required: [name, tests]
+
     Pagination:
       type: object
       properties:
         page: { type: integer }
         page_size: { type: integer }
         total: { type: integer }
+        total_pages: { type: integer }

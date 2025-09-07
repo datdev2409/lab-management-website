@@ -1,0 +1,46 @@
+services:
+  service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENV: production
+    ports:
+      - "8888:8080"
+    networks:
+      - default
+
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+  
+  alloy:
+    image: grafana/alloy:latest
+    ports:
+      - "12345:12345"
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - alloy_data:/var/lib/alloy/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - default
+
+volumes:
+  alloy_data:
+
+networks:
+  default:
+    driver: bridge

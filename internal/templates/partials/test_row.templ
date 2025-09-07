@@ -19,7 +19,7 @@ templ TestRow(test *models.Test, page string) {
 				<td style="width: 100px">
 					<a href={ templ.SafeURL("/danh-muc-xet-nghiem/" + test.ID + "/edit") } class="link-primary">Sửa</a>
 					<a
-						hx-delete={ "/api/tests/" + test.ID }
+						hx-delete={ "/api/v1/tests/" + test.ID }
 						hx-target="closest tr"
 						hx-swap="outerHTML"
 						hx-confirm="Bạn có chắc chắn muốn xoá xét nghiệm này?"

@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"log/slog"
 	"net/http"
 	"strconv"
 
 	"github.com/a-h/templ"
+	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) HandleTrackingPage(w http.ResponseWriter, r *http.Request) error {
@@ -30,6 +31,7 @@ func (h *Handler) HandleCreateTrackingListPage(w http.ResponseWriter, r *http.Re
 }
 
 func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
+	log := logger.FromCtx(r.Context())
 	keyword := r.URL.Query().Get("keyword")
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
@@ -45,7 +47,7 @@ func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	target := r.Header.Get("HX-Target")
-	slog.Debug("HTMX Target:", slog.String("target", target))
+	log.Debug("HTMX Target", zap.String("target", target))
 
 	switch target {
 	default:
@@ -139,7 +141,7 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 
 	}
 
-	filename, err := sheets.CreateRecordTrackingFile(records, testMap)
+	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testMap)
 	if err != nil {
 		return err
 	}

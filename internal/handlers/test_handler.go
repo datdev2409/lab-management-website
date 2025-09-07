@@ -2,16 +2,15 @@ package handlers
 
 import (
 	"encoding/json"
-	"log/slog"
 	"math"
 	"net/http"
 	"strconv"
 
-	"github.com/a-h/templ"
+	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/datdev2409/lab-admin-go/internal/templates/partials"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) HandleTestPage(w http.ResponseWriter, r *http.Request) error {
@@ -55,28 +54,6 @@ func (h *Handler) HandleCreateTest(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
-func (h *Handler) ListTests(w http.ResponseWriter, r *http.Request) error {
-	keyword := r.URL.Query().Get("test_name")
-	slog.Debug("Listing tests with keyword", "keyword", keyword)
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	_, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: 10})
-	if err != nil {
-		return err
-	}
-	target := r.Header.Get("HX-Target")
-	switch target {
-	case "test-table":
-		return RenderMultiComponents(r.Context(), w, []templ.Component{
-			partials.TestTable(),
-			partials.Pagination(pagination, "test-page"),
-		})
-	}
-	return nil
-}
-
 func (h *Handler) DeleteTest(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 	err := h.Store.DeleteTestById(r.Context(), id)
@@ -89,6 +66,7 @@ func (h *Handler) DeleteTest(w http.ResponseWriter, r *http.Request) error {
 
 // ListTestsV1 handles GET /api/v1/tests
 func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
+	log := logger.FromCtx(r.Context())
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		page = 1
@@ -98,6 +76,7 @@ func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
 		pageSize = 10
 	}
 	keyword := r.URL.Query().Get("q")
+	log.Info("Listing tests", zap.String("keyword", keyword), zap.Int("page", page), zap.Int("pageSize", pageSize))
 	tests, pagination, err := h.Store.ListTests(r.Context(), models.TestQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
 	if err != nil {
 		return err
@@ -108,44 +87,40 @@ func (h *Handler) ListTestsV1(w http.ResponseWriter, r *http.Request) error {
 
 // CreateTestV1 handles POST /api/v1/tests
 func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		Name        string `json:"name"`
-		Price       string `json:"price"`
-		NormalValue string `json:"normal_value"`
-		Unit        string `json:"unit"`
-		LowerBound  string `json:"lower_bound"`
-		UpperBound  string `json:"upper_bound"`
-	}
+	log := logger.FromCtx(r.Context())
+	var req models.CreateTestRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		slog.Debug("Failed to decode request body", "error", err)
+		log.Error("Failed to decode request body", zap.Error(err))
 		return BadRequestError("invalid request body")
 	}
 
-	// Parse price
-	price, err := strconv.Atoi(req.Price)
-	if err != nil {
-		return BadRequestError("invalid price value")
-	}
+	log.Debug("Creating test", zap.Float64("lower_bound", req.LowerBound))
 
-	// Parse lower bound
-	lowerBound, err := strconv.ParseFloat(req.LowerBound, 64)
-	if err != nil {
-		return BadRequestError("invalid lower_bound value")
-	}
+	// // Parse price
+	// price, err := strconv.Atoi(req.Price)
+	// if err != nil {
+	// 	return BadRequestError("invalid price value")
+	// }
 
-	// Parse upper bound
-	upperBound, err := strconv.ParseFloat(req.UpperBound, 64)
-	if err != nil {
-		return BadRequestError("invalid upper_bound value")
-	}
+	// // Parse lower bound
+	// lowerBound, err := strconv.ParseFloat(req.LowerBound, 64)
+	// if err != nil {
+	// 	return BadRequestError("invalid lower_bound value")
+	// }
+
+	// // Parse upper bound
+	// upperBound, err := strconv.ParseFloat(req.UpperBound, 64)
+	// if err != nil {
+	// 	return BadRequestError("invalid upper_bound value")
+	// }
 
 	test := models.NewTest(
 		req.Name,
-		price,
+		req.Price,
 		req.NormalValue,
 		req.Unit,
-		math.Round(lowerBound*100)/100,
-		math.Round(upperBound*100)/100,
+		math.Round(req.LowerBound*1000)/1000,
+		math.Round(req.UpperBound*1000)/1000,
 	)
 	newTest, err := h.Store.InsertTest(r.Context(), test)
 	if err != nil {

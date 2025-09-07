@@ -3,6 +3,7 @@ package sheets
 import (
 	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -40,4 +41,25 @@ func ToLowerCaseNonAccentVietnamese(str string) string {
 	// Remove Â, Ê, Ă, Ơ, Ư marks
 	str = regexp.MustCompile(`[\\u02C6\\u0306\\u031B]`).ReplaceAllString(str, "")
 	return str
+}
+
+// FormatPrice formats an integer price with comma separators
+func FormatPrice(price int) string {
+	if price == 0 {
+		return "0"
+	}
+	
+	// Convert to string
+	priceStr := strconv.Itoa(price)
+	
+	// Add commas for thousands separator
+	result := ""
+	for i, char := range priceStr {
+		if i > 0 && (len(priceStr)-i)%3 == 0 {
+			result += ","
+		}
+		result += string(char)
+	}
+	
+	return result
 }
