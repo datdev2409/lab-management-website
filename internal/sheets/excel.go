@@ -377,7 +377,7 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
 
-		testFieldValue := testResult.Result
+		testFieldValue := FormatResult(testResult.Result)
 		if testResult.ResultText != "" {
 			testFieldValue += testResult.ResultText
 		}
@@ -532,7 +532,7 @@ func CreateRecordResultPDF(ctx context.Context, record *models.Record) (string, 
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
 
-		testFieldValue := testResult.Result
+		testFieldValue := FormatResult(testResult.Result)
 		if testResult.ResultText != "" {
 			testFieldValue += testResult.ResultText
 		}
@@ -687,7 +687,7 @@ func CreateRecordResultWithSignatureFile(ctx context.Context, record *models.Rec
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
 
-		testFieldValue := testResult.Result
+		testFieldValue := FormatResult(testResult.Result)
 		if testResult.ResultText != "" {
 			testFieldValue += testResult.ResultText
 		}

@@ -63,3 +63,25 @@ func FormatPrice(price int) string {
 	
 	return result
 }
+
+// FormatResult formats a result string to ensure at least 1 decimal point
+// If the result is a whole number, adds .0
+// If the result already has decimals, keeps the full value
+func FormatResult(result string) string {
+	if result == "" {
+		return result
+	}
+	
+	// Try to parse as float to check if it's a numeric value
+	if val, err := strconv.ParseFloat(result, 64); err == nil {
+		// If it's a whole number, format with 1 decimal place
+		if val == float64(int64(val)) {
+			return strconv.FormatFloat(val, 'f', 1, 64)
+		}
+		// If it already has decimals, keep the original precision
+		return result
+	}
+	
+	// If it's not a number, return as is
+	return result
+}
