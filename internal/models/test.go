@@ -16,6 +16,15 @@ type Test struct {
 	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
 }
 
+type CreateTestRequest struct {
+	Name        string  `json:"name"`
+	Price       int     `json:"price"`
+	NormalValue string  `json:"normal_value"`
+	Unit        string  `json:"unit"`
+	LowerBound  float64 `json:"lower_bound"`
+	UpperBound  float64 `json:"upper_bound"`
+}
+
 type TestInfo struct {
 	Name        string
 	NormalValue string

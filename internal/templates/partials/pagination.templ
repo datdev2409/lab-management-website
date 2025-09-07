@@ -41,8 +41,6 @@ templ Pagination(pagination *models.PaginationResponse, page string) {
 				for i := 1; i <= pagination.TotalPage; i++ {
 					<li class={ "page-item", templ.KV("active", i == pagination.Page) }>
 						switch page {
-							case "test-page":
-								<a class="page-link" hx-get={ "/api/tests?page=" + strconv.Itoa(i) } hx-include="#test-search-form" hx-target="#test-table">{ strconv.Itoa(i) }</a>
 							case "combo-page":
 								<a class="page-link" hx-get={ "/api/combos?page=" + strconv.Itoa(i) } hx-include="#combo-search-form" hx-target="#combo-table-wrapper">{ strconv.Itoa(i) }</a>
 							case "tracking-page":

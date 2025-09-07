@@ -10,7 +10,7 @@ live/templ:
 # run air to detect any go file changes to re-build and re-run the server.
 live/server:
 	@air \
-	--build.cmd "go build -o bin/main cmd/api/*.go" --build.bin "bin/main" --build.delay "100" \
+	--build.cmd "GO_ENV=local go build -o bin/main cmd/api/*.go" --build.bin "bin/main" --build.delay "100" \
 	--build.exclude_dir "node_modules" \
 	--build.include_ext "go" \
 	--build.stop_on_error "false" \
@@ -19,6 +19,9 @@ live/server:
 # start live server and templ generation
 live: 
 	make -j2 live/server live/templ
+
+compose-local:
+	docker-compose -f docker-compose.local.yaml up
 
 build:
 	@GOOS=linux GOARCH=amd64 go build -o bin/main cmd/api/main.go

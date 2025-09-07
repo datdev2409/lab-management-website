@@ -258,7 +258,7 @@ func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request
 	}
 
 	// Generate Excel file
-	filePath, err := sheets.CreateRecordTrackingFile(records, testMap)
+	filePath, err := sheets.CreateRecordTrackingFile(r.Context(), records, testMap)
 	if err != nil {
 		return InternalServerError("failed to create comparison file")
 	}

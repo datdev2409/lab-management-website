@@ -7,6 +7,7 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
+	"go.uber.org/zap"
 )
 
 type Handler struct {
@@ -14,14 +15,17 @@ type Handler struct {
 	Store  storage.Storage
 }
 
-func NewHandler(store storage.Storage) *Handler {
+func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	h := &Handler{Router: r, Store: store}
 
-	r.Use(middleware.Logger)
+	r.Use(middleware.RequestID)
+	// r.Use(requestLogger)
+	r.Use(LoggingMiddleware(log))
+	r.Use(HTTPLogger)
 
 	// Handle static files
 	r.Get("/reports/*", http.StripPrefix("/reports/", http.FileServer(http.Dir("reports"))).ServeHTTP)
@@ -92,13 +96,6 @@ func NewHandler(store storage.Storage) *Handler {
 		r.Get("/{id}", Make(h.GetRecordV1))
 		r.Put("/{id}", Make(h.UpdateRecordV1))
 		r.Delete("/{id}", Make(h.DeleteRecordV1))
-	})
-
-	// Handle tests
-	r.Route("/api/tests", func(r chi.Router) {
-		r.Get("/", Make(h.ListTests))
-		r.Post("/", Make(h.HandleCreateTest))
-		r.Delete("/{id}", Make(h.DeleteTest))
 	})
 
 	r.Route("/api/records", func(r chi.Router) {
