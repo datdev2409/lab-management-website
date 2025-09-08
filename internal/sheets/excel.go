@@ -148,27 +148,32 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	}
 	defer f.Close()
 
-	// Create font styles
-	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
-	})
+	// Create style manager
+	styleManager := NewStyleManager(ctx, f)
+
+	// Get styles from style manager
+	patientNameStyle, err := styleManager.GetPatientNameStyle()
 	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to create patient name style for billing", zap.Error(err))
 		return "", err
 	}
 
-	patientInfoStyle, _ := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-	})
-	dateCenterStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-	})
+	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
 	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to create date center style for billing", zap.Error(err))
+		return "", err
+	}
+
+	dateCenterStyle, err := styleManager.GetDateCenterStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testResultStyle, err := styleManager.GetTestResultStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testNameStyle, err := styleManager.GetTestNameStyle()
+	if err != nil {
 		return "", err
 	}
 
@@ -188,43 +193,6 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	startTestRow := 10
 	for range len(record.TestResults) - 1 {
 		f.DuplicateRow("Sheet1", startTestRow)
-	}
-
-	// Create test result style with borders
-	testResultStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test name style (left aligned)
-	testNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to create test name style for billing", zap.Error(err))
-		return "", err
 	}
 
 	totalPrice := 0
@@ -278,17 +246,31 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 	}
 	defer f.Close()
 
-	// Create font styles
-	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
-	})
+	// Create style manager
+	styleManager := NewStyleManager(ctx, f)
+
+	// Get styles from style manager
+	patientNameStyle, err := styleManager.GetPatientNameStyle()
 	if err != nil {
 		return "", err
 	}
 
-	patientInfoStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-	})
+	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testResultStyle, err := styleManager.GetTestResultStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testNameStyle, err := styleManager.GetTestNameStyle()
+	if err != nil {
+		return "", err
+	}
+
+	abnormalStyle, err := styleManager.GetAbnormalStyle()
 	if err != nil {
 		return "", err
 	}
@@ -311,63 +293,6 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 
 	f.SetCellValue("Sheet1", "E4", record.Patient.Gender)
 	f.SetCellStyle("Sheet1", "E4", "E4", patientInfoStyle)
-
-	// Create style for abnormal results (bold + center + borders)
-	abnormalStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true,
-			Size: 13,
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test result style with borders
-	testResultStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test name style (left aligned)
-	testNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
 
 	startTestRow := 8
 	for range len(record.TestResults) - 1 {
@@ -433,17 +358,31 @@ func CreateRecordResultPDF(ctx context.Context, record *models.Record) (string, 
 	}
 	defer f.Close()
 
-	// Create font styles
-	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
-	})
+	// Create style manager
+	styleManager := NewStyleManager(ctx, f)
+
+	// Get styles from style manager
+	patientNameStyle, err := styleManager.GetPatientNameStyle()
 	if err != nil {
 		return "", err
 	}
 
-	patientInfoStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-	})
+	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testResultStyle, err := styleManager.GetTestResultStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testNameStyle, err := styleManager.GetTestNameStyle()
+	if err != nil {
+		return "", err
+	}
+
+	abnormalStyle, err := styleManager.GetAbnormalStyle()
 	if err != nil {
 		return "", err
 	}
@@ -466,63 +405,6 @@ func CreateRecordResultPDF(ctx context.Context, record *models.Record) (string, 
 
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
 	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
-
-	// Create style for abnormal results (bold + center + borders)
-	abnormalStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true,
-			Size: 13,
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test result style with borders
-	testResultStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test name style (left aligned)
-	testNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
 
 	startTestRow := 15
 	for range len(record.TestResults) - 1 {
@@ -588,17 +470,31 @@ func CreateRecordResultWithSignatureFile(ctx context.Context, record *models.Rec
 	}
 	defer f.Close()
 
-	// Create font styles
-	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
-	})
+	// Create style manager
+	styleManager := NewStyleManager(ctx, f)
+
+	// Get styles from style manager
+	patientNameStyle, err := styleManager.GetPatientNameStyle()
 	if err != nil {
 		return "", err
 	}
 
-	patientInfoStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-	})
+	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testResultStyle, err := styleManager.GetTestResultStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testNameStyle, err := styleManager.GetTestNameStyle()
+	if err != nil {
+		return "", err
+	}
+
+	abnormalStyle, err := styleManager.GetAbnormalStyle()
 	if err != nil {
 		return "", err
 	}
@@ -621,63 +517,6 @@ func CreateRecordResultWithSignatureFile(ctx context.Context, record *models.Rec
 
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
 	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
-
-	// Create style for abnormal results (bold + center + borders)
-	abnormalStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true,
-			Size: 13,
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test result style with borders
-	testResultStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test name style (left aligned)
-	testNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
 
 	startTestRow := 15
 	for range len(record.TestResults) - 1 {
@@ -742,25 +581,39 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	}
 	defer f.Close()
 
+	// Create style manager
+	styleManager := NewStyleManager(ctx, f)
+
+	// Get styles from style manager
+	patientNameStyle, err := styleManager.GetPatientNameStyle()
+	if err != nil {
+		return "", err
+	}
+
+	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testResultStyle, err := styleManager.GetTestResultStyle()
+	if err != nil {
+		return "", err
+	}
+
+	testNameStyle, err := styleManager.GetTestNameStyle()
+	if err != nil {
+		return "", err
+	}
+
+	abnormalStyle, err := styleManager.GetAbnormalStyle()
+	if err != nil {
+		return "", err
+	}
+
 	startDate := records[0].CreatedAt.Format("02/01/2006")
 	f.SetCellValue("Sheet1", "A4", fmt.Sprintf(" Từ ngày: %s đến ngày: %s", startDate, time.Now().Format("02/01/2006")))
 
 	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
-
-	// Create font styles
-	patientNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	patientInfoStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
-	})
-	if err != nil {
-		return "", err
-	}
 
 	// Apply styles
 	f.SetCellStyle("Sheet1", "A4", "A4", patientInfoStyle)
@@ -784,42 +637,6 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 				}
 			}
 		}
-	}
-
-	// Create test result style with borders
-	testResultStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// Create test name style (left aligned)
-	testNameStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
-		Alignment: &excelize.Alignment{
-			Horizontal: "left",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
-	if err != nil {
-		return "", err
 	}
 
 	rowMap := make(map[string]int)
@@ -847,27 +664,6 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	})
 
 	tableHeaderStyle, err := f.GetCellStyle("Sheet1", "A6")
-	if err != nil {
-		return "", err
-	}
-
-	// Create style for abnormal results (bold + center + borders)
-	abnormalStyle, err := f.NewStyle(&excelize.Style{
-		Font: &excelize.Font{
-			Bold: true,
-			Size: 13,
-		},
-		Alignment: &excelize.Alignment{
-			Horizontal: "center",
-			Vertical:   "center",
-		},
-		Border: []excelize.Border{
-			{Type: "left", Color: "000000", Style: 1},
-			{Type: "right", Color: "000000", Style: 1},
-			{Type: "top", Color: "000000", Style: 1},
-			{Type: "bottom", Color: "000000", Style: 1},
-		},
-	})
 	if err != nil {
 		return "", err
 	}
