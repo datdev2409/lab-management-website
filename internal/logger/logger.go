@@ -19,6 +19,7 @@ func Init() *zap.Logger {
 		cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 	}
 	l := zap.Must(cfg.Build(logOptions...))
+	zap.ReplaceGlobals(l)
 	l.Info("Logger initialized", zap.String("env", os.Getenv("GO_ENV")))
 	return l
 }

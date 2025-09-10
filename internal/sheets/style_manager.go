@@ -2,6 +2,7 @@ package sheets
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/xuri/excelize/v2"
@@ -12,15 +13,27 @@ import (
 type StyleManager struct {
 	file   *excelize.File
 	ctx    context.Context
-	styles map[string]int // Cache created styles by name
+	styles map[StyleName]int // Cache created styles by name
 }
+
+// StyleName represents available style names
+type StyleName string
+
+const (
+	StylePatientName StyleName = "patientName"
+	StylePatientInfo StyleName = "patientInfo"
+	StyleDateCenter  StyleName = "dateCenter"
+	StyleTestResult  StyleName = "testResult"
+	StyleTestName    StyleName = "testName"
+	StyleAbnormal    StyleName = "abnormal"
+)
 
 // NewStyleManager creates a new StyleManager instance
 func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 	return &StyleManager{
 		file:   file,
 		ctx:    ctx,
-		styles: make(map[string]int),
+		styles: make(map[StyleName]int),
 	}
 }
 
@@ -34,9 +47,29 @@ func (sm *StyleManager) getStandardBorder() []excelize.Border {
 	}
 }
 
+// GetStyle returns the style ID for the given style name
+func (sm *StyleManager) GetStyle(styleName StyleName) (int, error) {
+	switch styleName {
+	case StylePatientName:
+		return sm.GetPatientNameStyle()
+	case StylePatientInfo:
+		return sm.GetPatientInfoStyle()
+	case StyleDateCenter:
+		return sm.GetDateCenterStyle()
+	case StyleTestResult:
+		return sm.GetTestResultStyle()
+	case StyleTestName:
+		return sm.GetTestNameStyle()
+	case StyleAbnormal:
+		return sm.GetAbnormalStyle()
+	default:
+		return 0, fmt.Errorf("unknown style name: %s", styleName)
+	}
+}
+
 // GetPatientNameStyle returns style for patient names (14pt, bold)
 func (sm *StyleManager) GetPatientNameStyle() (int, error) {
-	if styleID, exists := sm.styles["patientName"]; exists {
+	if styleID, exists := sm.styles[StylePatientName]; exists {
 		return styleID, nil
 	}
 
@@ -48,13 +81,13 @@ func (sm *StyleManager) GetPatientNameStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["patientName"] = styleID
+	sm.styles[StylePatientName] = styleID
 	return styleID, nil
 }
 
 // GetPatientInfoStyle returns style for patient information (12pt)
 func (sm *StyleManager) GetPatientInfoStyle() (int, error) {
-	if styleID, exists := sm.styles["patientInfo"]; exists {
+	if styleID, exists := sm.styles[StylePatientInfo]; exists {
 		return styleID, nil
 	}
 
@@ -66,13 +99,13 @@ func (sm *StyleManager) GetPatientInfoStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["patientInfo"] = styleID
+	sm.styles[StylePatientInfo] = styleID
 	return styleID, nil
 }
 
 // GetDateCenterStyle returns style for centered date fields (12pt, center aligned)
 func (sm *StyleManager) GetDateCenterStyle() (int, error) {
-	if styleID, exists := sm.styles["dateCenter"]; exists {
+	if styleID, exists := sm.styles[StyleDateCenter]; exists {
 		return styleID, nil
 	}
 
@@ -88,13 +121,13 @@ func (sm *StyleManager) GetDateCenterStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["dateCenter"] = styleID
+	sm.styles[StyleDateCenter] = styleID
 	return styleID, nil
 }
 
 // GetTestResultStyle returns style for test results (13pt, center aligned with borders)
 func (sm *StyleManager) GetTestResultStyle() (int, error) {
-	if styleID, exists := sm.styles["testResult"]; exists {
+	if styleID, exists := sm.styles[StyleTestResult]; exists {
 		return styleID, nil
 	}
 
@@ -111,13 +144,13 @@ func (sm *StyleManager) GetTestResultStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["testResult"] = styleID
+	sm.styles[StyleTestResult] = styleID
 	return styleID, nil
 }
 
 // GetTestNameStyle returns style for test names (13pt, left aligned with borders)
 func (sm *StyleManager) GetTestNameStyle() (int, error) {
-	if styleID, exists := sm.styles["testName"]; exists {
+	if styleID, exists := sm.styles[StyleTestName]; exists {
 		return styleID, nil
 	}
 
@@ -134,13 +167,13 @@ func (sm *StyleManager) GetTestNameStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["testName"] = styleID
+	sm.styles[StyleTestName] = styleID
 	return styleID, nil
 }
 
 // GetAbnormalStyle returns style for abnormal test results (13pt, bold, center aligned with borders)
 func (sm *StyleManager) GetAbnormalStyle() (int, error) {
-	if styleID, exists := sm.styles["abnormal"]; exists {
+	if styleID, exists := sm.styles[StyleAbnormal]; exists {
 		return styleID, nil
 	}
 
@@ -160,6 +193,6 @@ func (sm *StyleManager) GetAbnormalStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles["abnormal"] = styleID
+	sm.styles[StyleAbnormal] = styleID
 	return styleID, nil
 }

@@ -4,146 +4,21 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strings"
 	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 )
 
-// MarginConfig holds margin settings for different templates
-type MarginConfig struct {
-	Top    float64
-	Bottom float64
-	Left   float64
-	Right  float64
-	Header float64
-	Footer float64
-}
-
-// getTemplateMargins returns specific margin settings for each template
-func getTemplateMargins(reportType models.ReportType) MarginConfig {
-	switch reportType {
-	case models.BillingReport: // Billing template
-		return MarginConfig{
-			Top:    float64(0),        // Smaller top margin for billing
-			Bottom: 0.511811023622047, // Smaller bottom margin
-			Left:   0.4,               // Narrow left margin
-			Right:  0.4,               // Narrow right margin
-			Header: 0.236220472440945, // Minimal header
-			Footer: 0.511811023622047, // Minimal footer
-		}
-	case models.ResultsReport: // Result template
-		return MarginConfig{
-			Top:    1.9,               // Standard top margin
-			Bottom: float64(0),        // Standard bottom margin
-			Left:   0.4,               // Medium left margin
-			Right:  0.4,               // Medium right margin
-			Header: 0.236220472440945, // Standard header
-			Footer: float64(0),        // Standard footer
-		}
-	case models.ResultsWithSignature: // Result with signature template
-		return MarginConfig{
-			Top:    0.31496063,        // Larger top margin for signature space
-			Bottom: float64(0),        // Larger bottom margin for signature space
-			Left:   0.4,               // Wider left margin
-			Right:  0.4,               // Wider right margin
-			Header: 0.511811023622047, // Standard header
-			Footer: float64(0),        // Larger footer for signature
-		}
-	case models.TrackingReport: // Tracking template
-		return MarginConfig{
-			Top:    0.25, // Medium top margin
-			Bottom: 0.5,  // Medium bottom margin
-			Left:   0.5,  // Very narrow left margin (landscape needs more space)
-			Right:  0.5,  // Very narrow right margin
-			Header: 0.5,  // Compact header
-			Footer: 0.5,  // Compact footer
-		}
-	default: // Default margins
-		return MarginConfig{
-			Top:    0.75,
-			Bottom: 0.75,
-			Left:   0.7,
-			Right:  0.7,
-			Header: 0.3,
-			Footer: 0.3,
-		}
-	}
-}
-
-// setupPageLayoutWithCustomMargins configures the Excel sheet for A4 printing with template-specific margins
-func setupPageLayoutWithCustomMargins(ctx context.Context, f *excelize.File, sheetName string, orientation string, reportType models.ReportType) error {
-	// Set page layout for A4 paper size
-	size := 9
-	err := f.SetPageLayout(sheetName, &excelize.PageLayoutOptions{
-		Size:        &size,
-		Orientation: &orientation,
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to set page layout for sheet", zap.String("sheet", sheetName), zap.Error(err))
-		return err
-	}
-
-	// Get template-specific margins
-	margins := getTemplateMargins(reportType)
-
-	// Set page margins (in inches)
-	err = f.SetPageMargins(sheetName, &excelize.PageLayoutMarginsOptions{
-		Bottom: &margins.Bottom,
-		Footer: &margins.Footer,
-		Header: &margins.Header,
-		Left:   &margins.Left,
-		Right:  &margins.Right,
-		Top:    &margins.Top,
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to set page margins for sheet", zap.String("sheet", sheetName), zap.Error(err))
-		return err
-	}
-
-	// Set print options to fit to page
-	fitToPage := true
-	err = f.SetSheetProps(sheetName, &excelize.SheetPropsOptions{
-		FitToPage: &fitToPage,
-	})
-	return err
-}
-
-// setupPageLayoutWithCustomMarginsAndPrintArea configures the Excel sheet with custom margins and print area
-func setupPageLayoutWithCustomMarginsAndPrintArea(ctx context.Context, f *excelize.File, sheetName string, orientation string, reportType models.ReportType, printArea string) error {
-	// Set up page layout with custom margins first
-	err := setupPageLayoutWithCustomMargins(ctx, f, sheetName, orientation, reportType)
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to setup page layout with custom margins for sheet", zap.String("sheet", sheetName), zap.Error(err))
-		return err
-	}
-
-	// Set print area
-	// First, try to delete any existing print area to avoid conflicts
-	f.DeleteDefinedName(&excelize.DefinedName{
-		Name:  "_xlnm.Print_Area",
-		Scope: sheetName,
-	})
-
-	// Now set the new print area
-	err = f.SetDefinedName(&excelize.DefinedName{
-		Name:     "_xlnm.Print_Area",
-		RefersTo: fmt.Sprintf("%s!%s", sheetName, printArea),
-		Scope:    sheetName,
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to set print area for sheet", zap.String("sheet", sheetName), zap.String("printArea", printArea), zap.Error(err))
-	}
-	return err
-}
-
 func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string, error) {
-	f, err := OpenTemplate("phieu_thu")
+	billingReport, err := NewReportWithSingleRecord(models.BillingReport, *record)
 	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to open billing template", zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to create billing report config", zap.Error(err))
+		return "", err
+	}
+	f, err := billingReport.Open(ctx)
+	if err != nil {
 		return "", err
 	}
 	defer f.Close()
@@ -224,24 +99,21 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$E$%d", lastRow)
 
-	// Setup page layout for A4 printing with template-specific margins and print area
-	if err := setupPageLayoutWithCustomMarginsAndPrintArea(ctx, f, "Sheet1", "portrait", models.BillingReport, printArea); err != nil {
-		logger.FromCtx(ctx).Debug("Failed to setup page layout for billing report", zap.Error(err))
+	if err := billingReport.ApplyPageSetup(ctx, f, "Sheet1", printArea); err != nil {
 		return "", err
 	}
 
-	filename := fmt.Sprintf("reports/%s-%s-hoa-don.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
-	if err := f.SaveAs(filename); err != nil {
-		logger.FromCtx(ctx).Debug("Failed to save billing file", zap.String("filename", filename), zap.Error(err))
-		return "", err
-	}
-	return filename, nil
+	return billingReport.Save(ctx, f)
 }
 
 func CreateRecordResultFile(ctx context.Context, record *models.Record) (string, error) {
-	f, err := OpenTemplate("phieu_ket_qua")
+	resultReport, err := NewReportWithSingleRecord(models.ResultsReport, *record)
 	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to open result template", zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to create result report config", zap.Error(err))
+		return "", err
+	}
+	f, err := resultReport.Open(ctx)
+	if err != nil {
 		return "", err
 	}
 	defer f.Close()
@@ -338,134 +210,30 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)
 
-	// Setup page layout for A4 printing with template-specific margins and print area
-	if err := setupPageLayoutWithCustomMarginsAndPrintArea(ctx, f, "Sheet1", "portrait", models.ResultsReport, printArea); err != nil {
+	if err := resultReport.ApplyPageSetup(ctx, f, "Sheet1", printArea); err != nil {
 		return "", err
 	}
 
-	filename := fmt.Sprintf("reports/%s-%s-ket-qua.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
-	if err := f.SaveAs(filename); err != nil {
-		return "", err
-	}
-	return filename, nil
+	return resultReport.Save(ctx, f)
 }
 
 func CreateRecordResultPDF(ctx context.Context, record *models.Record) (string, error) {
-	f, err := OpenTemplate(models.ResultsWithSignaturePDF)
-	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to open template for results with signature PDF", zap.Error(err))
-		return "", err
-	}
-	defer f.Close()
-
-	// Create style manager
-	styleManager := NewStyleManager(ctx, f)
-
-	// Get styles from style manager
-	patientNameStyle, err := styleManager.GetPatientNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testResultStyle, err := styleManager.GetTestResultStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testNameStyle, err := styleManager.GetTestNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	abnormalStyle, err := styleManager.GetAbnormalStyle()
-	if err != nil {
-		return "", err
-	}
-
-	now := time.Now()
-	f.SetCellValue("Sheet1", "C9", now.Format("02/01/2006"))
-	f.SetCellStyle("Sheet1", "C9", "C9", patientInfoStyle)
-
-	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
-	f.SetCellStyle("Sheet1", "C10", "C10", patientNameStyle)
-
-	f.SetCellValue("Sheet1", "C11", record.Patient.Address)
-	f.SetCellStyle("Sheet1", "C11", "C11", patientInfoStyle)
-
-	f.SetCellValue("Sheet1", "E9", record.Patient.Phone)
-	f.SetCellStyle("Sheet1", "E9", "E9", patientInfoStyle)
-
-	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
-	f.SetCellStyle("Sheet1", "E10", "E10", patientInfoStyle)
-
-	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
-	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
-
-	startTestRow := 15
-	for range len(record.TestResults) - 1 {
-		f.DuplicateRow("Sheet1", startTestRow)
-	}
-
-	for i, testResult := range record.TestResults {
-		row := startTestRow + i
-
-		testFieldValue := FormatResult(testResult.Result)
-		if testResult.ResultText != "" {
-			testFieldValue += testResult.ResultText
-		}
-
-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
-
-		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
-
-		resultCell := fmt.Sprintf("D%d", row)
-		f.SetCellValue("Sheet1", resultCell, testFieldValue)
-
-		// Apply bold and underline style if result is abnormal, otherwise normal style
-		// Manual override has higher priority than automatic detection
-		if testResult.Abnormal {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
-		} else {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
-		}
-
-		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
-
-		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
-
-		// Set row height for better spacing (in points, default is usually ~15)
-		f.SetRowHeight("Sheet1", row, 19.0)
-	}
-
-	// Calculate print area based on content (A1 to F + last row with data)
-	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
-	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)     // Add +7 to the last row to handle the signature image
-
-	// Setup page layout for A4 printing with template-specific margins and print area
-	if err := setupPageLayoutWithCustomMarginsAndPrintArea(ctx, f, "Sheet1", "portrait", models.ResultsWithSignature, printArea); err != nil {
-		return "", err
-	}
-
-	filename := fmt.Sprintf("reports/%s-%s-ket-qua-online.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
-	if err := f.SaveAs(filename); err != nil {
-		return "", err
-	}
-	return filename, nil
+	return createRecordResultFile(ctx, record, models.ResultsWithSignaturePDF, "ket-qua-online.xlsx")
 }
 
 func CreateRecordResultWithSignatureFile(ctx context.Context, record *models.Record) (string, error) {
-	f, err := OpenTemplate(models.ResultsWithSignature)
+	return createRecordResultFile(ctx, record, models.ResultsWithSignature, "ket-qua-online.xlsx")
+}
+
+// createRecordResultFile is a common helper function for creating result files with different templates
+func createRecordResultFile(ctx context.Context, record *models.Record, templateType models.ReportType, filenameSuffix string) (string, error) {
+	resultReport, err := NewReportWithSingleRecord(templateType, *record)
 	if err != nil {
-		logger.FromCtx(ctx).Debug("Failed to open template for results with signature", zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to create result report config", zap.Error(err), zap.String("templateType", string(templateType)))
+		return "", err
+	}
+	f, err := resultReport.Open(ctx)
+	if err != nil {
 		return "", err
 	}
 	defer f.Close()
@@ -562,20 +330,20 @@ func CreateRecordResultWithSignatureFile(ctx context.Context, record *models.Rec
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)     // Add +7 to the last row to handle the signature image
 
-	// Setup page layout for A4 printing with template-specific margins and print area
-	if err := setupPageLayoutWithCustomMarginsAndPrintArea(ctx, f, "Sheet1", "portrait", models.ResultsWithSignature, printArea); err != nil {
+	if err := resultReport.ApplyPageSetup(ctx, f, "Sheet1", printArea); err != nil {
 		return "", err
 	}
 
-	filename := fmt.Sprintf("reports/%s-%s-ket-qua-online.xlsx", now.Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"))
-	if err := f.SaveAs(filename); err != nil {
-		return "", err
-	}
-	return filename, nil
+	return resultReport.Save(ctx, f)
 }
 
 func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, testMap map[string]models.TestInfo) (string, error) {
-	f, err := OpenTemplate("phieu_theo_doi")
+	trackingReport, err := NewReportWithMultipleRecords(models.TrackingReport, records)
+	if err != nil {
+		logger.FromCtx(ctx).Error("Failed to create tracking report config", zap.Error(err))
+		return "", err
+	}
+	f, err := trackingReport.Open(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -619,7 +387,6 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	f.SetCellStyle("Sheet1", "A4", "A4", patientInfoStyle)
 	f.SetCellStyle("Sheet1", "A5", "A5", patientNameStyle)
 
-	now := time.Now()
 	startTestRow := 7
 	startRecordCol := 'D'
 
@@ -709,14 +476,9 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	lastRow := startTestRow + len(testMap) + 1        // Add buffer row
 	printArea := fmt.Sprintf("$A$1:$%s$%d", lastCol, lastRow)
 
-	// Setup page layout for A4 printing (landscape orientation for tracking reports) with template-specific margins and print area
-	if err := setupPageLayoutWithCustomMarginsAndPrintArea(ctx, f, "Sheet1", "landscape", models.TrackingReport, printArea); err != nil {
+	if err := trackingReport.ApplyPageSetup(ctx, f, "Sheet1", printArea); err != nil {
 		return "", err
 	}
 
-	filename := fmt.Sprintf("reports/%s-%s-theo-doi.xlsx", now.Format("20060102"), ToLowerCaseNonAccentVietnamese(strings.ReplaceAll(records[0].Patient.Name, " ", "_")))
-	if err := f.SaveAs(filename); err != nil {
-		return "", err
-	}
-	return filename, nil
+	return trackingReport.Save(ctx, f)
 }
