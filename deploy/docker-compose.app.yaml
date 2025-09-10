@@ -20,6 +20,6 @@ services:
       - traefik.enable=true
       - traefik.http.routers.lab-admin-go.entrypoints=web
     env_file:
-      - .env
+      - ../.env
     ports:
       - "9000:9000"
