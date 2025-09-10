@@ -1,0 +1,97 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+jobs:
+  update-go-dependencies:
+    name: Update Go Dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Update Go dependencies
+        run: |
+          go get -u ./...
+          go mod tidy
+
+      - name: Install templ
+        run: go install github.com/a-h/templ/cmd/templ@latest
+
+      - name: Generate templ files
+        run: templ generate
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update Go dependencies"
+          title: "chore: update Go dependencies"
+          body: |
+            This PR updates Go dependencies to their latest versions.
+
+            - Updated all dependencies using `go get -u ./...`
+            - Ran `go mod tidy` to clean up go.mod and go.sum
+            - Regenerated templ files
+            - Verified all tests still pass
+
+            Please review the changes before merging.
+          branch: chore/update-go-dependencies
+          delete-branch: true
+
+  update-docker-images:
+    name: Update Docker Base Images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Dockerfile base image
+        run: |
+          # Update Go version in Dockerfile (example - adjust as needed)
+          LATEST_GO_VERSION=$(curl -s https://api.github.com/repos/golang/go/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' | sed 's/go//')
+          sed -i "s/FROM golang:[0-9.]*/FROM golang:${LATEST_GO_VERSION}/" Dockerfile
+
+      - name: Update Docker Compose base images
+        run: |
+          # Update MongoDB version in docker-compose files
+          LATEST_MONGO_VERSION=$(curl -s https://registry.hub.docker.com/v2/repositories/library/mongo/tags/ | jq -r '.results[0].name' | grep -E '^[0-9]+\.[0-9]+$' | head -1)
+          find . -name "docker-compose*.yaml" -exec sed -i "s/mongo:[0-9.]*/mongo:${LATEST_MONGO_VERSION}/" {} \;
+
+      - name: Test Docker build
+        run: docker build --build-arg ENV=production -t test-build .
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update Docker base images"
+          title: "chore: update Docker base images"
+          body: |
+            This PR updates Docker base images to their latest versions.
+
+            - Updated Go base image in Dockerfile
+            - Updated service images in docker-compose files
+            - Verified Docker build still works
+
+            Please review the changes before merging.
+          branch: chore/update-docker-images
+          delete-branch: true

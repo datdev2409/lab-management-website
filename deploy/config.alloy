@@ -1,0 +1,36 @@
+// Discover Docker containers and extract metadata.
+discovery.docker "linux" {
+  host = "unix:///var/run/docker.sock"
+}
+discovery.relabel "logs_integrations_docker" {
+    targets = []
+
+    rule {
+      source_labels = ["__meta_docker_container_name"]
+      regex = "/(.*)"
+      target_label = "container_name"
+    }
+
+    rule {
+      target_label = "instance"
+      replacement  = constants.hostname
+  }
+}
+
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.linux.targets
+  relabel_rules    = discovery.relabel.logs_integrations_docker.rules
+  forward_to = [loki.write.grafanacloud.receiver]
+}
+
+// https://logs-prod-020.grafana.net
+loki.write "grafanacloud" {
+  endpoint {
+    url = "https://logs-prod-020.grafana.net/loki/api/v1/push"
+    basic_auth {
+      username = sys.env("LOKI_USERNAME")
+      password = sys.env("LOKI_PASSWORD")
+    }
+  }
+}
