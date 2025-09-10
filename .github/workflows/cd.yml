@@ -54,6 +54,7 @@ jobs:
             export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
 
             make stop-app
+            make fetch-secrets
             make start-app
 
             echo "Deployment completed successfully!"
