@@ -6,6 +6,10 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Install templ
+RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN templ generate
+
 COPY . .
 
 RUN mkdir -p /app/reports
