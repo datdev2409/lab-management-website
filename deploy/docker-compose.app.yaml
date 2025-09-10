@@ -1,4 +1,16 @@
 services:
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   lab-admin-go:
     image: ${DOCKER_USERNAME:-congdat2409}/lab-admin-go:${DOCKER_TAG:-latest}
     restart: unless-stopped
