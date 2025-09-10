@@ -53,6 +53,7 @@ jobs:
             export ENV=${{ inputs.environment }}
             export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
 
+            make stop-app
             make start-app
 
             echo "Deployment completed successfully!"
