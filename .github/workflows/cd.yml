@@ -41,6 +41,7 @@ jobs:
             REPO_NAME=${{ github.event.repository.name }}
 
             GITHUB_URL="https://github.com/$REPO_OWNER/$REPO_NAME.git"
+            git checkout ${{ inputs.commit_id }}
             echo $GITHUB_URL
 
             rm -rf $REPO_NAME
