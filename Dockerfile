@@ -26,7 +26,6 @@ WORKDIR /
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 COPY --from=builder /app/bin/main /main
-COPY --from=builder /app/.env.${ENV} /.env.${ENV}
 COPY --from=builder /app/templates /templates
 COPY --from=builder /app/reports /reports
 
