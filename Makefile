@@ -40,3 +40,9 @@ copy-template:
 
 start-pdf-server:
 	sudo docker run -p 3000:3000 -d gotenberg/gotenberg:8
+
+fetch-secrets:
+	./deploy/scripts/fetch-secrets.sh ${ENV}
+
+start-base: fetch-secrets
+	docker-compose --env-file .env -f deploy/docker-compose.base.yaml up
