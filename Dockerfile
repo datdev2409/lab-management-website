@@ -28,7 +28,7 @@ COPY --from=builder /app/templates /templates
 COPY --from=builder /app/reports /reports
 
 # Create empty reports directory
-EXPOSE 8080
+EXPOSE 9000
 
 ENTRYPOINT ["/main"]
 

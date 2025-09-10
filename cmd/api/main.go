@@ -48,13 +48,9 @@ func GetEnv(key, defaultValue string) string {
 }
 
 func main() {
-	env := GetEnv("GO_ENV", "local")
-	// In local environment, load .env file.
-	if env == "local" {
-		err := godotenv.Load(".env." + env)
-		if err != nil {
-			log.Fatalf("Error loading .env.%s file", env)
-		}
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatalf("Error loading .env file")
 	}
 
 	log := logger.Init()
@@ -85,7 +81,7 @@ func main() {
 	app.Init(config, handler.Router)
 
 	log.Info("Server is running", zap.String("port", app.Config.Port))
-	err := app.Start()
+	err = app.Start()
 	if err != nil {
 		log.Error("Server error", zap.Error(err))
 	}

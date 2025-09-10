@@ -1,0 +1,84 @@
+name: CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_id:
+        description: "Commit ID to deploy"
+        required: true
+        type: string
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+        default: dev
+
+env:
+  DOCKER_IMAGE: lab-admin-go
+
+jobs:
+  deploy:
+    name: Deploy Application
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout specific commit
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.commit_id }}
+          fetch-depth: 0
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ vars.SSH_HOST }}
+          username: ${{ vars.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            ls
+            pwd
+
+            export DOCKER_TAG=${{ inputs.commit_id }}
+            export ENV=${{ inputs.environment }}
+            export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
+
+            make start-app
+
+            echo "Deployment completed successfully!"
+
+            # Verify deployment
+            sleep 10
+            if docker ps | grep -q "${{ env.DOCKER_IMAGE }}"; then
+              echo "✅ Application is running successfully"
+            else
+              echo "❌ Application failed to start"
+              exit 1
+            fi
+
+      - name: Health check
+        run: |
+          echo "Waiting for application to be ready..."
+          sleep 30
+
+          # Perform health check if health endpoint is available
+          # Uncomment and modify the URL based on your application
+          # curl -f localhost:9000/health || exit 1
+
+          echo "✅ Deployment completed successfully for commit ${{ inputs.commit_id }} in ${{ inputs.environment }} environment"
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "🚀 Deployment SUCCESS: Commit ${{ inputs.commit_id }} deployed to ${{ inputs.environment }}"
+          else
+            echo "💥 Deployment FAILED: Commit ${{ inputs.commit_id }} failed to deploy to ${{ inputs.environment }}"
+          fi
