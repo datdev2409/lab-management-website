@@ -45,7 +45,7 @@ fetch-secrets:
 	./deploy/scripts/fetch-secrets.sh ${ENV}
 
 start-base: fetch-secrets
-	docker-compose --env-file .env -f deploy/docker-compose.base.yaml up
+	docker-compose --env-file .env -f deploy/docker-compose.base.yaml up -d
 
 start-app: fetch-secrets
-	docker-compose --env-file .env -f deploy/docker-compose.app.yaml up
+	docker-compose --env-file .env -f deploy/docker-compose.app.yaml up -d
