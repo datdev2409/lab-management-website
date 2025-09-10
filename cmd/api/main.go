@@ -36,7 +36,7 @@ func (app *Application) Init(config *Config, handler http.Handler) {
 }
 
 func (app *Application) Start() error {
-	err := http.ListenAndServe(app.Config.Port, app.Handler)
+	err := http.ListenAndServe("localhost:"+app.Config.Port, app.Handler)
 	return err
 }
 
