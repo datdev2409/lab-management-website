@@ -9,11 +9,9 @@ jobs:
     name: Build project
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - uses: actions/checkout@v5
+      - uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.23"
 
@@ -29,12 +27,15 @@ jobs:
       - name: Build go application
         run: make build
 
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/golang@master
+      - name: Run Snyk SCA scan
+        run: snyk test --all-projects --severity-threshold=high
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
+
+      - name: Run Snyk Code SAST scan
+        run: snyk code test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   docker-build-and-push:
     name: Docker Build and Push
@@ -52,7 +53,7 @@ jobs:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Snyk Container Security Scan
+      - name: Run Snyk Container Security Scan
         uses: snyk/actions/docker@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
