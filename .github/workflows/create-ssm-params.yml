@@ -1,0 +1,73 @@
+name: Create SSM Parameters
+
+on:
+  workflow_dispatch:
+    inputs:
+      app_name:
+        description: "Application name"
+        required: true
+        type: string
+      env:
+        description: "Environment (e.g., dev, prod)"
+        required: true
+        type: string
+      env_data:
+        description: "Env data in key=value;key=value format"
+        required: true
+        type: string
+      secret:
+        description: "Store values as SecureString? (true/false)"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  upload-env-to-ssm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Parse env_data and upload to SSM
+        run: |
+          set -euo pipefail
+          
+          APP_NAME="${{ github.event.inputs.app_name }}"
+          ENV_NAME="${{ github.event.inputs.env }}"
+          ENV_DATA="${{ github.event.inputs.env_data }}"
+          SECRET_INPUT="${{ github.event.inputs.secret }}"
+
+          if [[ "$SECRET_INPUT" == "true" ]]; then
+            PARAM_TYPE="SecureString"
+          else
+            PARAM_TYPE="String"
+          fi
+
+          echo "Uploading parameters for $APP_NAME/$ENV_NAME as $PARAM_TYPE"
+
+          # Split by ';'
+          IFS=';' read -ra PAIRS <<< "$ENV_DATA"
+
+          for pair in "${PAIRS[@]}"; do
+            # Each pair is key=value
+            KEY="${pair%%=*}"
+            VALUE="${pair#*=}"
+
+            if [[ -z "$KEY" ]]; then
+              continue
+            fi
+
+            PARAM_PATH="/$APP_NAME/$ENV_NAME/$KEY"
+            echo "Storing $PARAM_PATH"
+
+            aws ssm put-parameter \
+              --name "$PARAM_PATH" \
+              --value "$VALUE" \
+              --type "$PARAM_TYPE" \
+              --overwrite
+          done
