@@ -1,27 +1,16 @@
 services:
-  service:
-    image: ghcr.io/datdev2409/lab-admin-go:latest
+  traefik:
+    image: traefik:v3.5
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
     ports:
-      - "8888:8080"
-    environment:
-      - GO_ENV=production
-    networks:
-      - default
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-  gotenberg:
-    image: gotenberg/gotenberg:8
-    ports:
-      - "3000:3000"
-    networks:
-      - default
-  
   alloy:
     image: grafana/alloy:latest
     ports:
@@ -34,8 +23,10 @@ services:
       - --server.http.listen-addr=0.0.0.0:12345
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
+    labels:
+      - traefik.enable=false
     volumes:
-      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - ./config.alloy:/etc/alloy/config.alloy
       - alloy_data:/var/lib/alloy/data
       - /var/run/docker.sock:/var/run/docker.sock
       - /:/rootfs:ro
@@ -43,12 +34,6 @@ services:
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
-    networks:
-      - default
 
 volumes:
   alloy_data:
-
-networks:
-  default:
-    driver: bridge
