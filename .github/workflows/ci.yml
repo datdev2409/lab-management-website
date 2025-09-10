@@ -29,6 +29,13 @@ jobs:
       - name: Build go application
         run: make build
 
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
   docker-build-and-push:
     name: Docker Build and Push
     runs-on: ubuntu-latest
@@ -45,6 +52,14 @@ jobs:
         with:
           username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Snyk Container Security Scan
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: lab-admin-go:${{ github.event.pull_request.head.sha }}
+          args: --severity-threshold=high
 
       - name: Push Docker image
         run: |
