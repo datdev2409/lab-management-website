@@ -56,10 +56,11 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: "$DOCKER_IMAGE:$DOCKER_TAG"
+          image-ref: "${{env.DOCKER_IMAGE}}:${{ env.DOCKER_TAG }}"
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
+          hide-progress: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
 
