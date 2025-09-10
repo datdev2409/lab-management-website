@@ -20,9 +20,6 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      - name: Install templ
-        run: go install github.com/a-h/templ/cmd/templ@latest
-
       - name: Generate templ files
         run: templ generate
 
@@ -38,7 +35,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Build Docker image
-        run: docker build -t lab-admin-go:${GITHUB_SHA} -e GO_ENV=local .
+        run: docker build -t lab-admin-go:${GITHUB_SHA} --build-arg ENV=local .
 
       - name: Run Docker container
         run: docker run -d -p 8080:8080 --name lab-admin lab-admin-go:${GITHUB_SHA}
