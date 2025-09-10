@@ -1,6 +1,6 @@
 services:
   lab-admin-go:
-    image: congdat2409/lab-admin-go:2df5dea6c0a1e5be66e5ec87dd99546492598f8e
+    image: ${DOCKER_USERNAME:-congdat2409}/lab-admin-go:${DOCKER_TAG:-latest}
     restart: unless-stopped
     environment:
       - SERVER_PORT=9000
