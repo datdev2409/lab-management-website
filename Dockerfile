@@ -8,10 +8,10 @@ RUN go mod download
 
 # Install templ
 RUN go install github.com/a-h/templ/cmd/templ@latest
-RUN templ generate
 
 COPY . .
 
+RUN templ generate
 RUN mkdir -p /app/reports
 
 RUN GO_ENV=${ENV} go build -o /app/bin/main /app/cmd/api/main.go
