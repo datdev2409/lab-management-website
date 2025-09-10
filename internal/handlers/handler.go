@@ -30,6 +30,9 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	// Handle static files
 	r.Get("/reports/*", http.StripPrefix("/reports/", http.FileServer(http.Dir("reports"))).ServeHTTP)
 
+	// Health check endpoint
+	r.Get("/health", Make(h.HandleHealthCheck))
+
 	// Handle pages
 	r.Route("/", func(r chi.Router) {
 		r.Get("/", Make(h.HandleRecordPage))
@@ -116,4 +119,12 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	})
 
 	return h
+}
+
+// HandleHealthCheck provides a health check endpoint
+func (h *Handler) HandleHealthCheck(w http.ResponseWriter, r *http.Request) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte(`{"status":"ok","service":"lab-admin-go"}`))
+	return err
 }
