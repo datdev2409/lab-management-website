@@ -6,5 +6,4 @@ services:
       - SERVER_PORT=9000
     labels:
       - traefik.enable=true
-      - traefik.http.services.lab-admin-go.loadbalancer.server.port=9000
       - traefik.http.routers.lab-admin-go.entrypoints=web
