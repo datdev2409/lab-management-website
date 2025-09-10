@@ -37,6 +37,11 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v5.3.1 # Ex: v4.1.0, See the latest version at https://github.com/marketplace/actions/official-sonarqube-scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
   docker-build-and-push:
     name: Docker Build and Push
     runs-on: ubuntu-latest
