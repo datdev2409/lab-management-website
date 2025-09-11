@@ -19,7 +19,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.lab-admin-go.rule=Host(`lab-stg.datnguyen2409.tech`)
-      - traefik.http.routers.lab-admin-go.entrypoints=web
+      - traefik.http.services.lab-admin-go.loadbalancer.server.port=9000
     env_file:
       - ../.env
     ports:
