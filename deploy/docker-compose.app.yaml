@@ -18,6 +18,7 @@ services:
       - SERVER_PORT=9000
     labels:
       - traefik.enable=true
+      - traefik.http.routers.lab-admin-go.rule=Host(`lab-stg.datnguyen2409.net`)
       - traefik.http.routers.lab-admin-go.entrypoints=web
     env_file:
       - ../.env
