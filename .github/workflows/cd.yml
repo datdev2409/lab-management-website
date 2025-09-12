@@ -80,7 +80,7 @@ jobs:
           sleep 30
 
           for i in {1..10}; do
-          if curl -f localhost:9000/health; then
+          if [ $(curl -s -o /dev/null -w "%{http_code}" localhost:9000/health) -eq 200 ]; then
             echo "Health check passed!"
             break
           else
