@@ -45,13 +45,13 @@ fetch-secrets:
 	./deploy/scripts/fetch-secrets.sh ${ENV}
 
 start-base: fetch-secrets
-	ENV=${ENV} docker-compose --env-file .env -f deploy/docker-compose.base.yaml up -d
+	ENV=${ENV} docker-compose -p base --env-file .env -f deploy/docker-compose.base.yaml up -d
 
 stop-base:
-	ENV=${ENV} docker-compose --env-file .env -f deploy/docker-compose.base.yaml down
+	ENV=${ENV} docker-compose -p base --env-file .env -f deploy/docker-compose.base.yaml down
 
 start-app: fetch-secrets
-	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose --env-file .env -f deploy/docker-compose.app.yaml up -d
+	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app --env-file .env -f deploy/docker-compose.app.yaml up -d
 
 stop-app: fetch-secrets
-	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose --env-file .env -f deploy/docker-compose.app.yaml down
+	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app--env-file .env -f deploy/docker-compose.app.yaml down
