@@ -54,4 +54,4 @@ start-app: fetch-secrets
 	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app --env-file .env -f deploy/docker-compose.app.yaml up -d
 
 stop-app: fetch-secrets
-	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app--env-file .env -f deploy/docker-compose.app.yaml down
+	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app --env-file .env -f deploy/docker-compose.app.yaml down
