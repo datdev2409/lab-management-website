@@ -3,8 +3,8 @@ name: CD Pipeline
 on:
   workflow_dispatch:
     inputs:
-      commit_id:
-        description: "Commit ID to deploy"
+      image_tag:
+        description: "Image tag to deploy. This can be a commit SHA, or tag."
         required: true
         type: string
       environment:
@@ -12,10 +12,9 @@ on:
         required: true
         type: choice
         options:
-          - dev
           - stg
           - prod
-        default: dev
+        default: stg
 
 env:
   DOCKER_IMAGE: lab-admin-go
@@ -27,6 +26,14 @@ jobs:
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Show deployment info
+        run: |
+          echo "🚀 Starting deployment..."
+          echo "Repository: ${{ github.repository }}"
+          echo "Source Code SHA: ${{ github.sha }}"
+          echo "Environment: ${{ inputs.environment }}"
+          echo "Image Tag: ${{ inputs.image_tag }}"
+
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.2.2
         with:
@@ -46,10 +53,10 @@ jobs:
             rm -rf $REPO_NAME
             git clone $GITHUB_URL
             cd $REPO_NAME
-            git checkout ${{ inputs.commit_id }}
+            git checkout ${{ github.sha }}
             pwd
 
-            export DOCKER_TAG=${{ inputs.commit_id }}
+            export DOCKER_TAG=${{ inputs.image_tag }}
             export ENV=${{ inputs.environment }}
             export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
 
@@ -72,17 +79,27 @@ jobs:
           echo "Waiting for application to be ready..."
           sleep 30
 
-          # Perform health check if health endpoint is available
-          # Uncomment and modify the URL based on your application
-          # curl -f localhost:9000/health || exit 1
+          for i in {1..10}; do
+          if curl -f localhost:9000/health; then
+            echo "Health check passed!"
+            break
+          else
+            echo "Health check failed, retrying in 5 seconds... ($i/10)"
+            sleep 5
+          fi
+          if [ $i -eq 10 ]; then
+            echo "Health check failed after 10 attempts."
+            exit 1
+          fi
+          done
 
-          echo "✅ Deployment completed successfully for commit ${{ inputs.commit_id }} in ${{ inputs.environment }} environment"
+          echo "✅ Deployment completed successfully for tag ${{ inputs.image_tag }} in ${{ inputs.environment }} environment"
 
       - name: Notify deployment status
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
-            echo "🚀 Deployment SUCCESS: Commit ${{ inputs.commit_id }} deployed to ${{ inputs.environment }}"
+            echo "🚀 Deployment SUCCESS: Tag ${{ inputs.image_tag }} deployed to ${{ inputs.environment }}"
           else
-            echo "💥 Deployment FAILED: Commit ${{ inputs.commit_id }} failed to deploy to ${{ inputs.environment }}"
+            echo "💥 Deployment FAILED: Tag ${{ inputs.image_tag }} failed to deploy to ${{ inputs.environment }}"
           fi
