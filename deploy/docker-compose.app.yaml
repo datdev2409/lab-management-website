@@ -7,6 +7,9 @@ services:
       - "--entrypoints.web.address=:80"
       - "--accesslog=true"
       - "--accesslog.format=json"
+    labels:
+      - "traefik.http.routers.dashboard.rule=Host(`${ENV:-stg}-dashboard.datnguyen2409.tech`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
     ports:
       - "80:80"
       - "8080:8080"
@@ -20,7 +23,7 @@ services:
       - SERVER_PORT=9000
     labels:
       - traefik.enable=true
-      - traefik.http.routers.lab-admin-go.rule=Host(`lab-stg.datnguyen2409.tech`)
+      - traefik.http.routers.lab-admin-go.rule=Host(`${ENV:-stg}-lab.datnguyen2409.tech`)
       - traefik.http.services.lab-admin-go.loadbalancer.server.port=9000
     env_file:
       - ../.env
