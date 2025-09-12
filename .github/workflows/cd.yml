@@ -74,26 +74,20 @@ jobs:
               exit 1
             fi
 
-      - name: Health check
-        run: |
-          echo "Waiting for application to be ready..."
-          sleep 30
-
-          for i in {1..10}; do
-          if [ $(curl -s -o /dev/null -w "%{http_code}" localhost:9000/health) -eq 200 ]; then
-            echo "Health check passed!"
-            break
-          else
-            echo "Health check failed, retrying in 5 seconds... ($i/10)"
-            sleep 5
-          fi
-          if [ $i -eq 10 ]; then
-            echo "Health check failed after 10 attempts."
-            exit 1
-          fi
-          done
-
-          echo "✅ Deployment completed successfully for tag ${{ inputs.image_tag }} in ${{ inputs.environment }} environment"
+            # Health check
+            for i in {1..10}; do
+            if [ $(curl -s -o /dev/null -w "%{http_code}" localhost:9000/health) -eq 200 ]; then
+              echo "Health check passed!"
+              break
+            else
+              echo "Health check failed, retrying in 5 seconds... ($i/10)"
+              sleep 5
+            fi
+            if [ $i -eq 10 ]; then
+              echo "Health check failed after 10 attempts."
+              exit 1
+            fi
+            done
 
       - name: Notify deployment status
         if: always()
