@@ -36,7 +36,7 @@ func (app *Application) Init(config *Config, handler http.Handler) {
 }
 
 func (app *Application) Start() error {
-	err := http.ListenAndServe(app.Config.Port, app.Handler)
+	err := http.ListenAndServe(":"+app.Config.Port, app.Handler)
 	return err
 }
 
@@ -50,7 +50,7 @@ func GetEnv(key, defaultValue string) string {
 func main() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		log.Println("No .env file found")
 	}
 
 	log := logger.Init()
