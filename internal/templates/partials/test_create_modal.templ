@@ -37,13 +37,20 @@ templ TestCreateModal() {
 							async createTest() {
 								this.loading = true
 								const requestBody = this.validateRequestData(this.form)
+								if (!requestBody) {
+									this.loading = false
+									return;
+								}
+								console.log("Create test request body: ", requestBody)
 								await sendAPIRequestWithErrorHandler({method: "POST", url: "/api/v1/tests", body: requestBody, onSuccess: (data) => {
 									window.location.href = "/danh-muc-xet-nghiem?noti_code=test_create_success"
 									showCustomNotification("Thêm xét nghiệm thành công", "success");
 								}, onError: ({error, requestId}) => {
 									// this.error = error.error || 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.';
+									let errorMessage = this.error || error || 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.';
+									if (this.error) console.log("Error response:", {error, requestId});
 									this.error = `
-										Lỗi: ${error || 'Đã có lỗi xảy ra. Vui lòng thử lại hoặc liên hệ với quản trị viên.'}<br>
+										Lỗi: ${errorMessage}<br>
 										Mã yêu cầu: ${requestId}
 									`
 								}});
@@ -59,8 +66,8 @@ templ TestCreateModal() {
 								upper_bound = parseFloat(upper_bound);
 
 								// Validate number parsing
-								if (isNaN(price) || price <= 0) {
-									this.error = 'Giá tiền phải là số dương.';
+								if (isNaN(price) || price < 0) {
+									this.error = 'Giá tiền phải lớn hơn hoặc bằng 0.';
 									return null;
 								}
 
