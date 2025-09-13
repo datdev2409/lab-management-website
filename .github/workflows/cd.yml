@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: "Image tag to deploy. This can be a commit SHA, or tag."
-        required: true
+        description: "Image tag to deploy. This can be a commit SHA, or tag. If empty, will use current commit SHA."
+        required: false
         type: string
       environment:
         description: "Environment to deploy to"
@@ -56,7 +56,11 @@ jobs:
             git checkout ${{ github.sha }}
             pwd
 
-            export DOCKER_TAG=${{ inputs.image_tag }}
+            if [ -z "${{ inputs.image_tag }}" ]; then
+              export DOCKER_TAG=${{ github.sha }}
+            else
+              export DOCKER_TAG=${{ inputs.image_tag }}
+            fi
             export ENV=${{ inputs.environment }}
             export DOCKER_USERNAME=${{ vars.DOCKER_USERNAME }}
 
