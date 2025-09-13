@@ -5,7 +5,7 @@ env:
 # re-create _templ.txt files on change, then send reload event to browser. 
 # Default url: http://localhost:7331
 live/templ:
-	templ generate -lazy --watch --proxy="http://localhost:8081" --open-browser=false -v
+	templ generate -lazy --watch --proxy="http://localhost:9000" --open-browser=false -v
 
 # run air to detect any go file changes to re-build and re-run the server.
 live/server:
