@@ -13,7 +13,8 @@ entryPoints:
     address: ":443"
 
 providers:
-  docker: {}
+  docker:
+    exposedByDefault: false
 
 certificatesResolvers:
   cloudflare:
