@@ -14,6 +14,7 @@ type Storage interface {
 	UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error
 	DeletePatientById(ctx context.Context, id string) error
 	SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
+	FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error)
 	// Test
 	InsertTest(ctx context.Context, test *models.Test) (string, error)
 	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)

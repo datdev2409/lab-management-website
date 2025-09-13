@@ -77,6 +77,15 @@ func (h *Handler) CreatePatientV1(w http.ResponseWriter, r *http.Request) error 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return err
 	}
+
+	existing, err := h.Store.FindPatientByNameAndPhone(r.Context(), req.Name, req.Phone)
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		return &AppError{http.StatusBadRequest, DUPLICATE_PATIENT_ERROR}
+	}
+
 	patient := models.NewPatient(req.Name, req.YOB, req.Gender, req.Address, req.Phone)
 	newPatient, err := h.Store.InsertPatient(r.Context(), patient)
 	if err != nil {
