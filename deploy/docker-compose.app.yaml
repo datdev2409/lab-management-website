@@ -18,10 +18,20 @@ services:
       - "9000:9000"
     networks:
       - lab-admin-network
+  
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    name: gotenberg
+    ports:
+      - "3000:3000"
+    networks:
+      - lab-admin-network
 
 networks:
   lab-admin-network:
     name: lab-admin-network
     external: true
+  
         
 
