@@ -9,7 +9,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.lab-admin-https.tls=true
-      - traefik.http.routers.lab-admin-https.rule=Host(`^.+-lab.datnguyen2409.tech`)
+      - traefik.http.routers.lab-admin-https.rule=HostRegexp(`^.+-lab\.datnguyen2409\.tech`)
       - traefik.http.routers.lab-admin-https.tls.certresolver=cloudflare
       - traefik.http.routers.lab-admin-https.entrypoints=websecure
     env_file:
