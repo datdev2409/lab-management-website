@@ -13,6 +13,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
       - /root/data/certs:/var/traefik/certs:rw
+    networks:
+      - lab-admin-network
 
   alloy:
     image: grafana/alloy:latest
@@ -40,3 +42,8 @@ services:
 
 volumes:
   alloy_data:
+
+networks:
+  lab-admin-network:
+    name: lab-admin-network
+    external: true

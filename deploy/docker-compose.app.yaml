@@ -14,7 +14,17 @@ services:
       - traefik.http.routers.lab-admin-https.tls.certresolver=cloudflare
       - traefik.http.routers.lab-admin-https.entrypoints=websecure
       - traefik.http.routers.lab-admin-https.rule=Host(`${ENV:-stg}-lab.datnguyen2409.tech`)
+      - traefik.http.services.lab-admin-https.loadbalancer.server.port=9000
     env_file:
       - ../.env
     ports:
       - "9000:9000"
+    networks:
+      - lab-admin-network
+
+networks:
+  lab-admin-network:
+    name: lab-admin-network
+    external: true
+        
+
