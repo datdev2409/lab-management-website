@@ -1,4 +1,19 @@
 services:
+  traefik:
+    image: traefik:v3.5
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    labels:
+      - "traefik.http.routers.dashboard.rule=Host(`${ENV:-stg}-dashboard.datnguyen2409.tech`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      - "traefik.http.routers.dashboard.service=api@internal"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - /root/data/certs:/var/traefik/certs:rw
+
   alloy:
     image: grafana/alloy:latest
     ports:
@@ -14,7 +29,7 @@ services:
     labels:
       - traefik.enable=false
     volumes:
-      - ./config.alloy:/etc/alloy/config.alloy
+      - ./config/config.alloy:/etc/alloy/config.alloy
       - alloy_data:/var/lib/alloy/data
       - /var/run/docker.sock:/var/run/docker.sock
       - /:/rootfs:ro
