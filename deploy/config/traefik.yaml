@@ -23,7 +23,7 @@ certificatesResolvers:
       storage: /var/traefik/certs/cloudflare-acme.json
       caServer: https://acme-v02.api.letsencrypt.org/directory
       keyType: EC256
-      httpChallenge:
+      dnsChallenge:
         provider: cloudflare
         resolvers:
           - "1.1.1.1:53"

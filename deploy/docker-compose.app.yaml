@@ -10,7 +10,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.lab-admin-http.rule=Host(`${ENV:-stg}-lab.datnguyen2409.tech`)
       - traefik.http.services.lab-admin-http.loadbalancer.server.port=9000
-      - traefik.http.routers.lab-admin-https.tts=true
+      - traefik.http.routers.lab-admin-https.tls=true
       - traefik.http.routers.lab-admin-https.tls.certresolver=cloudflare
       - traefik.http.routers.lab-admin-https.entrypoints=websecure
       - traefik.http.routers.lab-admin-https.rule=Host(`${ENV:-stg}-lab.datnguyen2409.tech`)
