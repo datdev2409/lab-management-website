@@ -1,6 +1,4 @@
 services:
-
-
   lab-admin-go:
     image: ${DOCKER_USERNAME:-congdat2409}/lab-admin-go:${DOCKER_TAG:-latest}
     restart: unless-stopped
@@ -8,10 +6,12 @@ services:
       - SERVER_PORT=9000
     labels:
       - traefik.enable=true
+      - traefik.http.routers.lab-admin-http.rule=Host(`anhquanlab.datnguyen2409.tech`)
+      - traefik.http.routers.lab-admin-http.entryPoints=web
       - traefik.http.routers.lab-admin-https.tls=true
-      - traefik.http.routers.lab-admin-https.rule=HostRegexp(`^.+-lab\.datnguyen2409\.tech`)
+      - traefik.http.routers.lab-admin-https.entryPoints=websecure
+      - traefik.http.routers.lab-admin-https.rule=Host(`anhquanlab.datnguyen2409.tech`)
       - traefik.http.routers.lab-admin-https.tls.certresolver=cloudflare
-      - traefik.http.routers.lab-admin-https.entrypoints=websecure
     env_file:
       - ../.env
     ports:
