@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"time"
 
@@ -45,7 +44,6 @@ func JWTAuthWebEndpoint(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("auth_token")
 		if err != nil {
-			log.Println("Error retrieving auth_token cookie:", err)
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
