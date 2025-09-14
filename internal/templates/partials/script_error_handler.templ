@@ -13,6 +13,7 @@ templ ScriptErrorHandler() {
             'Content-Type': 'application/json',
           },
           body,
+          credentials: "include"
         });
 
         if (!response.ok) {

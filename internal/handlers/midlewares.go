@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
+	"github.com/datdev2409/lab-admin-go/internal/auth"
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
@@ -17,6 +19,45 @@ func LoggingMiddleware(logObj *zap.Logger) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func JWTAuthAPIEndpoint(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_token")
+		if err != nil {
+			http.Error(w, "Missing auth_token cookie", http.StatusUnauthorized)
+			return
+		}
+		tokenStr := cookie.Value
+		userId, err := auth.ValidateJWT(tokenStr)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "userId", userId)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+func JWTAuthWebEndpoint(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("auth_token")
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		tokenStr := cookie.Value
+		userId, err := auth.ValidateJWT(tokenStr)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "userId", userId)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func HTTPLogger(next http.Handler) http.Handler {
