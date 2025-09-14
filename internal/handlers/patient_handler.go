@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
@@ -77,6 +79,15 @@ func (h *Handler) CreatePatientV1(w http.ResponseWriter, r *http.Request) error 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return err
 	}
+
+	existing, err := h.Store.FindPatientByNameAndPhone(r.Context(), req.Name, req.Phone)
+	if err != nil {
+		return err
+	}
+	if existing != nil {
+		return &AppError{http.StatusBadRequest, DUPLICATE_PATIENT_ERROR}
+	}
+
 	patient := models.NewPatient(req.Name, req.YOB, req.Gender, req.Address, req.Phone)
 	newPatient, err := h.Store.InsertPatient(r.Context(), patient)
 	if err != nil {
@@ -99,6 +110,7 @@ func (h *Handler) GetPatientV1(w http.ResponseWriter, r *http.Request) error {
 
 // UpdatePatientV1 handles PUT /api/v1/patients/{id}
 func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error {
+	log := logger.FromCtx(r.Context())
 	id := chi.URLParam(r, "id")
 	var req struct {
 		Name    *string `json:"name"`
@@ -124,6 +136,23 @@ func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error 
 	if err != nil {
 		return err
 	}
+	// When update patient info, also update all records with the new patient info
+	records, err := h.Store.GetRecordsByPatientId(r.Context(), id)
+	if err == nil {
+		patientUpdate := models.UpdateRecordRequest{
+			Patient: patient,
+		}
+		for _, record := range records {
+			if err := h.Store.UpdateRecord(r.Context(), record.ID, patientUpdate); err != nil {
+				log.Warn("failed to update patient info in the record",
+					zap.String("record_id", record.ID),
+					zap.String("patient_id", patient.ID),
+					zap.Error(err),
+				)
+			}
+		}
+	}
+
 	RespondJSON(w, http.StatusOK, patient)
 	return nil
 }

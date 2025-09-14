@@ -14,6 +14,7 @@ type Storage interface {
 	UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error
 	DeletePatientById(ctx context.Context, id string) error
 	SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
+	FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error)
 	// Test
 	InsertTest(ctx context.Context, test *models.Test) (string, error)
 	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)
@@ -34,6 +35,7 @@ type Storage interface {
 	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
 	GetRecordById(ctx context.Context, id string) (*models.Record, error)
 	GetRecordsByIds(ctx context.Context, ids []string) ([]*models.Record, error)
+	GetRecordsByPatientId(ctx context.Context, patientId string) ([]*models.Record, error)
 	UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error
 	DeleteRecord(ctx context.Context, recordId string) error
 	// Tracking

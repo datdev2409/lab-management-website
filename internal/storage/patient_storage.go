@@ -7,6 +7,21 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+// FindPatientByNameAndPhone returns a patient with the given name and phone, or nil if not found
+func (m *MongoStorage) FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error) {
+	col := m.getCollection("patients")
+	filter := bson.M{"name": name, "phone": phone}
+	var result models.Patient
+	err := col.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if err.Error() == "mongo: no documents in result" {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &result, nil
+}
+
 func (m *MongoStorage) InsertPatient(ctx context.Context, patient *models.Patient) (string, error) {
 	col := m.getCollection("patients")
 	return MongoInsert(ctx, col, patient)
