@@ -43,6 +43,22 @@ func (m *MongoStorage) GetRecordsByIds(ctx context.Context, ids []string) ([]*mo
 	return MongoGetByIds[models.Record](ctx, col, ids)
 }
 
+func (m *MongoStorage) GetRecordsByPatientId(ctx context.Context, patientId string) ([]*models.Record, error) {
+	col := m.getCollection("records")
+	filter := bson.M{"patient._id": patientId}
+	cursor, err := col.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var records []*models.Record
+	if err := cursor.All(ctx, &records); err != nil {
+		return nil, err
+	}
+	return records, nil
+}
+
 func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
 	update := bson.M{}
 	if updateRequest.ComboName != "" {

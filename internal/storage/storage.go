@@ -35,6 +35,7 @@ type Storage interface {
 	ListRecords(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) ([]*models.Record, *models.PaginationResponse, error)
 	GetRecordById(ctx context.Context, id string) (*models.Record, error)
 	GetRecordsByIds(ctx context.Context, ids []string) ([]*models.Record, error)
+	GetRecordsByPatientId(ctx context.Context, patientId string) ([]*models.Record, error)
 	UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error
 	DeleteRecord(ctx context.Context, recordId string) error
 	// Tracking
