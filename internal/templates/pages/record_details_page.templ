@@ -37,7 +37,7 @@ templ RecordDetailsPage(recordId string) {
 			}))
 		})
 	</script>
-	@partials.Base() {
+	@partials.SidebarTemplate() {
 		<div class="d-flex align-items-center justify-content-between" x-data={ fmt.Sprintf("recordDetails('%s')", recordId) }>
 			<h3 class="pt-3">Chi tiết phiếu xét nghiệm</h3>
 			<div class="btn-group" role="group" class="ms-2">

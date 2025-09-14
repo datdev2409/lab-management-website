@@ -8,6 +8,9 @@ import (
 )
 
 type Storage interface {
+	// User
+	CreateUser(ctx context.Context, user *models.User) (string, error)
+	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	// Patient
 	InsertPatient(ctx context.Context, patient *models.Patient) (string, error)
 	GetPatientById(ctx context.Context, id string) (*models.Patient, error)

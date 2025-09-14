@@ -1,5 +1,10 @@
 package handlers
 
 const (
-	DUPLICATE_PATIENT_ERROR = "Bệnh nhân với tên và số điện thoại đã tồn tại"
+	AUTH_INVALID_PAYLOAD_ERROR     = "Tên đăng nhập hoặc mật khẩu không hợp lệ"
+	AUTH_USER_EXISTS_ERROR         = "Người dùng đã tồn tại"
+	AUTH_USER_NOT_FOUND_ERROR      = "Người dùng không tồn tại"
+	AUTH_LOGIN_FAILED_ERROR        = "Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập và mật khẩu"
+	AUTH_INVALID_ADMIN_TOKEN_ERROR = "Mã quản trị không hợp lệ. Vui lòng liên hệ quản trị viên"
+	DUPLICATE_PATIENT_ERROR        = "Bệnh nhân với tên và số điện thoại đã tồn tại"
 )

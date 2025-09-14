@@ -1,0 +1,17 @@
+package partials
+
+templ SidebarTemplate() {
+	@Base() {
+		<div class="container-fluid" style="min-height: 100vh;">
+			<div class="row">
+				<div class="col-2 px-0 position-fixed top-0 left-0 bottom-0">
+					@Sidebar()
+				</div>
+				<div class="col-2"></div>
+				<div class="col-10 position-relative">
+					{ children... }
+				</div>
+			</div>
+		</div>
+	}
+}

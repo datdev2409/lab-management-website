@@ -1,0 +1,78 @@
+package pages
+
+import "github.com/datdev2409/lab-admin-go/internal/templates/partials"
+
+templ RegisterPage() {
+	@partials.Base() {
+		<script>
+      document.addEventListener("alpine:init", function () {
+        Alpine.data("registerData", () => ({
+          username: "",
+          password: "",
+          passwordConfirm: "",
+          adminToken: "",
+          error: '',
+
+          async register() {
+            this.error = '';
+
+            if (this.password !== this.passwordConfirm) {
+              this.error = "Mật khẩu xác nhận không khớp.";
+              return;
+            }
+
+            const payload = {
+              username: this.username,
+              password: this.password,
+              admin_token: this.adminToken
+            };
+
+            await sendAPIRequestWithErrorHandler({
+              method: "POST",
+              url: "/api/v1/auth/register",
+              body: JSON.stringify(payload),
+              onSuccess: ({data}) => {
+                this.error = '';
+                redirectWithMessage("/login", "user_create_success");
+              },
+              onError: ({error, requestId}) => {
+                this.error = `
+                  Lỗi: ${error}<br>
+                  Mã yêu cầu: ${requestId}
+                `;
+              }
+            })
+          },
+        }))
+      })
+    </script>
+		<div class="d-flex align-items-center justify-content-center" style="height: 100vh;">
+			<div x-data="registerData" class="card p-4" style="width: 400px;">
+				<h3 class="mb-3 text-center">Đăng ký</h3>
+				<form @submit.prevent="register">
+					<div class="alert alert-danger p-2" x-show="error" x-html="error" x-cloak></div>
+					<div class="mb-3">
+						<label for="username" class="form-label">Tên đăng nhập</label>
+						<input x-model="username" type="text" class="form-control" id="username" name="username" required/>
+					</div>
+					<div class="mb-3">
+						<label for="password" class="form-label">Mật khẩu</label>
+						<input x-model="password" type="password" class="form-control" id="password" name="password" required/>
+					</div>
+					<div class="mb-3">
+						<label for="passwordConfirm" class="form-label">Xác nhận mật khẩu</label>
+						<input x-model="passwordConfirm" type="password" class="form-control" id="passwordConfirm" name="passwordConfirm" required/>
+					</div>
+					<div class="mb-3">
+						<label for="adminToken" class="form-label">Admin Token</label>
+						<input x-model="adminToken" type="text" class="form-control" id="adminToken" name="adminToken" required/>
+					</div>
+					<button type="submit" class="btn btn-primary w-100">Đăng ký</button>
+				</form>
+				<div class="mt-3 text-center">
+					<a href="/login">Đã có tài khoản? Đăng nhập</a>
+				</div>
+			</div>
+		</div>
+	}
+}
