@@ -90,3 +90,24 @@ const (
 	ResultsWithSignaturePDF ReportType = "phieu_ket_qua_chu_ky_pdf"
 	TrackingReport          ReportType = "phieu_theo_doi"
 )
+
+// RecordWithTotal represents a record with its calculated total price
+type RecordWithTotal struct {
+	*Record
+	TotalPrice int `json:"total_price"`
+}
+
+// ReportSummary represents aggregated data for revenue reports
+type ReportSummary struct {
+	TotalRecords int        `json:"total_records"`
+	TotalRevenue int        `json:"total_revenue"`
+	StartDate    *time.Time `json:"start_date"`
+	EndDate      *time.Time `json:"end_date"`
+}
+
+// ReportResponse represents the complete response for revenue reports
+type ReportResponse struct {
+	Records    []*RecordWithTotal  `json:"records"`
+	Pagination *PaginationResponse `json:"pagination"`
+	Summary    *ReportSummary      `json:"summary"`
+}

@@ -6,11 +6,14 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
@@ -254,4 +257,71 @@ func (h *Handler) DeleteRecordV1(w http.ResponseWriter, r *http.Request) error {
 	}
 	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
 	return nil
+}
+
+// GetRecordsWithRevenue returns revenue report data based on date range filters
+func (h *Handler) GetRecordsWithRevenue(w http.ResponseWriter, r *http.Request) error {
+	ctx := r.Context()
+	log := logger.FromCtx(ctx)
+
+	// Parse query parameters
+	filters := models.RecordQueryOptions{}
+
+	// Load Vietnam timezone
+	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		log.Error("Failed to load Vietnam timezone", zap.Error(err))
+		vietnamLocation = time.UTC // Fallback to UTC
+	}
+
+	// Parse start_date
+	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
+		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			// Set to start of day in Vietnam timezone
+			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
+			filters.StartDate = &startOfDay
+		} else {
+			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
+		}
+	}
+
+	// Parse end_date
+	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
+		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			// Set to end of day in Vietnam timezone
+			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
+			filters.EndDate = &endOfDay
+		} else {
+			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
+		}
+	}
+
+	// Parse optional sorting parameters
+	opts := models.GenericQueryOptions{
+		Page:      1,
+		PageSize:  0, // No pagination for reports
+		SortBy:    r.URL.Query().Get("sort_by"),
+		SortOrder: r.URL.Query().Get("sort_order"),
+	}
+
+	// Default sorting by created_at desc if not specified
+	if opts.SortBy == "" {
+		opts.SortBy = "created_at"
+		opts.SortOrder = "desc"
+	}
+
+	// Get report data from storage
+	reportData, err := h.Store.GetRecordsWithRevenue(ctx, filters, opts)
+	if err != nil {
+		log.Error("Failed to get records with revenue", zap.Error(err))
+		return WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": "Failed to get records with revenue",
+		})
+	}
+
+	log.Info("Revenue report data retrieved successfully",
+		zap.Int("record_count", len(reportData.Records)),
+		zap.Int("total_revenue", reportData.Summary.TotalRevenue))
+
+	return WriteJSON(w, http.StatusOK, reportData)
 }
