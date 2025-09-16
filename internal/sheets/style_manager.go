@@ -9,6 +9,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const FontMyriadPro = "MyRIAD PRO"
+
 // StyleManager handles creation and caching of Excel styles
 type StyleManager struct {
 	file   *excelize.File
@@ -74,7 +76,7 @@ func (sm *StyleManager) GetPatientNameStyle() (int, error) {
 	}
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 14, Bold: true},
+		Font: &excelize.Font{Size: 14, Bold: true, Family: FontMyriadPro},
 	})
 	if err != nil {
 		logger.FromCtx(sm.ctx).Debug("Failed to create patient name style", zap.Error(err))
@@ -92,7 +94,7 @@ func (sm *StyleManager) GetPatientInfoStyle() (int, error) {
 	}
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
+		Font: &excelize.Font{Size: 12, Family: FontMyriadPro},
 	})
 	if err != nil {
 		logger.FromCtx(sm.ctx).Debug("Failed to create patient info style", zap.Error(err))
@@ -110,7 +112,7 @@ func (sm *StyleManager) GetDateCenterStyle() (int, error) {
 	}
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 12},
+		Font: &excelize.Font{Size: 12, Family: FontMyriadPro},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
 			Vertical:   "center",
@@ -132,7 +134,7 @@ func (sm *StyleManager) GetTestResultStyle() (int, error) {
 	}
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
+		Font: &excelize.Font{Size: 13, Family: FontMyriadPro},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
 			Vertical:   "center",
@@ -155,7 +157,7 @@ func (sm *StyleManager) GetTestNameStyle() (int, error) {
 	}
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
-		Font: &excelize.Font{Size: 13},
+		Font: &excelize.Font{Size: 13, Family: FontMyriadPro},
 		Alignment: &excelize.Alignment{
 			Horizontal: "left",
 			Vertical:   "center",
@@ -179,8 +181,9 @@ func (sm *StyleManager) GetAbnormalStyle() (int, error) {
 
 	styleID, err := sm.file.NewStyle(&excelize.Style{
 		Font: &excelize.Font{
-			Bold: true,
-			Size: 13,
+			Bold:   true,
+			Size:   13,
+			Family: FontMyriadPro,
 		},
 		Alignment: &excelize.Alignment{
 			Horizontal: "center",
