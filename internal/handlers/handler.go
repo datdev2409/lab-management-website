@@ -51,6 +51,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 		r.Get("/so-sanh-ket-qua", Make(h.HandleTrackingPage))
 		r.Get("/danh-muc-so-sanh", Make(h.HandleTrackingListPage))
 		r.Get("/danh-muc-so-sanh/new", Make(h.HandleCreateTrackingListPage))
+		r.Get("/bao-cao-thong-ke-doanh-so", Make(h.HandleReportPage))
 	})
 
 	// Handle patients
@@ -107,6 +108,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 			r.Get("/{id}", Make(h.GetRecordV1))
 			r.Put("/{id}", Make(h.UpdateRecordV1))
 			r.Delete("/{id}", Make(h.DeleteRecordV1))
+			r.Get("/revenue", Make(h.GetRecordsWithRevenue))
 		})
 	})
 
