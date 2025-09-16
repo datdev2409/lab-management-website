@@ -11,13 +11,6 @@ import (
 
 const FontMyriadPro = "MyRIAD PRO"
 
-// StyleManager handles creation and caching of Excel styles
-type StyleManager struct {
-	file   *excelize.File
-	ctx    context.Context
-	styles map[StyleName]int // Cache created styles by name
-}
-
 // StyleName represents available style names
 type StyleName string
 
@@ -28,7 +21,36 @@ const (
 	StyleTestResult  StyleName = "testResult"
 	StyleTestName    StyleName = "testName"
 	StyleAbnormal    StyleName = "abnormal"
+	StylePriceRight  StyleName = "priceRight"
 )
+
+// GetPriceRightStyle returns style for price cells (same as testResultStyle but right aligned)
+func (sm *StyleManager) GetPriceRightStyle() (int, error) {
+	if styleID, exists := sm.styles[StylePriceRight]; exists {
+		return styleID, nil
+	}
+	styleID, err := sm.file.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Size: 13, Family: FontMyriadPro},
+		Alignment: &excelize.Alignment{
+			Horizontal: "right",
+			Vertical:   "center",
+		},
+		Border: sm.getStandardBorder(),
+	})
+	if err != nil {
+		logger.FromCtx(sm.ctx).Debug("Failed to create price right style", zap.Error(err))
+		return 0, err
+	}
+	sm.styles[StylePriceRight] = styleID
+	return styleID, nil
+}
+
+// StyleManager handles creation and caching of Excel styles
+type StyleManager struct {
+	file   *excelize.File
+	ctx    context.Context
+	styles map[StyleName]int // Cache created styles by name
+}
 
 // NewStyleManager creates a new StyleManager instance
 func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {

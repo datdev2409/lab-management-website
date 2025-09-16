@@ -26,6 +26,10 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	// Create style manager
 	styleManager := NewStyleManager(ctx, f)
 
+	priceRightStyle, err := styleManager.GetPriceRightStyle()
+	if err != nil {
+		return "", err
+	}
 	// Get styles from style manager
 	patientNameStyle, err := styleManager.GetPatientNameStyle()
 	if err != nil {
@@ -82,10 +86,10 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testResultStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("D%d", row), FormatPrice(testResult.Price))
-		f.SetCellStyle("Sheet1", fmt.Sprintf("D%d", row), fmt.Sprintf("D%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("D%d", row), fmt.Sprintf("D%d", row), priceRightStyle)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), FormatPrice(testResult.Price))
-		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), priceRightStyle)
 
 		// Set row height for better spacing (in points, default is usually ~15)
 		f.SetRowHeight("Sheet1", row, 19.0)
@@ -94,6 +98,7 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	}
 
 	f.SetCellValue("Sheet1", fmt.Sprintf("E%d", startTestRow+len(record.TestResults)), FormatPrice(totalPrice))
+	f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", startTestRow+len(record.TestResults)), fmt.Sprintf("E%d", startTestRow+len(record.TestResults)), priceRightStyle)
 
 	// Calculate print area based on content (A1 to E + last row with data)
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
