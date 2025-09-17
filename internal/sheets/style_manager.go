@@ -25,6 +25,18 @@ const (
 	StylePatientNameLargeCenter StyleName = "patientNameLargeCenter"
 )
 
+// CommonStyles holds commonly used style IDs to reduce repetitive style retrieval
+type CommonStyles struct {
+	PatientName            int
+	PatientInfo            int
+	DateCenter             int
+	TestResult             int
+	TestName               int
+	Abnormal               int
+	PriceRight             int
+	PatientNameLargeCenter int
+}
+
 // GetPriceRightStyle returns style for price cells (same as testResultStyle but right aligned)
 func (sm *StyleManager) GetPriceRightStyle() (int, error) {
 	if styleID, exists := sm.styles[StylePriceRight]; exists {
@@ -90,6 +102,60 @@ func (sm *StyleManager) GetStyle(styleName StyleName) (int, error) {
 	default:
 		return 0, fmt.Errorf("unknown style name: %s", styleName)
 	}
+}
+
+// GetCommonStyles returns all commonly used styles in a single call to reduce code duplication
+func (sm *StyleManager) GetCommonStyles() (*CommonStyles, error) {
+	patientNameStyle, err := sm.GetPatientNameStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient name style: %w", err)
+	}
+
+	patientInfoStyle, err := sm.GetPatientInfoStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient info style: %w", err)
+	}
+
+	dateCenterStyle, err := sm.GetDateCenterStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get date center style: %w", err)
+	}
+
+	testResultStyle, err := sm.GetTestResultStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get test result style: %w", err)
+	}
+
+	testNameStyle, err := sm.GetTestNameStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get test name style: %w", err)
+	}
+
+	abnormalStyle, err := sm.GetAbnormalStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get abnormal style: %w", err)
+	}
+
+	priceRightStyle, err := sm.GetPriceRightStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get price right style: %w", err)
+	}
+
+	patientNameLargeCenterStyle, err := sm.GetPatientNameLargeCenter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient name large center style: %w", err)
+	}
+
+	return &CommonStyles{
+		PatientName:            patientNameStyle,
+		PatientInfo:            patientInfoStyle,
+		DateCenter:             dateCenterStyle,
+		TestResult:             testResultStyle,
+		TestName:               testNameStyle,
+		Abnormal:               abnormalStyle,
+		PriceRight:             priceRightStyle,
+		PatientNameLargeCenter: patientNameLargeCenterStyle,
+	}, nil
 }
 
 // GetPatientNameStyle returns style for patient names (14pt, bold)

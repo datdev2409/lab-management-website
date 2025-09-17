@@ -28,33 +28,8 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	// Create style manager
 	styleManager := NewStyleManager(ctx, f)
 
-	// Get styles from style manager
-	patientNameStyle, err := styleManager.GetPatientNameLargeCenter()
-	if err != nil {
-		return "", err
-	}
-
-	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testResultStyle, err := styleManager.GetTestResultStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testNameStyle, err := styleManager.GetTestNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	abnormalStyle, err := styleManager.GetAbnormalStyle()
-	if err != nil {
-		return "", err
-	}
-
-	styleDateCenter, err := styleManager.GetDateCenterStyle()
+	// Get all common styles at once
+	styles, err := styleManager.GetCommonStyles()
 	if err != nil {
 		return "", err
 	}
@@ -65,13 +40,13 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
 
 	// Apply styles
-	f.SetCellStyle("Sheet1", "A4", "A4", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "A4", "A4", styles.PatientInfo)
 
 	startTestRow := 7
 	startRecordCol := 'D'
 
 	// Set up test rows and get mapping of test names to row numbers
-	testNameToRowMap := setupTestRows(f, testList, startTestRow, testNameStyle)
+	testNameToRowMap := setupTestRows(f, testList, startTestRow, styles.TestName)
 
 	// Get table styles for record columns
 	tableHeaderStyle, err := f.GetCellStyle("Sheet1", "A6")
@@ -82,13 +57,12 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 
 	// Populate record columns with test results
 	err = populateRecordColumns(f, records, testNameToRowMap, startRecordCol, startTestRow, testList,
-		tableHeaderStyle, tableCellStyle, testResultStyle, abnormalStyle)
+		tableHeaderStyle, tableCellStyle, styles.TestResult, styles.Abnormal)
 	if err != nil {
 		return "", err
 	}
 
-	f.SetCellStyle("Sheet1", "A4", "A4", styleDateCenter)
-	f.SetCellStyle("Sheet1", "A5", "A5", patientNameStyle)
+	f.SetCellStyle("Sheet1", "A5", "A5", styles.PatientNameLargeCenter)
 
 	// Calculate print area for tracking report (A1 to last column + last row with data)
 	lastCol := string(rune('C') + rune(len(records))) // C + number of records

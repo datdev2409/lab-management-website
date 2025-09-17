@@ -26,50 +26,30 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 	// Create style manager
 	styleManager := NewStyleManager(ctx, f)
 
-	// Get styles from style manager
-	patientNameStyle, err := styleManager.GetPatientNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testResultStyle, err := styleManager.GetTestResultStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testNameStyle, err := styleManager.GetTestNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	abnormalStyle, err := styleManager.GetAbnormalStyle()
+	// Get all common styles at once
+	styles, err := styleManager.GetCommonStyles()
 	if err != nil {
 		return "", err
 	}
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C2", now.Format("02/01/2006"))
-	f.SetCellStyle("Sheet1", "C2", "C2", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "C2", "C2", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "C3", record.Patient.Name)
-	f.SetCellStyle("Sheet1", "C3", "C3", patientNameStyle)
+	f.SetCellStyle("Sheet1", "C3", "C3", styles.PatientName)
 
 	f.SetCellValue("Sheet1", "C4", record.Patient.Address)
-	f.SetCellStyle("Sheet1", "C4", "C4", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "C4", "C4", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E2", record.Patient.Phone)
-	f.SetCellStyle("Sheet1", "E2", "E2", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E2", "E2", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E3", record.Patient.YOB)
-	f.SetCellStyle("Sheet1", "E3", "E3", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E3", "E3", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E4", record.Patient.Gender)
-	f.SetCellStyle("Sheet1", "E4", "E4", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E4", "E4", styles.PatientInfo)
 
 	startTestRow := 8
 	for range len(record.TestResults) - 1 {
@@ -85,10 +65,10 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), styles.TestResult)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), styles.TestName)
 
 		resultCell := fmt.Sprintf("D%d", row)
 		f.SetCellValue("Sheet1", resultCell, testFieldValue)
@@ -96,16 +76,16 @@ func CreateRecordResultFile(ctx context.Context, record *models.Record) (string,
 		// Apply bold and underline style if result is abnormal, otherwise normal style
 		// Manual override has higher priority than automatic detection
 		if testResult.Abnormal {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+			f.SetCellStyle("Sheet1", resultCell, resultCell, styles.Abnormal)
 		} else {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
+			f.SetCellStyle("Sheet1", resultCell, resultCell, styles.TestResult)
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), styles.TestResult)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), styles.TestResult)
 
 		// Set row height for better spacing (in points, default is usually ~15)
 		f.SetRowHeight("Sheet1", row, 19.0)
@@ -148,50 +128,30 @@ func createRecordResultFile(ctx context.Context, record *models.Record, template
 	// Create style manager
 	styleManager := NewStyleManager(ctx, f)
 
-	// Get styles from style manager
-	patientNameStyle, err := styleManager.GetPatientNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	patientInfoStyle, err := styleManager.GetPatientInfoStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testResultStyle, err := styleManager.GetTestResultStyle()
-	if err != nil {
-		return "", err
-	}
-
-	testNameStyle, err := styleManager.GetTestNameStyle()
-	if err != nil {
-		return "", err
-	}
-
-	abnormalStyle, err := styleManager.GetAbnormalStyle()
+	// Get all common styles at once
+	styles, err := styleManager.GetCommonStyles()
 	if err != nil {
 		return "", err
 	}
 
 	now := time.Now()
 	f.SetCellValue("Sheet1", "C9", now.Format("02/01/2006"))
-	f.SetCellStyle("Sheet1", "C9", "C9", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "C9", "C9", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "C10", record.Patient.Name)
-	f.SetCellStyle("Sheet1", "C10", "C10", patientNameStyle)
+	f.SetCellStyle("Sheet1", "C10", "C10", styles.PatientName)
 
 	f.SetCellValue("Sheet1", "C11", record.Patient.Address)
-	f.SetCellStyle("Sheet1", "C11", "C11", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "C11", "C11", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E9", record.Patient.Phone)
-	f.SetCellStyle("Sheet1", "E9", "E9", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E9", "E9", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E10", record.Patient.YOB)
-	f.SetCellStyle("Sheet1", "E10", "E10", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E10", "E10", styles.PatientInfo)
 
 	f.SetCellValue("Sheet1", "E11", record.Patient.Gender)
-	f.SetCellStyle("Sheet1", "E11", "E11", patientInfoStyle)
+	f.SetCellStyle("Sheet1", "E11", "E11", styles.PatientInfo)
 
 	startTestRow := 15
 	for range len(record.TestResults) - 1 {
@@ -207,10 +167,10 @@ func createRecordResultFile(ctx context.Context, record *models.Record, template
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", row), i+1)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), styles.TestResult)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", row), testResult.Name)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), testNameStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), styles.TestName)
 
 		resultCell := fmt.Sprintf("D%d", row)
 		f.SetCellValue("Sheet1", resultCell, testFieldValue)
@@ -218,16 +178,16 @@ func createRecordResultFile(ctx context.Context, record *models.Record, template
 		// Apply bold and underline style if result is abnormal, otherwise normal style
 		// Manual override has higher priority than automatic detection
 		if testResult.Abnormal {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, abnormalStyle)
+			f.SetCellStyle("Sheet1", resultCell, resultCell, styles.Abnormal)
 		} else {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, testResultStyle)
+			f.SetCellStyle("Sheet1", resultCell, resultCell, styles.TestResult)
 		}
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("E%d", row), testResult.Unit)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), styles.TestResult)
 
 		f.SetCellValue("Sheet1", fmt.Sprintf("F%d", row), testResult.NormalValue)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), testResultStyle)
+		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), styles.TestResult)
 
 		// Set row height for better spacing (in points, default is usually ~15)
 		f.SetRowHeight("Sheet1", row, 19.0)
