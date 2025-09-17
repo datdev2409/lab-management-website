@@ -342,7 +342,7 @@ func createRecordResultFile(ctx context.Context, record *models.Record, template
 	return resultReport.Save(ctx, f)
 }
 
-func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, testMap map[string]models.TestInfo) (string, error) {
+func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, testList []models.TestInfo) (string, error) {
 	trackingReport, err := NewReportWithMultipleRecords(models.TrackingReport, records)
 	if err != nil {
 		logger.FromCtx(ctx).Error("Failed to create tracking report config", zap.Error(err))
@@ -395,35 +395,35 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 	startTestRow := 7
 	startRecordCol := 'D'
 
-	// If testMap is empty or incomplete, build it from all test results in records
-	if len(testMap) == 0 {
-		testMap = make(map[string]models.TestInfo)
+	// If testList is empty or incomplete, build it from all test results in records
+	if len(testList) == 0 {
+		testMap := make(map[string]bool) // To track duplicates
 		for _, record := range records {
 			for _, test := range record.TestResults {
-				if _, exists := testMap[test.Name]; !exists {
-					testMap[test.Name] = models.TestInfo{
+				if !testMap[test.Name] {
+					testMap[test.Name] = true
+					testList = append(testList, models.TestInfo{
 						Name:        test.Name,
 						NormalValue: test.NormalValue,
 						Unit:        test.Unit,
-					}
+						Order:       0, // Default order when no testList provided
+					})
 				}
 			}
 		}
 	}
 
 	rowMap := make(map[string]int)
-	i := 0
-	for testName, testInfo := range testMap {
-		rowMap[testName] = startTestRow + i
+	for i, testInfo := range testList {
+		rowMap[testInfo.Name] = startTestRow + i
 		f.DuplicateRow("Sheet1", startTestRow+i)
 		f.SetCellValue("Sheet1", fmt.Sprintf("A%d", startTestRow+i), i+1)
-		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", startTestRow+i), testName)
+		f.SetCellValue("Sheet1", fmt.Sprintf("B%d", startTestRow+i), testInfo.Name)
 		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", startTestRow+i), fmt.Sprintf("B%d", startTestRow+i), testNameStyle)
 		f.SetCellValue("Sheet1", fmt.Sprintf("C%d", startTestRow+i), testInfo.NormalValue)
-		i += 1
 	}
 	// Remove the last duplicated row since we don't need it
-	f.RemoveRow("Sheet1", startTestRow+i)
+	f.RemoveRow("Sheet1", startTestRow+len(testList))
 
 	// Sort records by CreatedAt in increasing order
 	slices.SortFunc(records, func(a, b *models.Record) int {
@@ -451,8 +451,8 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 		f.SetCellStyle("Sheet1", headerCell, headerCell, tableHeaderStyle)
 
 		// Apply table cell style to the entire column first
-		if len(testMap) > 0 {
-			f.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col, startTestRow), fmt.Sprintf("%s%d", col, startTestRow+len(testMap)-1), tableCellStyle)
+		if len(testList) > 0 {
+			f.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col, startTestRow), fmt.Sprintf("%s%d", col, startTestRow+len(testList)-1), tableCellStyle)
 		}
 
 		// Then set values and apply abnormal styles (which will override table style where needed)
@@ -464,7 +464,11 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 				continue
 			}
 			cell := fmt.Sprintf("%s%d", col, row)
-			f.SetCellValue("Sheet1", cell, testResult.Result)
+			if testResult.ResultText != "" {
+				f.SetCellValue("Sheet1", cell, testResult.ResultText)
+			} else {
+				f.SetCellValue("Sheet1", cell, testResult.Result)
+			}
 
 			// Apply abnormal style if result is abnormal, otherwise normal style
 			// Manual override has higher priority than automatic detection
@@ -478,7 +482,7 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 
 	// Calculate print area for tracking report (A1 to last column + last row with data)
 	lastCol := string(rune('C') + rune(len(records))) // C + number of records
-	lastRow := startTestRow + len(testMap) + 1        // Add buffer row
+	lastRow := startTestRow + len(testList) + 1       // Add buffer row
 	printArea := fmt.Sprintf("$A$1:$%s$%d", lastCol, lastRow)
 
 	if err := trackingReport.ApplyPageSetup(ctx, f, "Sheet1", printArea); err != nil {

@@ -85,6 +85,7 @@ func (h *Handler) ListTestsForTracking(w http.ResponseWriter, r *http.Request) e
 					Name:        test.Name,
 					NormalValue: test.NormalValue,
 					Unit:        test.Unit,
+					Order:       0, // Default order for ad-hoc tests
 				})
 			}
 		}
@@ -112,16 +113,21 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 		records = append(records, record)
 	}
 
-	// Handle custom tracking ID
-	testMap := make(map[string]models.TestInfo)
+	// Handle custom tracking ID - build ordered test list
+	var testList []models.TestInfo
 	trackingId := r.FormValue("tracking_id")
 	if trackingId == "" {
+		testMap := make(map[string]bool) // To track duplicates
 		for _, record := range records {
 			for _, test := range record.TestResults {
-				testMap[test.Name] = models.TestInfo{
-					Name:        test.Name,
-					NormalValue: test.NormalValue,
-					Unit:        test.Unit,
+				if !testMap[test.Name] {
+					testMap[test.Name] = true
+					testList = append(testList, models.TestInfo{
+						Name:        test.Name,
+						NormalValue: test.NormalValue,
+						Unit:        test.Unit,
+						Order:       0, // Default order when no tracking template
+					})
 				}
 			}
 		}
@@ -131,17 +137,27 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 			return err
 		}
 
-		for _, test := range tracking.Tests {
-			testMap[test.TestName] = models.TestInfo{
-				Name:        test.TestName,
-				NormalValue: test.NormalValue,
-				Unit:        test.Unit,
+		// Sort tracking tests by Order field to ensure proper ordering
+		tests := tracking.Tests
+		for i := 0; i < len(tests)-1; i++ {
+			for j := i + 1; j < len(tests); j++ {
+				if tests[i].Order > tests[j].Order {
+					tests[i], tests[j] = tests[j], tests[i]
+				}
 			}
 		}
 
+		for _, test := range tests {
+			testList = append(testList, models.TestInfo{
+				Name:        test.TestName,
+				NormalValue: test.NormalValue,
+				Unit:        test.Unit,
+				Order:       test.Order,
+			})
+		}
 	}
 
-	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testMap)
+	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)
 	if err != nil {
 		return err
 	}

@@ -258,36 +258,53 @@ func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request
 		records = append(records, record)
 	}
 
-	// Build test map for comparison
-	testMap := make(map[string]models.TestInfo)
+	// Build ordered test list for comparison
+	var testList []models.TestInfo
 	if req.TrackingID != "" {
-		// Use tracking template
+		// Use tracking template with proper ordering
 		tracking, err := h.Store.GetTrackingById(r.Context(), req.TrackingID)
 		if err != nil {
 			return BadRequestError("tracking template not found")
 		}
-		for _, test := range tracking.Tests {
-			testMap[test.TestName] = models.TestInfo{
+
+		// Sort tracking tests by Order field to ensure proper ordering
+		tests := tracking.Tests
+		for i := 0; i < len(tests)-1; i++ {
+			for j := i + 1; j < len(tests); j++ {
+				if tests[i].Order > tests[j].Order {
+					tests[i], tests[j] = tests[j], tests[i]
+				}
+			}
+		}
+
+		for _, test := range tests {
+			testList = append(testList, models.TestInfo{
 				Name:        test.TestName,
 				NormalValue: test.NormalValue,
 				Unit:        test.Unit,
-			}
+				Order:       test.Order,
+			})
 		}
 	} else {
-		// Use all tests from the records
+		// Use all tests from the records (maintain order by appearance)
+		testMap := make(map[string]bool) // To track duplicates
 		for _, record := range records {
 			for _, test := range record.TestResults {
-				testMap[test.Name] = models.TestInfo{
-					Name:        test.Name,
-					NormalValue: test.NormalValue,
-					Unit:        test.Unit,
+				if !testMap[test.Name] {
+					testMap[test.Name] = true
+					testList = append(testList, models.TestInfo{
+						Name:        test.Name,
+						NormalValue: test.NormalValue,
+						Unit:        test.Unit,
+						Order:       0, // Default order when no tracking template
+					})
 				}
 			}
 		}
 	}
 
 	// Generate Excel file
-	filePath, err := sheets.CreateRecordTrackingFile(r.Context(), records, testMap)
+	filePath, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)
 	if err != nil {
 		return InternalServerError("failed to create comparison file")
 	}
