@@ -39,9 +39,6 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 
 	f.SetCellValue("Sheet1", "A5", fmt.Sprintf("Họ & Tên: %s", records[0].Patient.Name))
 
-	// Apply styles
-	f.SetCellStyle("Sheet1", "A4", "A4", styles.PatientInfo)
-
 	startTestRow := 7
 	startRecordCol := 'D'
 
@@ -62,6 +59,8 @@ func CreateRecordTrackingFile(ctx context.Context, records []*models.Record, tes
 		return "", err
 	}
 
+	// Apply styles
+	f.SetCellStyle("Sheet1", "A4", "A4", styles.DateCenter)
 	f.SetCellStyle("Sheet1", "A5", "A5", styles.PatientNameLargeCenter)
 
 	// Calculate print area for tracking report (A1 to last column + last row with data)
