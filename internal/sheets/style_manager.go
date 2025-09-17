@@ -15,14 +15,27 @@ const FontMyriadPro = "MyRIAD PRO"
 type StyleName string
 
 const (
-	StylePatientName StyleName = "patientName"
-	StylePatientInfo StyleName = "patientInfo"
-	StyleDateCenter  StyleName = "dateCenter"
-	StyleTestResult  StyleName = "testResult"
-	StyleTestName    StyleName = "testName"
-	StyleAbnormal    StyleName = "abnormal"
-	StylePriceRight  StyleName = "priceRight"
+	StylePatientName            StyleName = "patientName"
+	StylePatientInfo            StyleName = "patientInfo"
+	StyleDateCenter             StyleName = "dateCenter"
+	StyleTestResult             StyleName = "testResult"
+	StyleTestName               StyleName = "testName"
+	StyleAbnormal               StyleName = "abnormal"
+	StylePriceRight             StyleName = "priceRight"
+	StylePatientNameLargeCenter StyleName = "patientNameLargeCenter"
 )
+
+// CommonStyles holds commonly used style IDs to reduce repetitive style retrieval
+type CommonStyles struct {
+	PatientName            int
+	PatientInfo            int
+	DateCenter             int
+	TestResult             int
+	TestName               int
+	Abnormal               int
+	PriceRight             int
+	PatientNameLargeCenter int
+}
 
 // GetPriceRightStyle returns style for price cells (same as testResultStyle but right aligned)
 func (sm *StyleManager) GetPriceRightStyle() (int, error) {
@@ -89,6 +102,60 @@ func (sm *StyleManager) GetStyle(styleName StyleName) (int, error) {
 	default:
 		return 0, fmt.Errorf("unknown style name: %s", styleName)
 	}
+}
+
+// GetCommonStyles returns all commonly used styles in a single call to reduce code duplication
+func (sm *StyleManager) GetCommonStyles() (*CommonStyles, error) {
+	patientNameStyle, err := sm.GetPatientNameStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient name style: %w", err)
+	}
+
+	patientInfoStyle, err := sm.GetPatientInfoStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient info style: %w", err)
+	}
+
+	dateCenterStyle, err := sm.GetDateCenterStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get date center style: %w", err)
+	}
+
+	testResultStyle, err := sm.GetTestResultStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get test result style: %w", err)
+	}
+
+	testNameStyle, err := sm.GetTestNameStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get test name style: %w", err)
+	}
+
+	abnormalStyle, err := sm.GetAbnormalStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get abnormal style: %w", err)
+	}
+
+	priceRightStyle, err := sm.GetPriceRightStyle()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get price right style: %w", err)
+	}
+
+	patientNameLargeCenterStyle, err := sm.GetPatientNameLargeCenter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get patient name large center style: %w", err)
+	}
+
+	return &CommonStyles{
+		PatientName:            patientNameStyle,
+		PatientInfo:            patientInfoStyle,
+		DateCenter:             dateCenterStyle,
+		TestResult:             testResultStyle,
+		TestName:               testNameStyle,
+		Abnormal:               abnormalStyle,
+		PriceRight:             priceRightStyle,
+		PatientNameLargeCenter: patientNameLargeCenterStyle,
+	}, nil
 }
 
 // GetPatientNameStyle returns style for patient names (14pt, bold)
@@ -192,6 +259,28 @@ func (sm *StyleManager) GetTestNameStyle() (int, error) {
 	}
 
 	sm.styles[StyleTestName] = styleID
+	return styleID, nil
+}
+
+func (sm *StyleManager) GetPatientNameLargeCenter() (int, error) {
+	if styleID, exists := sm.styles[StylePatientNameLargeCenter]; exists {
+		return styleID, nil
+	}
+
+	styleID, err := sm.file.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Bold: true, Size: 15, Family: FontMyriadPro},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: sm.getStandardBorder(),
+	})
+	if err != nil {
+		logger.FromCtx(sm.ctx).Debug("Failed to create test name style", zap.Error(err))
+		return 0, err
+	}
+
+	sm.styles[StylePatientNameLargeCenter] = styleID
 	return styleID, nil
 }
 

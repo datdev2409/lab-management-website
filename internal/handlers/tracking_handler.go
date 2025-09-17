@@ -85,6 +85,7 @@ func (h *Handler) ListTestsForTracking(w http.ResponseWriter, r *http.Request) e
 					Name:        test.Name,
 					NormalValue: test.NormalValue,
 					Unit:        test.Unit,
+					Order:       0, // Default order for ad-hoc tests
 				})
 			}
 		}
@@ -112,36 +113,14 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 		records = append(records, record)
 	}
 
-	// Handle custom tracking ID
-	testMap := make(map[string]models.TestInfo)
+	// Build ordered test list using shared helper function
 	trackingId := r.FormValue("tracking_id")
-	if trackingId == "" {
-		for _, record := range records {
-			for _, test := range record.TestResults {
-				testMap[test.Name] = models.TestInfo{
-					Name:        test.Name,
-					NormalValue: test.NormalValue,
-					Unit:        test.Unit,
-				}
-			}
-		}
-	} else {
-		tracking, err := h.Store.GetTrackingById(r.Context(), trackingId)
-		if err != nil {
-			return err
-		}
-
-		for _, test := range tracking.Tests {
-			testMap[test.TestName] = models.TestInfo{
-				Name:        test.TestName,
-				NormalValue: test.NormalValue,
-				Unit:        test.Unit,
-			}
-		}
-
+	testList, err := h.buildOrderedTestList(r.Context(), records, trackingId)
+	if err != nil {
+		return fmt.Errorf("failed to build test list: %v", err)
 	}
 
-	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testMap)
+	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)
 	if err != nil {
 		return err
 	}

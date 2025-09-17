@@ -29,6 +29,7 @@ type TestInfo struct {
 	Name        string
 	NormalValue string
 	Unit        string
+	Order       int
 }
 
 type TestQueryOptions struct {
