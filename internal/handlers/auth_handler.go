@@ -106,3 +106,21 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 	RespondJSON(w, http.StatusOK, map[string]string{"token": token})
 	return nil
 }
+
+// LogoutHandler handles user logout by clearing the auth cookie
+func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) error {
+	// Clear the auth_token cookie by setting it to expire immediately
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		HttpOnly: true,
+		Expires:  time.Now().Add(-time.Hour), // Set to past time to expire immediately
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		Path:     "/",
+	})
+
+	// Redirect to login page
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	return nil
+}

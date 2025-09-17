@@ -52,9 +52,18 @@ templ Sidebar() {
 					return this.currentPath.startsWith(href) && href !== '';
 				},
 				logout() {
-					// Remove auth cookie by setting it expired
-					document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-					window.location.href = "/login";
+					// Call server-side logout endpoint to properly clear HTTP-only cookie
+					fetch('/api/v1/auth/logout', {
+						method: 'POST',
+						credentials: 'include'  // Include cookies in the request
+					}).then(() => {
+						// Redirect to login page after successful logout
+						window.location.href = "/login";
+					}).catch((error) => {
+						console.error('Logout failed:', error);
+						// Even if logout fails, redirect to login as fallback
+						window.location.href = "/login";
+					});
 				}
 			}));
 		});

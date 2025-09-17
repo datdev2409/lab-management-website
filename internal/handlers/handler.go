@@ -63,6 +63,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", Make(h.RegisterHandler))
 		r.Post("/login", Make(h.LoginHandler))
+		r.Post("/logout", Make(h.LogoutHandler))
 	})
 
 	// API v1 routes

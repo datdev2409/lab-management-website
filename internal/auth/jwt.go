@@ -11,8 +11,8 @@ func GenerateJWT(userID string) (string, error) {
 	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 	claims := jwt.MapClaims{
 		"userId": userID,
-		"exp":    time.Now().Add(time.Hour * 24).Unix(), // 1 day
-		"iat":    time.Now().Unix(),
+		// "exp":    time.Now().Add(time.Second * 24).Unix(), - No expiration for now
+		"iat": time.Now().Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
