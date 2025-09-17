@@ -113,48 +113,11 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 		records = append(records, record)
 	}
 
-	// Handle custom tracking ID - build ordered test list
-	var testList []models.TestInfo
+	// Build ordered test list using shared helper function
 	trackingId := r.FormValue("tracking_id")
-	if trackingId == "" {
-		testMap := make(map[string]bool) // To track duplicates
-		for _, record := range records {
-			for _, test := range record.TestResults {
-				if !testMap[test.Name] {
-					testMap[test.Name] = true
-					testList = append(testList, models.TestInfo{
-						Name:        test.Name,
-						NormalValue: test.NormalValue,
-						Unit:        test.Unit,
-						Order:       0, // Default order when no tracking template
-					})
-				}
-			}
-		}
-	} else {
-		tracking, err := h.Store.GetTrackingById(r.Context(), trackingId)
-		if err != nil {
-			return err
-		}
-
-		// Sort tracking tests by Order field to ensure proper ordering
-		tests := tracking.Tests
-		for i := 0; i < len(tests)-1; i++ {
-			for j := i + 1; j < len(tests); j++ {
-				if tests[i].Order > tests[j].Order {
-					tests[i], tests[j] = tests[j], tests[i]
-				}
-			}
-		}
-
-		for _, test := range tests {
-			testList = append(testList, models.TestInfo{
-				Name:        test.TestName,
-				NormalValue: test.NormalValue,
-				Unit:        test.Unit,
-				Order:       test.Order,
-			})
-		}
+	testList, err := h.buildOrderedTestList(r.Context(), records, trackingId)
+	if err != nil {
+		return fmt.Errorf("failed to build test list: %v", err)
 	}
 
 	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)

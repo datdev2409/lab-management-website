@@ -15,13 +15,14 @@ const FontMyriadPro = "MyRIAD PRO"
 type StyleName string
 
 const (
-	StylePatientName StyleName = "patientName"
-	StylePatientInfo StyleName = "patientInfo"
-	StyleDateCenter  StyleName = "dateCenter"
-	StyleTestResult  StyleName = "testResult"
-	StyleTestName    StyleName = "testName"
-	StyleAbnormal    StyleName = "abnormal"
-	StylePriceRight  StyleName = "priceRight"
+	StylePatientName            StyleName = "patientName"
+	StylePatientInfo            StyleName = "patientInfo"
+	StyleDateCenter             StyleName = "dateCenter"
+	StyleTestResult             StyleName = "testResult"
+	StyleTestName               StyleName = "testName"
+	StyleAbnormal               StyleName = "abnormal"
+	StylePriceRight             StyleName = "priceRight"
+	StylePatientNameLargeCenter StyleName = "patientNameLargeCenter"
 )
 
 // GetPriceRightStyle returns style for price cells (same as testResultStyle but right aligned)
@@ -192,6 +193,28 @@ func (sm *StyleManager) GetTestNameStyle() (int, error) {
 	}
 
 	sm.styles[StyleTestName] = styleID
+	return styleID, nil
+}
+
+func (sm *StyleManager) GetPatientNameLargeCenter() (int, error) {
+	if styleID, exists := sm.styles[StylePatientNameLargeCenter]; exists {
+		return styleID, nil
+	}
+
+	styleID, err := sm.file.NewStyle(&excelize.Style{
+		Font: &excelize.Font{Bold: true, Size: 15, Family: FontMyriadPro},
+		Alignment: &excelize.Alignment{
+			Horizontal: "center",
+			Vertical:   "center",
+		},
+		Border: sm.getStandardBorder(),
+	})
+	if err != nil {
+		logger.FromCtx(sm.ctx).Debug("Failed to create test name style", zap.Error(err))
+		return 0, err
+	}
+
+	sm.styles[StylePatientNameLargeCenter] = styleID
 	return styleID, nil
 }
 

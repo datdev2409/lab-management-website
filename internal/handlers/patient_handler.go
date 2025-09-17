@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"sort"
 	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
@@ -223,6 +225,8 @@ func (h *Handler) GetPatientRecordsV1(w http.ResponseWriter, r *http.Request) er
 }
 
 // ComparePatientRecordsV1 handles POST /api/v1/patients/{id}/records/compare
+// Creates an Excel comparison report for the specified patient's records.
+// Supports optional tracking template for ordered test comparison.
 func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	patientId := chi.URLParam(r, "id")
 
@@ -259,48 +263,9 @@ func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request
 	}
 
 	// Build ordered test list for comparison
-	var testList []models.TestInfo
-	if req.TrackingID != "" {
-		// Use tracking template with proper ordering
-		tracking, err := h.Store.GetTrackingById(r.Context(), req.TrackingID)
-		if err != nil {
-			return BadRequestError("tracking template not found")
-		}
-
-		// Sort tracking tests by Order field to ensure proper ordering
-		tests := tracking.Tests
-		for i := 0; i < len(tests)-1; i++ {
-			for j := i + 1; j < len(tests); j++ {
-				if tests[i].Order > tests[j].Order {
-					tests[i], tests[j] = tests[j], tests[i]
-				}
-			}
-		}
-
-		for _, test := range tests {
-			testList = append(testList, models.TestInfo{
-				Name:        test.TestName,
-				NormalValue: test.NormalValue,
-				Unit:        test.Unit,
-				Order:       test.Order,
-			})
-		}
-	} else {
-		// Use all tests from the records (maintain order by appearance)
-		testMap := make(map[string]bool) // To track duplicates
-		for _, record := range records {
-			for _, test := range record.TestResults {
-				if !testMap[test.Name] {
-					testMap[test.Name] = true
-					testList = append(testList, models.TestInfo{
-						Name:        test.Name,
-						NormalValue: test.NormalValue,
-						Unit:        test.Unit,
-						Order:       0, // Default order when no tracking template
-					})
-				}
-			}
-		}
+	testList, err := h.buildOrderedTestList(r.Context(), records, req.TrackingID)
+	if err != nil {
+		return BadRequestError("failed to build test list: " + err.Error())
 	}
 
 	// Generate Excel file
@@ -313,4 +278,65 @@ func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request
 		"excel_file_path": filePath,
 	})
 	return nil
+}
+
+// buildOrderedTestList creates an ordered list of tests for comparison.
+// If trackingID is provided, it uses the tracking template with proper ordering.
+// Otherwise, it extracts unique tests from records maintaining order of appearance.
+func (h *Handler) buildOrderedTestList(ctx context.Context, records []*models.Record, trackingID string) ([]models.TestInfo, error) {
+	if trackingID != "" {
+		return h.buildTestListFromTracking(ctx, trackingID)
+	}
+	return h.buildTestListFromRecords(records), nil
+}
+
+// buildTestListFromTracking creates a test list from a tracking template, sorted by Order field
+func (h *Handler) buildTestListFromTracking(ctx context.Context, trackingID string) ([]models.TestInfo, error) {
+	tracking, err := h.Store.GetTrackingById(ctx, trackingID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Sort tracking tests by Order field using Go's built-in sort
+	tests := make([]models.TrackingTestData, len(tracking.Tests))
+	copy(tests, tracking.Tests)
+
+	sort.Slice(tests, func(i, j int) bool {
+		return tests[i].Order < tests[j].Order
+	})
+
+	// Convert to TestInfo
+	testList := make([]models.TestInfo, 0, len(tests))
+	for _, test := range tests {
+		testList = append(testList, models.TestInfo{
+			Name:        test.TestName,
+			NormalValue: test.NormalValue,
+			Unit:        test.Unit,
+			Order:       test.Order,
+		})
+	}
+
+	return testList, nil
+}
+
+// buildTestListFromRecords extracts unique tests from records maintaining order of appearance
+func (h *Handler) buildTestListFromRecords(records []*models.Record) []models.TestInfo {
+	seen := make(map[string]bool)
+	var testList []models.TestInfo
+
+	for _, record := range records {
+		for _, test := range record.TestResults {
+			if !seen[test.Name] {
+				seen[test.Name] = true
+				testList = append(testList, models.TestInfo{
+					Name:        test.Name,
+					NormalValue: test.NormalValue,
+					Unit:        test.Unit,
+					Order:       0, // Default order when no tracking template
+				})
+			}
+		}
+	}
+
+	return testList
 }
