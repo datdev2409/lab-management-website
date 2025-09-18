@@ -98,8 +98,8 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) error {
 		Name:     "auth_token",
 		Value:    token,
 		HttpOnly: true,
-		Expires:  time.Now().Add(23 * time.Hour), //jwt token valid for 24 hours, to be safe, set cookie to 23 hours
-		Secure:   true,
+		// Expires:  time.Now().Add(23 * time.Hour), //jwt token valid for 24 hours, to be safe, set cookie to 23 hours
+		Secure:   os.Getenv("ENVIRONMENT") != "local",
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	})
@@ -115,7 +115,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 		Value:    "",
 		HttpOnly: true,
 		Expires:  time.Now().Add(-time.Hour), // Set to past time to expire immediately
-		Secure:   true,
+		Secure:   os.Getenv("ENVIRONMENT") != "local",
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	})
