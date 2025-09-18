@@ -115,7 +115,7 @@ func (h *Handler) LogoutHandler(w http.ResponseWriter, r *http.Request) error {
 		Value:    "",
 		HttpOnly: true,
 		Expires:  time.Now().Add(-time.Hour), // Set to past time to expire immediately
-		Secure:   os.Getenv("ENVIRONMENT") == "prod",
+		Secure:   os.Getenv("ENVIRONMENT") != "local",
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 	})
