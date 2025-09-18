@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     environment:
       - SERVER_PORT=9000
+      - ENVIRONMENT=prod
     labels:
       - traefik.enable=true
       - traefik.http.routers.lab-admin-http.rule=Host(`anhquanlab.datnguyen2409.tech`)
