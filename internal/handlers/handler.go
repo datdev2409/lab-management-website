@@ -28,6 +28,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	r.Use(HTTPLogger)
 
 	// Handle static files
+	r.Get("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))).ServeHTTP)
 	r.Get("/reports/*", http.StripPrefix("/reports/", http.FileServer(http.Dir("reports"))).ServeHTTP)
 
 	// Health check endpoint
