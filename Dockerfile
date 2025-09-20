@@ -15,6 +15,16 @@ RUN mkdir -p /app/reports
 
 RUN go build -o /app/bin/main /app/cmd/api/main.go
 
+FROM node:alpine3.22 as esbuild
+
+WORKDIR /app
+
+COPY internal/templates/scripts ./internal/templates/scripts
+
+RUN npm install -g --ignore-scripts esbuild
+
+RUN esbuild ./internal/templates/scripts/ --bundle --minify --outfile=./static/index.js
+
 # Deploy the application binary into a lean image
 FROM scratch
 
@@ -26,6 +36,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 COPY --from=builder /app/bin/main /main
 COPY --from=builder /app/templates /templates
 COPY --from=builder /app/reports /reports
+COPY --from=esbuild /app/static/index.js /static/index.js
 
 # Create empty reports directory
 EXPOSE 9000

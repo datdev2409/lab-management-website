@@ -6,5 +6,6 @@ bin/*
 internal/templates/*/*_templ.go
 internal/templates/*/*_templ.txt
 
+static/
 reports/
 alloy/config.alloy

@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	_ "time/tzdata"
+
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
@@ -277,9 +279,10 @@ func (h *Handler) GetRecordsWithRevenue(w http.ResponseWriter, r *http.Request) 
 	// Parse start_date
 	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
 		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
-			// Set to start of day in Vietnam timezone
+			// Set to start of day in Vietnam timezone, then convert to UTC
 			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
-			filters.StartDate = &startOfDay
+			startOfDayUTC := startOfDay.UTC()
+			filters.StartDate = &startOfDayUTC
 		} else {
 			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
 		}
@@ -288,9 +291,10 @@ func (h *Handler) GetRecordsWithRevenue(w http.ResponseWriter, r *http.Request) 
 	// Parse end_date
 	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
 		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
-			// Set to end of day in Vietnam timezone
+			// Set to end of day in Vietnam timezone, then convert to UTC
 			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
-			filters.EndDate = &endOfDay
+			endOfDayUTC := endOfDay.UTC()
+			filters.EndDate = &endOfDayUTC
 		} else {
 			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
 		}
