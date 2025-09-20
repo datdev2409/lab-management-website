@@ -1,8 +1,11 @@
 package partials
 
 templ PatientInput() {
-	<div x-show="patient == null" class="position-relative">
+	<div x-show="patient == null && isEditMode" class="position-relative">
 		@PatientAutocomplete()
+	</div>
+	<div x-show="patient == null && !isEditMode">
+		<em class="text-muted">Chưa chọn bệnh nhân</em>
 	</div>
 	<div x-show="patient != null">
 		<div class="d-flex align-items-start justify-content-between">
@@ -17,7 +20,7 @@ templ PatientInput() {
 					<span x-text="patient.address"></span>
 				</div>
 			</div>
-			<a @click="patient = null" class="link-primary">Chọn bệnh nhân khác</a>
+			<a x-show="isEditMode" @click="patient = null" class="link-primary">Chọn bệnh nhân khác</a>
 		</div>
 	</div>
 }

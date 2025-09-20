@@ -9,6 +9,15 @@ templ RecordCreateForm(recordId string) {
 				window.dispatchEvent(new CustomEvent("save"))
 				event.preventDefault();
 			}
+			
+			// Toggle edit mode with Ctrl/Cmd + E
+			if ((event.ctrlKey || event.metaKey) && event.key === 'e') {
+				const recordForm = Alpine.$data(document.querySelector('[x-data*="recordForm"]'))
+				if (recordForm && recordForm.flow === 'update-record') {
+					recordForm.setEditMode(!recordForm.isEditMode)
+					event.preventDefault();
+				}
+			}
 		});
 
 		document.addEventListener('alpine:init', function() {
@@ -19,6 +28,7 @@ templ RecordCreateForm(recordId string) {
 				combo_name_input: "",
 				test_results: [],
 				number_of_empty_tests: 1,
+				isEditMode: true, // Default to edit mode for new records
 
 				async init() {
 					if (recordId == '') {
@@ -38,6 +48,7 @@ templ RecordCreateForm(recordId string) {
 						this.test_results = data.test_results
 						this.combo_name = data.combo_name
 						this.flow = "update-record"
+						this.isEditMode = false // Default to view mode for existing records
 						
 						// Check abnormal status for existing results
 						this.test_results.forEach(test => {
@@ -274,6 +285,51 @@ templ RecordCreateForm(recordId string) {
 						console.log(`Removed test "${testToRemove.name}" from record`)
 					}
 				},
+
+				toggleEditMode() {
+					this.isEditMode = !this.isEditMode
+					console.log(`Record edit mode toggled to: ${this.isEditMode ? 'Edit' : 'View'}`)
+				},
+
+				setEditMode(mode) {
+					const previousMode = this.isEditMode
+					this.isEditMode = mode
+					
+					// Show user feedback
+					if (typeof showCustomNotification === 'function') {
+						if (mode && !previousMode) {
+							showCustomNotification('Đã chuyển sang chế độ chỉnh sửa', 'info')
+						} else if (!mode && previousMode) {
+							showCustomNotification('Đã chuyển sang chế độ xem (chỉ đọc)', 'info')
+						}
+					}
+				},
+
+				showViewModeTooltip(testId, field) {
+					// Show tooltip for specific field
+					const tooltipKey = `${testId}_${field}`
+					this.activeTooltips = this.activeTooltips || {}
+					this.activeTooltips[tooltipKey] = true
+					
+					// Auto hide after 3 seconds
+					setTimeout(() => {
+						if (this.activeTooltips) {
+							this.activeTooltips[tooltipKey] = false
+						}
+					}, 3000)
+				},
+
+				hideViewModeTooltip(testId, field) {
+					const tooltipKey = `${testId}_${field}`
+					if (this.activeTooltips) {
+						this.activeTooltips[tooltipKey] = false
+					}
+				},
+
+				isTooltipVisible(testId, field) {
+					const tooltipKey = `${testId}_${field}`
+					return this.activeTooltips && this.activeTooltips[tooltipKey]
+				},
 			}))
 
 		})
@@ -284,7 +340,39 @@ templ RecordCreateForm(recordId string) {
 				<tbody>
 					<tr>
 						<td style="width: 200px">Trạng thái</td>
-						<td><span class="badge text-bg-secondary">New</span></td>
+						<td>
+							<div class="d-flex align-items-center justify-content-between">
+								<div class="d-flex align-items-center gap-2">
+									<span class="badge text-bg-secondary">New</span>
+									<small x-show="flow === 'update-record'" class="text-muted">
+										<i class="bi" :class="isEditMode ? 'bi-unlock text-warning' : 'bi-lock text-success'"></i>
+										<span x-text="isEditMode ? 'Đang chỉnh sửa' : 'Chỉ đọc'"></span>
+									</small>
+								</div>
+								<div x-show="flow === 'update-record'" class="btn-group btn-group-sm" role="group" aria-label="Mode toggle">
+									<button
+										type="button"
+										class="btn"
+										:class="!isEditMode ? 'btn-success' : 'btn-outline-success'"
+										@click="setEditMode(false)"
+										title="Chế độ xem (read-only) - Ctrl+E để toggle"
+									>
+										<i class="bi bi-eye me-1"></i>
+										Xem
+									</button>
+									<button
+										type="button"
+										class="btn"
+										:class="isEditMode ? 'btn-warning' : 'btn-outline-warning'"
+										@click="setEditMode(true)"
+										title="Chế độ chỉnh sửa - Ctrl+E để toggle"
+									>
+										<i class="bi bi-pencil me-1"></i>
+										Sửa
+									</button>
+								</div>
+							</div>
+						</td>
 					</tr>
 					<tr>
 						<td style="width: 200px">Bệnh nhân</td>
@@ -295,14 +383,17 @@ templ RecordCreateForm(recordId string) {
 					<tr>
 						<td style="width: 200px">Tên gói xét nghiệm</td>
 						<td>
-							<div x-show="combo_name == ''">
+							<div x-show="combo_name == '' && isEditMode">
 								@ComboAutocomplete()
 							</div>
 							<div x-show="combo_name != ''">
 								<div class="d-flex align-items-center justify-content-between">
 									<div x-text="combo_name"></div>
-									<a @click="combo_name='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
+									<a x-show="isEditMode" @click="combo_name='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
 								</div>
+							</div>
+							<div x-show="combo_name == '' && !isEditMode">
+								<em class="text-muted">Chưa chọn gói xét nghiệm</em>
 							</div>
 						</td>
 					</tr>
@@ -314,7 +405,7 @@ templ RecordCreateForm(recordId string) {
 		</div>
 		<div class="position-sticky bottom-0 end-0 start-0 bg-white py-3 z-10">
 			<button type="button" class="btn btn-secondary" @click="window.location.replace(`/phieu-xet-nghiem`)">Trở lại</button>
-			<button type="submit" class="btn btn-primary me-2">
+			<button x-show="isEditMode" type="submit" class="btn btn-primary me-2">
 				<span x-text="flow === 'create-record' ? 'Tạo' : 'Lưu thay đổi'"></span>
 				<span class="badge text-bg-dark">(Ctrl + S)</span>
 			</button>
