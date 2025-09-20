@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	_ "time/tzdata"
+
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
