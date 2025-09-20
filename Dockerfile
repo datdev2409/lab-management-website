@@ -21,7 +21,7 @@ WORKDIR /app
 
 COPY internal/templates/scripts ./internal/templates/scripts
 
-RUN npm install -g esbuild
+RUN npm install -g --ignore-scripts esbuild
 
 RUN esbuild ./internal/templates/scripts/ --bundle --minify --outfile=./static/index.js
 
