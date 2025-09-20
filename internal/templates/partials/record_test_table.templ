@@ -25,24 +25,51 @@ templ RecordTestTable() {
 					</td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
-						<input x-model="test.result" @input="checkAbnormalWithPrompt(test)" :class="test.abnormal ? 'form-control border-danger' : 'form-control'"/>
+						<div class="position-relative">
+							<input
+								x-model="test.result"
+								@input="checkAbnormalWithPrompt(test)"
+								:class="test.abnormal ? 'form-control border-danger' : 'form-control'"
+								:readonly="!isEditMode"
+								@click="!isEditMode && showViewModeTooltip(test.id, 'result')"
+								@focus="!isEditMode && showViewModeTooltip(test.id, 'result')"
+								@blur="hideViewModeTooltip(test.id, 'result')"
+							/>
+							@ViewModeTooltip("result")
+						</div>
 					</td>
 					<td style="width: 180px">
-						<input x-model="test.result_text"/>
+						<div class="position-relative">
+							<input
+								x-model="test.result_text"
+								class="form-control"
+								:readonly="!isEditMode"
+								@click="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
+								@focus="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
+								@blur="hideViewModeTooltip(test.id, 'result_text')"
+							/>
+							@ViewModeTooltip("result_text")
+						</div>
 					</td>
 					<td style="width: 30px">
 						<div class="d-flex align-items-center">
-							<input
-								type="checkbox"
-								x-model="test.abnormal"
-								@change="markManualOverride(test)"
-								:class="test.abnormal ? 'text-danger' : ''"
-								:title="test.manual_abnormal_override ? 
-									   'Đã đánh dấu thủ công (ưu tiên cao hơn tự động)' :
-									   (test.abnormal && test.lower_bound !== undefined && test.upper_bound !== undefined ? 
-									   `Kết quả ${test.result} nằm ngoài khoảng bình thường [${test.lower_bound} - ${test.upper_bound}]` : 
-									   'Đánh dấu kết quả bất thường')"
-							/>
+							<div class="position-relative">
+								<input
+									type="checkbox"
+									x-model="test.abnormal"
+									@change="markManualOverride(test)"
+									:class="test.abnormal ? 'text-danger' : ''"
+									:disabled="!isEditMode"
+									:title="!isEditMode ? '' : 
+										   (test.manual_abnormal_override ? 
+										   'Đã đánh dấu thủ công (ưu tiên cao hơn tự động)' :
+										   (test.abnormal && test.lower_bound !== undefined && test.upper_bound !== undefined ? 
+										   `Kết quả ${test.result} nằm ngoài khoảng bình thường [${test.lower_bound} - ${test.upper_bound}]` : 
+										   'Đánh dấu kết quả bất thường'))"
+									@click="!isEditMode && showViewModeTooltip(test.id, 'abnormal')"
+								/>
+								@ViewModeTooltipCentered("abnormal")
+							</div>
 							<span
 								x-show="test.abnormal"
 								class="text-danger ms-1"
@@ -52,7 +79,7 @@ templ RecordTestTable() {
 						<div class="d-flex align-items-center mt-1">
 							<small x-show="test.manual_abnormal_override" class="text-info" style="font-size: 0.7em;">Thủ công</small>
 							<button
-								x-show="test.manual_abnormal_override"
+								x-show="test.manual_abnormal_override && isEditMode"
 								@click="clearManualOverride(test)"
 								class="btn btn-outline-secondary btn-sm ms-1"
 								style="font-size: 0.6em; padding: 1px 4px;"
@@ -64,6 +91,7 @@ templ RecordTestTable() {
 					</td>
 					<td style="width: 50px">
 						<button
+							x-show="isEditMode"
 							@click="removeTest(test)"
 							class="btn btn-outline-danger btn-sm"
 							style="font-size: 0.7em; padding: 2px 6px;"
@@ -75,7 +103,7 @@ templ RecordTestTable() {
 				</tr>
 			</template>
 			<template x-for="i in number_of_empty_tests" x-key="i">
-				<tr>
+				<tr x-show="isEditMode">
 					<td>
 						@TestAutocomplete()
 					</td>
@@ -83,13 +111,13 @@ templ RecordTestTable() {
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 120px">
-						<input x-model="test.result"/>
+						<input x-model="test.result" :disabled="!isEditMode"/>
 					</td>
 					<td style="width: 180px">
-						<input x-model="test.result_text"/>
+						<input x-model="test.result_text" :disabled="!isEditMode"/>
 					</td>
 					<td style="width: 30px">
-						<input type="checkbox" x-model="test.abnormal"/>
+						<input type="checkbox" x-model="test.abnormal" :disabled="!isEditMode"/>
 					</td>
 					<td style="width: 50px">
 						<button
@@ -105,5 +133,5 @@ templ RecordTestTable() {
 			</template>
 		</tbody>
 	</table>
-	<button type="button" @click="number_of_empty_tests += 1">+</button>
+	<button x-show="isEditMode" type="button" @click="number_of_empty_tests += 1">+</button>
 }

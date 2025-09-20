@@ -1,0 +1,41 @@
+package partials
+
+templ ViewModeTooltip(field string) {
+	<div
+		x-show={ "isTooltipVisible(test.id, '" + field + "')" }
+		x-transition:enter="transition ease-out duration-200"
+		x-transition:enter-start="opacity-0 transform translate-y-1"
+		x-transition:enter-end="opacity-100 transform translate-y-0"
+		x-transition:leave="transition ease-in duration-150"
+		x-transition:leave-start="opacity-100 transform translate-y-0"
+		x-transition:leave-end="opacity-0 transform translate-y-1"
+		class="position-absolute top-100 start-0 mt-1 p-2 bg-dark text-white rounded shadow-sm"
+		style="font-size: 0.75rem; white-space: nowrap; z-index: 1050;"
+	>
+		<i class="bi bi-info-circle me-1"></i>
+		Chuyển sang chế độ sửa để cập nhật
+		<div class="position-absolute top-0 start-0 translate-middle-y" style="margin-left: 10px; margin-top: -2px;">
+			<div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 4px solid #212529;"></div>
+		</div>
+	</div>
+}
+
+templ ViewModeTooltipCentered(field string) {
+	<div
+		x-show={ "isTooltipVisible(test.id, '" + field + "')" }
+		x-transition:enter="transition ease-out duration-200"
+		x-transition:enter-start="opacity-0 transform translate-y-1"
+		x-transition:enter-end="opacity-100 transform translate-y-0"
+		x-transition:leave="transition ease-in duration-150"
+		x-transition:leave-start="opacity-100 transform translate-y-0"
+		x-transition:leave-end="opacity-0 transform translate-y-1"
+		class="position-absolute top-100 start-0 mt-1 p-2 bg-dark text-white rounded shadow-sm"
+		style="font-size: 0.75rem; white-space: nowrap; z-index: 1050; left: -50px;"
+	>
+		<i class="bi bi-info-circle me-1"></i>
+		Chuyển sang chế độ sửa để cập nhật
+		<div class="position-absolute top-0 start-0 translate-middle-y" style="margin-left: 60px; margin-top: -2px;">
+			<div style="width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 4px solid #212529;"></div>
+		</div>
+	</div>
+}
