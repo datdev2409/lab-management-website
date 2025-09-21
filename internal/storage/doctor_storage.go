@@ -61,7 +61,6 @@ func (m *MongoStorage) SearchDoctorByNameOrPhone(ctx context.Context, filterOpts
 			Value: bson.A{
 				bson.D{{Key: "name", Value: regexPattern}},
 				bson.D{{Key: "phone", Value: regexPattern}},
-				bson.D{{Key: "address", Value: regexPattern}},
 			},
 		})
 	}
