@@ -24,6 +24,7 @@ templ RecordCreateForm(recordId string) {
 			Alpine.data("recordForm", (recordId) => ({
 				flow: "create-record",
 				patient: null,
+				doctor: null,
 				combo_name: "",
 				combo_name_input: "",
 				test_results: [],
@@ -45,6 +46,7 @@ templ RecordCreateForm(recordId string) {
 						const { data } = await response.json()
 
 						this.patient = data.patient
+						this.doctor = data.doctor_id ? { id: data.doctor_id, name: data.doctor_name } : null
 						this.test_results = data.test_results
 						this.combo_name = data.combo_name
 						this.flow = "update-record"
@@ -82,6 +84,21 @@ templ RecordCreateForm(recordId string) {
 					}
 					catch (error) {
 						console.error("Error fetching patient data:", error)
+					}
+				},
+
+				async selectDoctor(doctorId) {
+					try {
+						const response = await fetch(`/api/v1/doctors/${doctorId}`)
+						if (!response.ok) {
+							throw new Error("Failed to fetch doctor data")
+						}
+
+						const { data } = await response.json()
+						this.doctor = data
+					}
+					catch (error) {
+						console.error("Error fetching doctor data:", error)
 					}
 				},
 
@@ -179,6 +196,8 @@ templ RecordCreateForm(recordId string) {
 						const formData = {
 							patient_id: this.patient.id,
 							combo_name: this.combo_name != '' ? this.combo_name : this.combo_name_input,
+							doctor_id: this.doctor ? this.doctor.id : "",
+							doctor_name: this.doctor ? this.doctor.name : "",
 							test_results: this.test_results
 						}
 
@@ -378,6 +397,17 @@ templ RecordCreateForm(recordId string) {
 						<td style="width: 200px">Bệnh nhân</td>
 						<td>
 							@PatientInput()
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 200px">
+							<div class="d-flex align-items-center">
+								<span>Bác sĩ chỉ định</span>
+								<small class="text-muted ms-2">(tùy chọn)</small>
+							</div>
+						</td>
+						<td>
+							@DoctorInput()
 						</td>
 					</tr>
 					<tr>

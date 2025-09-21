@@ -87,6 +87,9 @@ templ BaseScript() {
       sortBy: options.defaultSortBy || "",
       sortOrder: options.defaultSortOrder || "asc",
       
+      // Custom filters
+      filters: options.filters || {},
+      
       init() {
         this.fetchData();
       },
@@ -109,6 +112,14 @@ templ BaseScript() {
             params.append("sort_by", this.sortBy);
             params.append("sort_order", this.sortOrder);
           }
+          
+          // Add custom filters
+          Object.keys(this.filters).forEach(key => {
+            const value = this.filters[key];
+            if (value !== null && value !== undefined && value !== "") {
+              params.append(key, value);
+            }
+          });
           
           const response = await fetch(`${fetchUrl}?${params}`);
           if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -177,6 +188,27 @@ templ BaseScript() {
 
       clearSearch() {
         this.searchQuery = "";
+        this.currentPage = 1;
+        this.fetchData();
+      },
+
+      // Filter methods
+      updateFilter(key, value) {
+        this.filters[key] = value;
+        this.currentPage = 1; // Reset to first page when filtering
+        this.fetchData();
+      },
+
+      clearFilter(key) {
+        this.filters[key] = "";
+        this.currentPage = 1;
+        this.fetchData();
+      },
+
+      clearAllFilters() {
+        Object.keys(this.filters).forEach(key => {
+          this.filters[key] = "";
+        });
         this.currentPage = 1;
         this.fetchData();
       },

@@ -1,0 +1,25 @@
+package partials
+
+templ DoctorInput() {
+	<div x-show="doctor == null && isEditMode" class="position-relative">
+		@DoctorAutocomplete()
+	</div>
+	<div x-show="doctor == null && !isEditMode">
+		<em class="text-muted">Không có bác sĩ chỉ định</em>
+	</div>
+	<div x-show="doctor != null">
+		<div class="d-flex align-items-start justify-content-between">
+			<div class="d-flex flex-column gap-1">
+				<div class="text-muted">
+					<span x-text="doctor.name"></span>
+					<span x-show="doctor.phone"> - <span x-text="doctor.phone"></span></span>
+				</div>
+			</div>
+			<div class="d-flex gap-2">
+				<a x-show="isEditMode" @click="doctor = null" class="link-primary text-decoration-none">
+					<i class="bi bi-x-circle me-1"></i>Bỏ chọn
+				</a>
+			</div>
+		</div>
+	</div>
+}

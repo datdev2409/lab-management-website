@@ -8,7 +8,60 @@ templ RecordPage() {
 			<h3 class="pt-3">Phiếu xét nghiệm</h3>
 			<a href="/phieu-xet-nghiem/new"><button class="btn btn-primary">Tạo phiếu xét nghiệm mới</button></a>
 		</div>
-		<div x-data="table('/api/v1/records', { pageSize: 10 })" class="mb-3 mt-3">
+		<div
+			x-data="table('/api/v1/records', { pageSize: 10, filters: { doctor_id: '' } })"
+			x-init="
+				// Add doctor filtering functionality
+				Object.assign($data, {
+					selectedDoctor: null,
+					doctorQuery: '',
+					doctorSuggestions: [],
+					showDoctorSuggestions: false,
+					isDoctorLoading: false,
+					
+					async searchDoctors() {
+						if (!this.doctorQuery.trim()) {
+							this.doctorSuggestions = [];
+							this.showDoctorSuggestions = false;
+							return;
+						}
+						this.isDoctorLoading = true;
+						try {
+							const response = await fetch(`/api/v1/doctors?q=${encodeURIComponent(this.doctorQuery)}&page_size=10`);
+							const result = await response.json();
+							this.doctorSuggestions = result.data || [];
+							this.showDoctorSuggestions = true;
+						} catch (error) {
+							console.error('Error searching doctors:', error);
+							this.doctorSuggestions = [];
+						} finally {
+							this.isDoctorLoading = false;
+						}
+					},
+					
+					selectDoctorFilter(doctor) {
+						this.selectedDoctor = doctor;
+						this.doctorQuery = `${doctor.name} - ${doctor.phone}`;
+						this.showDoctorSuggestions = false;
+						this.updateFilter('doctor_id', doctor.id);
+					},
+					
+					clearDoctorFilter() {
+						this.selectedDoctor = null;
+						this.doctorQuery = '';
+						this.showDoctorSuggestions = false;
+						this.updateFilter('doctor_id', '');
+					},
+					
+					clearAllFiltersAndDoctor() {
+						this.clearDoctorFilter();
+						this.clearSearch();
+						this.clearAllFilters();
+					}
+				});
+			"
+			class="mb-3 mt-3"
+		>
 			<div x-show="error" class="alert alert-danger" x-text="error" x-cloak></div>
 			<div class="row mb-3">
 				<div class="col-md-auto" style="width: 400px;">
@@ -20,8 +73,75 @@ templ RecordPage() {
 						@input.debounce.300ms="search()"
 					/>
 				</div>
+				<div class="col-md-auto" style="width: 250px;">
+					<div class="position-relative">
+						<input
+							type="text"
+							class="form-control"
+							placeholder="Lọc theo bác sĩ..."
+							x-model="doctorQuery"
+							@input.debounce.300ms="searchDoctors()"
+							@focus="if (doctorQuery) searchDoctors()"
+							@keydown.escape="showDoctorSuggestions = false"
+							@keydown.arrow-down.prevent="$focus.within($refs.doctorList).getNext() || $focus.first($refs.doctorList)"
+							@keydown.arrow-up.prevent="$focus.within($refs.doctorList).getPrevious() || $focus.last($refs.doctorList)"
+							autocomplete="off"
+						/>
+						<!-- Clear button for selected doctor -->
+						<button
+							x-show="selectedDoctor"
+							@click="clearDoctorFilter()"
+							type="button"
+							class="btn-close position-absolute end-0 top-50 translate-middle-y me-2"
+							style="font-size: 0.6rem;"
+						></button>
+						<!-- Loading indicator -->
+						<div
+							x-show="isDoctorLoading"
+							class="position-absolute end-0 top-50 translate-middle-y me-2"
+							style="margin-right: 0.5rem;"
+						>
+							<div class="spinner-border spinner-border-sm" role="status">
+								<span class="visually-hidden">Loading...</span>
+							</div>
+						</div>
+						<!-- Doctor suggestions dropdown -->
+						<div
+							x-show="showDoctorSuggestions && doctorSuggestions.length > 0"
+							@click.away="showDoctorSuggestions = false"
+							class="position-absolute top-100 start-0 w-100 bg-white border border-top-0 rounded-bottom shadow-sm"
+							style="z-index: 1000; max-height: 200px; overflow-y: auto;"
+							x-ref="doctorList"
+						>
+							<template x-for="doctor in doctorSuggestions" :key="doctor.id">
+								<div
+									@click="selectDoctorFilter(doctor)"
+									@keydown.enter="selectDoctorFilter(doctor)"
+									class="px-3 py-2 border-bottom"
+									tabindex="0"
+									style="cursor: pointer;"
+									@mouseenter="$el.style.backgroundColor = '#f8f9fa'"
+									@mouseleave="$el.style.backgroundColor = 'transparent'"
+								>
+									<div class="fw-medium" x-text="doctor.name"></div>
+									<small class="text-muted" x-text="doctor.phone"></small>
+								</div>
+							</template>
+						</div>
+					</div>
+				</div>
 				<div class="col-md-auto">
 					<button type="submit" class="btn btn-primary">Tìm kiếm</button>
+				</div>
+				<div class="col-md-auto">
+					<button
+						type="button"
+						class="btn btn-outline-secondary"
+						@click="clearAllFiltersAndDoctor()"
+						x-show="searchQuery || selectedDoctor"
+					>
+						Xóa bộ lọc
+					</button>
 				</div>
 			</div>
 			<table x-show="!isLoading" class="table table-bordered">
@@ -30,6 +150,7 @@ templ RecordPage() {
 						<th>Tên bệnh nhân</th>
 						<th>Số điện thoại</th>
 						<th>Tên gói xét nghiệm</th>
+						<th>Bác sĩ chỉ định</th>
 						<th>Trạng thái</th>
 						<th>Ngày tạo</th>
 						<th>Ngày cập nhật</th>
@@ -42,6 +163,10 @@ templ RecordPage() {
 							<td x-text="record.patient.name"></td>
 							<td x-text="record.patient.phone"></td>
 							<td x-text="record.combo_name"></td>
+							<td class="text-muted">
+								<span x-show="record.doctor_name" x-text="record.doctor_name"></span>
+								<em x-show="!record.doctor_name">-</em>
+							</td>
 							<td x-text="record.status"></td>
 							<td x-text="formatDate(record.created_at)"></td>
 							<td x-text="formatDate(record.updated_at)"></td>

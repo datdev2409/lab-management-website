@@ -43,12 +43,28 @@ func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
+	// Validate doctor if provided
+	if request.DoctorID != "" {
+		doctor, err := h.Store.GetDoctorById(r.Context(), request.DoctorID)
+		if err != nil {
+			logger.FromCtx(r.Context()).Error("Doctor not found", zap.String("doctor_id", request.DoctorID), zap.Error(err))
+			return BadRequestError("Doctor not found")
+		}
+		// Use the doctor's name from the database to ensure consistency
+		request.DoctorName = doctor.Name
+	}
+
 	recordTestResults := []models.TestResult{}
 	for _, testResult := range request.TestResults {
 		recordTestResults = append(recordTestResults, models.TestResult(testResult))
 	}
 
-	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
+	var record models.Record
+	if request.DoctorID != "" && request.DoctorName != "" {
+		record = models.NewRecordWithDoctor(*patient, request.ComboName, recordTestResults, request.DoctorID, request.DoctorName)
+	} else {
+		record = models.NewRecord(*patient, request.ComboName, recordTestResults)
+	}
 
 	_, err = h.Store.InsertRecord(r.Context(), &record)
 	if err != nil {
@@ -73,6 +89,17 @@ func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 		request.Patient = patient
+	}
+
+	// Validate doctor if provided
+	if request.DoctorID != "" {
+		doctor, err := h.Store.GetDoctorById(r.Context(), request.DoctorID)
+		if err != nil {
+			logger.FromCtx(r.Context()).Error("Doctor not found during update", zap.String("doctor_id", request.DoctorID), zap.Error(err))
+			return BadRequestError("Doctor not found")
+		}
+		// Use the doctor's name from the database to ensure consistency
+		request.DoctorName = doctor.Name
 	}
 
 	err := h.Store.UpdateRecord(r.Context(), recordId, request)
@@ -149,6 +176,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("q")
 	status := r.URL.Query().Get("status")
+	doctorID := r.URL.Query().Get("doctor_id")
 
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
@@ -169,8 +197,9 @@ func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	recordsQueryOptions := models.RecordQueryOptions{
-		Keyword: keyword,
-		Status:  status,
+		Keyword:  keyword,
+		Status:   status,
+		DoctorID: doctorID,
 	}
 
 	genericQueryOptions := models.GenericQueryOptions{
@@ -198,15 +227,35 @@ func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
 	if request.PatientID == "" || len(request.TestResults) == 0 {
 		return BadRequestError("patient_id and test_results are required")
 	}
+	
 	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
 	}
+
+	// Validate doctor if provided
+	if request.DoctorID != "" {
+		doctor, err := h.Store.GetDoctorById(r.Context(), request.DoctorID)
+		if err != nil {
+			logger.FromCtx(r.Context()).Error("Doctor not found", zap.String("doctor_id", request.DoctorID), zap.Error(err))
+			return BadRequestError("Doctor not found")
+		}
+		// Use the doctor's name from the database to ensure consistency
+		request.DoctorName = doctor.Name
+	}
+
 	recordTestResults := []models.TestResult{}
 	for _, tr := range request.TestResults {
 		recordTestResults = append(recordTestResults, models.TestResult(tr))
 	}
-	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
+
+	var record models.Record
+	if request.DoctorID != "" && request.DoctorName != "" {
+		record = models.NewRecordWithDoctor(*patient, request.ComboName, recordTestResults, request.DoctorID, request.DoctorName)
+	} else {
+		record = models.NewRecord(*patient, request.ComboName, recordTestResults)
+	}
+
 	id, err := h.Store.InsertRecord(r.Context(), &record)
 	if err != nil {
 		return err

@@ -1,0 +1,21 @@
+package partials
+
+templ DoctorAutocomplete() {
+	<div x-data="autocomplete('/api/v1/doctors')">
+		<input 
+			class="form-control" 
+			x-model="searchTerm" 
+			x-on:input.debounce="search()" 
+			autocomplete="off"
+			placeholder="Tìm kiếm bác sĩ theo tên hoặc số điện thoại (tùy chọn)..."
+		/>
+		<div x-show="open" @click.outside="open=false" class="shadow bordered position-absolute autocomplete">
+			<template x-for="result in results">
+				<div x-on:click="selectDoctor(result.id);reset();searchTerm=result.name" class="autocomplete-option">
+					<span x-text="result.name"></span>
+					<span x-show="result.phone"> - <span x-text="result.phone"></span></span>
+				</div>
+			</template>
+		</div>
+	</div>
+}
