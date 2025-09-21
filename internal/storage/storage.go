@@ -18,6 +18,13 @@ type Storage interface {
 	DeletePatientById(ctx context.Context, id string) error
 	SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
 	FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error)
+	// Doctor
+	InsertDoctor(ctx context.Context, doctor *models.Doctor) (string, error)
+	GetDoctorById(ctx context.Context, id string) (*models.Doctor, error)
+	UpdateDoctorById(ctx context.Context, id string, update models.DoctorUpdate) error
+	DeleteDoctorById(ctx context.Context, id string) error
+	SearchDoctorByNameOrPhone(ctx context.Context, filterOpts models.DoctorQueryOptions, opts models.GenericQueryOptions) ([]*models.Doctor, *models.PaginationResponse, error)
+	FindDoctorByNameAndPhone(ctx context.Context, name, phone string) (*models.Doctor, error)
 	// Test
 	InsertTest(ctx context.Context, test *models.Test) (string, error)
 	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)

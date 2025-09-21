@@ -22,6 +22,8 @@ type Record struct {
 	ID          string       `json:"id" bson:"_id,omitempty"`
 	ComboName   string       `json:"combo_name" bson:"combo_name"`
 	Patient     Patient      `json:"patient" bson:"patient"`
+	DoctorID    string       `json:"doctor_id,omitempty" bson:"doctor_id,omitempty"`
+	DoctorName  string       `json:"doctor_name,omitempty" bson:"doctor_name,omitempty"`
 	TestResults []TestResult `json:"test_results" bson:"test_results"`
 	Status      string       `json:"status" bson:"status"`
 	CreatedAt   time.Time    `json:"created_at" bson:"created_at"`
@@ -40,6 +42,31 @@ func NewRecord(patient Patient, comboName string, testResults []TestResult) Reco
 		UpdatedAt:   now,
 	}
 	return record
+}
+
+// NewRecordWithDoctor creates a new record with optional doctor information
+func NewRecordWithDoctor(patient Patient, comboName string, testResults []TestResult, doctorID, doctorName string) Record {
+	record := NewRecord(patient, comboName, testResults)
+	record.DoctorID = doctorID
+	record.DoctorName = doctorName
+	return record
+}
+
+// HasDoctor returns true if the record has doctor information
+func (r *Record) HasDoctor() bool {
+	return r.DoctorID != "" && r.DoctorName != ""
+}
+
+// SetDoctor sets the doctor information for the record
+func (r *Record) SetDoctor(doctorID, doctorName string) {
+	r.DoctorID = doctorID
+	r.DoctorName = doctorName
+}
+
+// ClearDoctor removes the doctor information from the record
+func (r *Record) ClearDoctor() {
+	r.DoctorID = ""
+	r.DoctorName = ""
 }
 
 type TestResultRequest struct {
@@ -63,6 +90,8 @@ type CreateRecordResponse struct {
 type CreateRecordRequest struct {
 	PatientID   string              `json:"patient_id"`
 	ComboName   string              `json:"combo_name"`
+	DoctorID    string              `json:"doctor_id,omitempty"`
+	DoctorName  string              `json:"doctor_name,omitempty"`
 	TestResults []TestResultRequest `json:"test_results"`
 }
 
@@ -70,6 +99,8 @@ type UpdateRecordRequest struct {
 	ComboName   string              `json:"combo_name" bson:"combo_name"`
 	PatientID   string              `json:"patient_id" bson:"patient_id"`
 	Patient     *Patient            `json:"patient,omitempty" bson:"patient,omitempty"`
+	DoctorID    string              `json:"doctor_id,omitempty" bson:"doctor_id,omitempty"`
+	DoctorName  string              `json:"doctor_name,omitempty" bson:"doctor_name,omitempty"`
 	TestResults []TestResultRequest `json:"test_results" bson:"test_results"`
 }
 
@@ -77,6 +108,7 @@ type RecordQueryOptions struct {
 	Keyword   string
 	Status    string
 	PatientID string
+	DoctorID  string
 	StartDate *time.Time
 	EndDate   *time.Time
 }

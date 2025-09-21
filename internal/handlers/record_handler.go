@@ -18,6 +18,22 @@ import (
 	"go.uber.org/zap"
 )
 
+// validateAndSetDoctor validates doctor ID and sets doctor name in the request
+func (h *Handler) validateAndSetDoctor(ctx context.Context, doctorID string) (string, error) {
+	if doctorID == "" {
+		return "", nil
+	}
+	
+	doctor, err := h.Store.GetDoctorById(ctx, doctorID)
+	if err != nil {
+		logger.FromCtx(ctx).Error("Doctor not found", zap.String("doctor_id", doctorID), zap.Error(err))
+		return "", BadRequestError(DOCTOR_NOT_FOUND_ERROR)
+	}
+	
+	// Return the doctor's name from the database to ensure consistency
+	return doctor.Name, nil
+}
+
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
 	return Render(context.Background(), w, pages.RecordPage())
 }
@@ -29,70 +45,6 @@ func (h *Handler) HandleCreateNewRecord(w http.ResponseWriter, r *http.Request) 
 func (h *Handler) HandleRecordDetailPage(w http.ResponseWriter, r *http.Request) error {
 	recordId := chi.URLParam(r, "id")
 	return Render(r.Context(), w, pages.RecordDetailsPage(recordId))
-}
-
-func (h *Handler) CreateRecord(w http.ResponseWriter, r *http.Request) error {
-	var request models.CreateRecordRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return err
-	}
-
-	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
-	if err != nil {
-		return err
-	}
-
-	recordTestResults := []models.TestResult{}
-	for _, testResult := range request.TestResults {
-		recordTestResults = append(recordTestResults, models.TestResult(testResult))
-	}
-
-	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
-
-	_, err = h.Store.InsertRecord(r.Context(), &record)
-	if err != nil {
-		return err
-	}
-
-	return WriteJSON(w, http.StatusCreated, map[string]string{"id": record.ID})
-}
-
-func (h *Handler) UpdateRecord(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
-
-	var request models.UpdateRecordRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return err
-	}
-
-	if request.PatientID != "" {
-		patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
-		if err != nil {
-			return err
-		}
-		request.Patient = patient
-	}
-
-	err := h.Store.UpdateRecord(r.Context(), recordId, request)
-	if err != nil {
-		return err
-	}
-
-	return WriteJSON(w, http.StatusOK, map[string]string{
-		"message": "Record updated successfully",
-	})
-}
-
-func (h *Handler) GetRecord(w http.ResponseWriter, r *http.Request) error {
-	recordId := chi.URLParam(r, "id")
-	record, err := h.Store.GetRecordById(r.Context(), recordId)
-	if err != nil {
-		return err
-	}
-
-	return WriteJSON(w, http.StatusOK, record)
 }
 
 func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
@@ -149,6 +101,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	keyword := r.URL.Query().Get("q")
 	status := r.URL.Query().Get("status")
+	doctorID := r.URL.Query().Get("doctor_id")
 
 	page, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
@@ -169,8 +122,9 @@ func (h *Handler) ListRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	recordsQueryOptions := models.RecordQueryOptions{
-		Keyword: keyword,
-		Status:  status,
+		Keyword:  keyword,
+		Status:   status,
+		DoctorID: doctorID,
 	}
 
 	genericQueryOptions := models.GenericQueryOptions{
@@ -198,15 +152,31 @@ func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
 	if request.PatientID == "" || len(request.TestResults) == 0 {
 		return BadRequestError("patient_id and test_results are required")
 	}
+	
 	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
 	}
+
+	// Validate doctor if provided
+	doctorName, err := h.validateAndSetDoctor(r.Context(), request.DoctorID)
+	if err != nil {
+		return err
+	}
+	request.DoctorName = doctorName
+
 	recordTestResults := []models.TestResult{}
 	for _, tr := range request.TestResults {
 		recordTestResults = append(recordTestResults, models.TestResult(tr))
 	}
-	record := models.NewRecord(*patient, request.ComboName, recordTestResults)
+
+	var record models.Record
+	if request.DoctorID != "" && request.DoctorName != "" {
+		record = models.NewRecordWithDoctor(*patient, request.ComboName, recordTestResults, request.DoctorID, request.DoctorName)
+	} else {
+		record = models.NewRecord(*patient, request.ComboName, recordTestResults)
+	}
+
 	id, err := h.Store.InsertRecord(r.Context(), &record)
 	if err != nil {
 		return err
@@ -240,6 +210,14 @@ func (h *Handler) UpdateRecordV1(w http.ResponseWriter, r *http.Request) error {
 		}
 		request.Patient = patient
 	}
+
+	// Validate doctor if provided
+	doctorName, err := h.validateAndSetDoctor(r.Context(), request.DoctorID)
+	if err != nil {
+		return err
+	}
+	request.DoctorName = doctorName
+
 	if err := h.Store.UpdateRecord(r.Context(), recordId, request); err != nil {
 		return err
 	}

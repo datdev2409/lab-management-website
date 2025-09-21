@@ -7,4 +7,6 @@ const (
 	AUTH_LOGIN_FAILED_ERROR        = "Đăng nhập thất bại. Vui lòng kiểm tra lại tên đăng nhập và mật khẩu"
 	AUTH_INVALID_ADMIN_TOKEN_ERROR = "Mã quản trị không hợp lệ. Vui lòng liên hệ quản trị viên"
 	DUPLICATE_PATIENT_ERROR        = "Bệnh nhân với tên và số điện thoại đã tồn tại"
+	DUPLICATE_DOCTOR_ERROR         = "Bác sĩ với tên và số điện thoại đã tồn tại"
+	DOCTOR_NOT_FOUND_ERROR         = "Không tìm thấy bác sĩ chỉ định"
 )

@@ -29,6 +29,9 @@ func (m *MongoStorage) ListRecords(ctx context.Context, filters models.RecordQue
 	if filters.Status != "" {
 		mongoFilters = append(mongoFilters, bson.E{Key: "status", Value: filters.Status})
 	}
+	if filters.DoctorID != "" {
+		mongoFilters = append(mongoFilters, bson.E{Key: "doctor_id", Value: filters.DoctorID})
+	}
 	// Add date range filtering
 	if filters.StartDate != nil {
 		mongoFilters = append(mongoFilters, bson.E{Key: "created_at", Value: bson.D{{Key: "$gte", Value: *filters.StartDate}}})
@@ -78,11 +81,21 @@ func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, update
 		}
 		update["patient"] = patientBSON
 	}
+	// Handle doctor fields - both must be present or both empty
+	if updateRequest.DoctorID != "" && updateRequest.DoctorName != "" {
+		update["doctor_id"] = updateRequest.DoctorID
+		update["doctor_name"] = updateRequest.DoctorName
+	} else if updateRequest.DoctorID == "" && updateRequest.DoctorName == "" {
+		// If both are empty, we want to unset the doctor fields
+		update["doctor_id"] = ""
+		update["doctor_name"] = ""
+	}
 	updatedTestResults := []models.TestResult{}
 	for _, testResult := range updateRequest.TestResults {
 		updatedTestResults = append(updatedTestResults, models.TestResult(testResult))
 	}
 	update["test_results"] = updatedTestResults
+	update["updated_at"] = GetCurrentTime()
 	col := m.getCollection("records")
 	return MongoUpdateById[models.Record](ctx, col, recordId, bson.M{"$set": update})
 }
