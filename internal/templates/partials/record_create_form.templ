@@ -185,11 +185,11 @@ templ RecordCreateForm(recordId string) {
 						const config = {
 							"create-record": {
 								method: "POST",
-								endpoint: "/api/records"
+								endpoint: "/api/v1/records"
 							},
 							"update-record": {
-								method: "PATCH",
-								endpoint: `/api/records/${recordId}`
+								method: "PUT",
+								endpoint: `/api/v1/records/${recordId}`
 							}
 						}
 

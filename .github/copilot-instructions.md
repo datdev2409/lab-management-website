@@ -159,8 +159,6 @@ Web Pages (SSR):
 
 API Endpoints:
 - /api/v1/* → RESTful API with JWT auth
-- /api/patients/* → Patient operations (legacy)
-- /api/records/* → Record operations
 - /api/reports/* → Report generation
 - /api/tracking/* → Tracking operations
 ```

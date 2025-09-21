@@ -123,12 +123,6 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 		})
 	})
 
-	r.Route("/api/records", func(r chi.Router) {
-		r.Post("/", Make(h.CreateRecord))
-		r.Get("/{id}", Make(h.GetRecord))
-		r.Patch("/{id}", Make(h.UpdateRecord))
-	})
-
 	r.Route("/api/reports", func(r chi.Router) {
 		r.Post("/export", Make(h.ExportRecord))
 	})
