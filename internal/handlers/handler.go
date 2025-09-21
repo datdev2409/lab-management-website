@@ -45,6 +45,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 		r.Get("/phieu-xet-nghiem/new", Make(h.HandleCreateNewRecord))
 		r.Get("/phieu-xet-nghiem/{id}", Make(h.HandleRecordDetailPage))
 		r.Get("/danh-muc-benh-nhan", Make(h.HandlePatientPage))
+		r.Get("/danh-muc-bac-si", Make(h.HandleDoctorPage))
 		r.Get("/danh-muc-xet-nghiem", Make(h.HandleTestPage))
 		r.Get("/danh-muc-goi-xet-nghiem", Make(h.HandleComboPage))
 		r.Get("/danh-muc-goi-xet-nghiem/new", Make(h.HandleComboCreatePage))
@@ -78,6 +79,14 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 			r.Delete("/{id}", Make(h.DeletePatientV1))
 			r.Get("/{id}/records", Make(h.GetPatientRecordsV1))
 			r.Post("/{id}/records/compare", Make(h.ComparePatientRecordsV1))
+		})
+
+		r.Route("/doctors", func(r chi.Router) {
+			r.Get("/", Make(h.ListDoctorsV1))
+			r.Post("/", Make(h.CreateDoctorV1))
+			r.Get("/{id}", Make(h.GetDoctorV1))
+			r.Put("/{id}", Make(h.UpdateDoctorV1))
+			r.Delete("/{id}", Make(h.DeleteDoctorV1))
 		})
 
 		r.Route("/tests", func(r chi.Router) {

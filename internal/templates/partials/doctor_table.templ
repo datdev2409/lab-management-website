@@ -1,0 +1,186 @@
+package partials
+
+templ DoctorTable() {
+	<div x-data="table('/api/v1/doctors', { pageSize: 10 })" class="mt-4">
+		<!-- Error state -->
+		<div x-show="error" class="alert alert-danger" x-text="error" x-cloak></div>
+		<!-- Search and filters -->
+		<div class="mb-3">
+			<div class="row align-items-center">
+				<div class="col-md-6">
+					<div class="input-group">
+						<span class="input-group-text">
+							<i class="bi bi-search" aria-hidden="true"></i>
+						</span>
+						<input
+							type="text"
+							class="form-control"
+							placeholder="Tìm kiếm theo tên, số điện thoại hoặc địa chỉ..."
+							x-model="searchQuery"
+							@input.debounce.300ms="search($event.target.value)"
+						/>
+						<button type="button" @click="clearSearch()" class="btn btn-outline-secondary" x-show="searchQuery">
+							<i class="bi bi-x"></i> Xóa
+						</button>
+					</div>
+				</div>
+				<div class="col-md-6 text-end">
+					<small class="text-muted" x-show="totalItems > 0">
+						Tổng cộng: <span x-text="totalItems"></span> bác sĩ
+					</small>
+				</div>
+			</div>
+		</div>
+		<!-- Loading state -->
+		<div x-show="isLoading" class="text-center py-4">
+			<div class="spinner-border text-primary" role="status">
+				<span class="visually-hidden">Đang tải...</span>
+			</div>
+			<div class="mt-2 text-muted">Đang tải dữ liệu...</div>
+		</div>
+		<!-- Table -->
+		<div x-show="!isLoading">
+			<table class="table table-bordered table-hover">
+				<thead class="position-sticky top-0">
+					<tr>
+						<th style="max-width: 300px" scope="col">Tên</th>
+						<th style="max-width: 150px" scope="col">Điện thoại</th>
+						<th style="max-width: 300px" scope="col">Địa chỉ</th>
+						<th style="max-width: 150px" scope="col"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- No data state -->
+					<tr x-show="!hasData && !isLoading">
+						<td colspan="4" class="text-center py-5">
+							<div class="text-muted">
+								<i class="bi bi-person-badge" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+								<div x-show="searchQuery">
+									<h6>Không tìm thấy bác sĩ nào</h6>
+									<p class="mb-0">Thử tìm kiếm với từ khóa khác hoặc <button @click="clearSearch()" class="btn btn-link p-0">xóa bộ lọc</button></p>
+								</div>
+								<div x-show="!searchQuery">
+									<h6>Chưa có bác sĩ nào</h6>
+									<p class="mb-0">Hãy thêm bác sĩ đầu tiên để bắt đầu</p>
+								</div>
+							</div>
+						</td>
+					</tr>
+					<!-- Data rows -->
+					<template x-for="doctor in data" :key="doctor.id">
+						<tr :id="'dr' + doctor.id" x-data="{editable: false}">
+							<td class="text-truncate" style="max-width: 300px">
+								<p x-show="!editable" x-text="doctor.name"></p>
+								<input x-show="editable" name="doctor_name" class="form-control" :value="doctor.name"/>
+							</td>
+							<td class="text-truncate" style="max-width: 150px">
+								<p x-show="!editable" x-text="doctor.phone"></p>
+								<input x-show="editable" name="doctor_phone" class="form-control" :value="doctor.phone"/>
+							</td>
+							<td class="text-truncate" style="max-width: 300px">
+								<p x-show="!editable" x-text="doctor.address"></p>
+								<input x-show="editable" name="doctor_address" class="form-control" :value="doctor.address"/>
+							</td>
+							<td class="text-truncate" style="width: 130px">
+								<div class="d-flex align-items-center gap-1">
+									<div x-show="editable" class="btn-group btn-group-sm">
+										<button @click="editable=false" class="btn btn-outline-secondary btn-sm">
+											<i class="bi bi-x"></i> Hủy
+										</button>
+										<button @click="updateDoctor(doctor.id, $el)" class="btn btn-primary btn-sm">
+											<i class="bi bi-check"></i> Lưu
+										</button>
+									</div>
+									<div x-show="!editable" class="btn-group btn-group-sm">
+										<button @click="editable=true" class="btn btn-outline-primary btn-sm" title="Chỉnh sửa">
+											<i class="bi bi-pencil"></i> Sửa
+										</button>
+										<button @click="confirmDeleteDoctor(doctor.id, doctor.name)" class="btn btn-outline-danger btn-sm" title="Xóa">
+											<i class="bi bi-trash"></i> Xóa
+										</button>
+									</div>
+								</div>
+							</td>
+						</tr>
+					</template>
+				</tbody>
+			</table>
+		</div>
+		<!-- Pagination -->
+		@AlpinePagination()
+	</div>
+	<script>
+	async function updateDoctor(doctorId, saveButton) {
+		const row = saveButton.closest('tr');
+		
+		// Get form values
+		const name = row.querySelector('[name="doctor_name"]').value.trim();
+		const phone = row.querySelector('[name="doctor_phone"]').value.trim();
+		const address = row.querySelector('[name="doctor_address"]').value.trim();
+		
+		// Basic validation
+		if (!name) {
+			showCustomNotification('Tên bác sĩ không được để trống', 'danger');
+			return;
+		}
+		if (!phone) {
+			showCustomNotification('Số điện thoại không được để trống', 'danger');
+			return;
+		}
+		
+		// Show loading state
+		saveButton.disabled = true;
+		saveButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Đang lưu...';
+		
+		try {
+			const response = await fetch(`/api/v1/doctors/${doctorId}`, {
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ name, phone, address })
+			});
+			
+			if (response.ok) {
+				redirectWithMessage('/danh-muc-bac-si', 'doctor_update_success');
+			} else {
+				const data = await response.json();
+				showCustomNotification(data.error || 'Cập nhật thất bại', 'danger');
+			}
+		} catch (error) {
+			console.error('Update error:', error);
+			showCustomNotification('Lỗi kết nối. Vui lòng thử lại', 'danger');
+		} finally {
+			saveButton.disabled = false;
+			saveButton.innerHTML = '<i class="bi bi-check"></i> Lưu';
+		}
+	}
+	
+	function confirmDeleteDoctor(doctorId, doctorName) {
+		// Enhanced confirmation dialog
+		const message = `Bạn có chắc chắn muốn xóa bác sĩ "${doctorName}"?\n\nHành động này không thể hoàn tác.`;
+		if (!confirm(message)) {
+			return;
+		}
+		deleteDoctor(doctorId, doctorName);
+	}
+	
+	async function deleteDoctor(doctorId, doctorName) {
+		try {
+			const response = await fetch(`/api/v1/doctors/${doctorId}`, {
+				method: 'DELETE'
+			});
+			
+			if (response.ok) {
+				redirectWithMessage('/danh-muc-bac-si', 'doctor_delete_success');
+			} else {
+				const data = await response.json();
+				showCustomNotification(data.error || 'Xóa thất bại', 'danger');
+			}
+		} catch (error) {
+			console.error('Delete error:', error);
+			showCustomNotification('Lỗi kết nối. Vui lòng thử lại', 'danger');
+		}
+	}
+	</script>
+}

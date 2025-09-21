@@ -1,0 +1,114 @@
+package partials
+
+templ DoctorCreateForm() {
+	<div x-data="createDoctorForm()" class="pt-3">
+		<form @submit.prevent="createDoctor" id="doctor_create_form">
+			<div class="alert alert-danger p-2" x-show="error" x-text="error" x-cloak></div>
+			<div class="alert alert-success p-2" x-show="success" x-text="success" x-cloak></div>
+			@InputField("Tên bác sĩ", "doctor_name", "form.name", "", templ.Attributes{
+				"type":        "text",
+				"required":    "true",
+				"placeholder": "Nhập tên bác sĩ",
+				"maxlength":   "100",
+			})
+			@InputField("Điện thoại", "doctor_phone", "form.phone", "", templ.Attributes{
+				"type":        "text",
+				"required":    "true",
+				"placeholder": "Nhập số điện thoại",
+				"maxlength":   "20",
+			})
+			@InputField("Địa chỉ", "doctor_address", "form.address", "", templ.Attributes{
+				"type":        "text",
+				"placeholder": "Nhập địa chỉ (tùy chọn)",
+				"maxlength":   "200",
+			})
+			<div class="d-flex justify-content-between align-items-center my-3">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+				<button type="submit" class="btn btn-primary" x-bind:disabled="loading">
+					<span x-show="!loading">Thêm bác sĩ</span>
+					<span x-show="loading">
+						<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+						Đang xử lý...
+					</span>
+				</button>
+			</div>
+		</form>
+		<script>
+		function createDoctorForm() {
+			return {
+				form: { name: '', phone: '', address: '' },
+				loading: false,
+				error: '',
+				success: '',
+				
+				validateForm() {
+					// Clear previous errors
+					this.error = '';
+					
+					// Validate name
+					if (!this.form.name.trim()) {
+						this.error = 'Tên bác sĩ không được để trống';
+						return false;
+					}
+					if (this.form.name.length > 100) {
+						this.error = 'Tên bác sĩ không được quá 100 ký tự';
+						return false;
+					}
+					
+					// Validate phone
+					if (!this.form.phone.trim()) {
+						this.error = 'Số điện thoại không được để trống';
+						return false;
+					}
+					
+					// Validate address length if provided
+					if (this.form.address && this.form.address.length > 200) {
+						this.error = 'Địa chỉ không được quá 200 ký tự';
+						return false;
+					}
+					
+					return true;
+				},
+				
+				async createDoctor() {
+					if (!this.validateForm()) {
+						return;
+					}
+					
+					this.loading = true;
+					this.error = '';
+					this.success = '';
+					
+					try {
+						const res = await fetch('/api/v1/doctors', {
+							method: 'POST',
+							headers: { 'Content-Type': 'application/json' },
+							body: JSON.stringify({
+								name: this.form.name.trim(),
+								phone: this.form.phone.trim(),
+								address: this.form.address.trim()
+							})
+						});
+						
+						this.loading = false;
+						
+						if (res.ok) {
+							// Reset form
+							this.form = { name: '', phone: '', address: '' };
+							// Redirect with notification
+							redirectWithMessage('/danh-muc-bac-si', 'doctor_create_success');
+						} else {
+							const data = await res.json();
+							this.error = data.error || 'Có lỗi xảy ra khi tạo bác sĩ';
+						}
+					} catch (e) {
+						this.loading = false;
+						this.error = 'Lỗi kết nối. Vui lòng thử lại';
+						console.error('Create doctor error:', e);
+					}
+				}
+			}
+		}
+		</script>
+	</div>
+}

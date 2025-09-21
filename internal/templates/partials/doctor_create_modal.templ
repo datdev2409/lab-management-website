@@ -1,0 +1,30 @@
+package partials
+
+templ DoctorCreateModal() {
+	<button
+		class="btn btn-primary"
+		data-bs-toggle="modal"
+		data-bs-target="#doctor-create-modal"
+	>
+		Thêm bác sĩ
+	</button>
+	<div
+		id="doctor-create-modal"
+		class="modal modal-blur fade"
+		style="display: none"
+		aria-hidden="false"
+		tabindex="-1"
+	>
+		<div class="modal-dialog modal-lg modal-dialog-centered px-5 py-2" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Thêm bác sĩ</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="pe-5 ps-4">
+					@DoctorCreateForm()
+				</div>
+			</div>
+		</div>
+	</div>
+}

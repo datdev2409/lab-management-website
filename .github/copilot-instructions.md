@@ -174,7 +174,7 @@ API Endpoints:
 
 ### Data Flow Patterns
 
-1. **HTMX Requests**: Frontend uses HTMX for dynamic updates
+1. **HTMX → Alpine.js Migration**: Frontend gradually migrating from HTMX to Alpine.js - prefer Alpine.js for new components
 2. **Templ Rendering**: Server-side HTML generation with Go templates
 3. **Alpine.js**: Client-side reactivity and state management
 4. **JSON API**: RESTful endpoints for data operations
@@ -186,6 +186,17 @@ API Endpoints:
 ```go
 // Always use context-aware logging
 logger.FromCtx(ctx).Error("Failed to create record", zap.Error(err))
+
+// Use Make wrapper for error handling in handlers
+r.Get("/endpoint", Make(h.HandlerFunction))
+
+// Use AppError for business logic errors with HTTP status codes
+func (h *Handler) SomeHandler(w http.ResponseWriter, r *http.Request) error {
+    if someCondition {
+        return &AppError{StatusCode: 404, Message: "Resource not found"}
+    }
+    return WriteJSON(w, http.StatusOK, data)
+}
 
 // Return appropriate HTTP status codes
 http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -207,6 +218,94 @@ func (m *MongoStorage) CreateEntity(ctx context.Context, entity *Model) (string,
     col := m.getCollection("entities")
     return MongoInsert(ctx, col, entity)
 }
+```
+
+### MongoDB v2 Indexing Strategy
+
+Based on query pattern analysis, create these indexes for optimal performance:
+
+**Essential Indexes (High Priority):**
+```javascript
+// Records collection - date filtering & embedded patient search
+db.records.createIndex({ "created_at": -1 })                                // Date filtering & sorting
+db.records.createIndex({ "patient.name": 1, "patient.phone": 1 })          // Patient search in records
+db.records.createIndex({ "patient._id": 1 })                               // Patient lookup
+db.records.createIndex({ "status": 1 })                                    // Status filtering
+
+// Patients collection - frequent searches
+db.patients.createIndex({ "name": 1, "phone": 1 })                         // Compound search (primary use case)
+db.patients.createIndex({ "name": "text", "phone": "text", "address": "text" })  // Text search fallback
+
+// Users collection - authentication
+db.users.createIndex({ "username": 1 }, { unique: true })  // Login queries + uniqueness
+
+// Tests collection - name-based search
+db.tests.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+
+// Combos collection - name-based search  
+db.combos.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+
+// Trackings collection - name-based search
+db.trackings.createIndex({ "name": 1 })  // Name search functionality
+```
+
+**Evidence for indexes:**
+- **Records patient search**: `ListRecords()` uses `$or` with `$regex` on `patient.name` and `patient.phone` (lines 19-23)
+- **Records date filtering**: Date range filtering with `$gte` and `$lte` on `created_at` (lines 34, 37)
+- **Patient compound search**: `FindPatientByNameAndPhone()` queries both fields together (line 15)
+- **Test/Combo name search**: `ListTests()` and `ListCombos()` use `$regex` on `name` field for autocomplete
+- **Authentication**: `GetUserByUsername()` queries by username for login (line 23)
+
+**Index Implementation Guide:**
+
+```javascript
+// Connect to your MongoDB instance
+use labadmin
+
+// 1. Records Collection Indexes
+db.records.createIndex({ "created_at": -1 })
+db.records.createIndex({ "patient.name": 1, "patient.phone": 1 })
+db.records.createIndex({ "patient._id": 1 })
+db.records.createIndex({ "status": 1 })
+
+// 2. Patients Collection Indexes
+db.patients.createIndex({ "name": 1, "phone": 1 })
+db.patients.createIndex({ "name": "text", "phone": "text", "address": "text" })
+
+// 3. Users Collection Index
+db.users.createIndex({ "username": 1 }, { unique: true })
+
+// 4. Tests Collection Index
+db.tests.createIndex({ "name": 1 })
+
+// 5. Combos Collection Index
+db.combos.createIndex({ "name": 1 })
+
+// 6. Trackings Collection Index
+db.trackings.createIndex({ "name": 1 })
+
+// Verify indexes were created
+db.records.getIndexes()
+db.patients.getIndexes()
+db.users.getIndexes()
+db.tests.getIndexes()
+db.combos.getIndexes()
+db.trackings.getIndexes()
+```
+
+**Index Monitoring & Maintenance:**
+
+```javascript
+// Check index usage statistics
+db.records.aggregate([{ $indexStats: {} }])
+
+// Analyze query performance
+db.records.find({
+  "patient.name": /john/i
+}).explain("executionStats")
+
+// Drop index if needed (be careful!)
+// db.collection.dropIndex("indexName")
 ```
 
 ### Handler Patterns
@@ -238,6 +337,14 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 - Helper: `GetCurrentTime()` in storage package
 - Auto-update `updated_at` in update operations
 
+### Abnormal Test Result Detection
+
+- **Automatic Detection**: System automatically marks test results as abnormal for numeric values outside the test's `lower_bound` and `upper_bound` range
+- **Non-numeric Results**: Ignored by automatic detection (no abnormal marking)
+- **Manual Override**: Doctors can manually mark any test result as abnormal/normal using `manual_abnormal_override` flag
+- **Priority**: Manual override takes precedence over automatic detection
+- **UI Pattern**: Frontend provides toggle between automatic and manual modes with clear visual indicators
+
 ## Development Guidelines
 
 ### Adding New Features
@@ -250,17 +357,36 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 
 ### Testing Strategy
 
-- Unit tests for storage layer
-- Integration tests for handlers
-- Cypress for E2E testing
-- Pre-commit hooks run tests and linting
+- **Unit tests**: Storage layer functions
+- **Integration tests**: HTTP handlers
+- **E2E tests**: Cypress in `tests/` directory  
+- **Pre-commit workflow**: `./scripts/pre-commit.sh` runs:
+  - `templ generate` for templates
+  - `go fmt` and `go vet` for code formatting
+  - `golangci-lint run` for linting
+  - Unit tests with Go test runner
+- **Test commands**: 
+  - `go test ./...` for all tests
+  - `npm test` in `tests/` for Cypress
+
+### Development Workflow
+
+- **Live Development**: `make live` runs 3 concurrent processes:
+  - `make live/server`: Air for Go hot reload
+  - `make live/templ`: Templ template generation with proxy
+  - `make live/esbuild`: JavaScript bundling and minification
+- **Generate Templ**: `templ generate` before building
+- **Pre-commit**: `./scripts/pre-commit.sh` runs tests, linting, and formatting
+- **Testing**: Cypress E2E tests in `tests/` directory
 
 ### Deployment
 
-- **Local**: `make live` (hot reload with Air + Templ)
-- **Production**: Docker build → systemd service
+- **Local**: `make live` (3-way hot reload: Air + Templ + ESBuild)
+- **Build**: `make build` creates Linux binary in `bin/main`
+- **Production**: Docker multi-stage build → systemd service
 - **Environment**: Use `.env` files for configuration
 - **Database**: MongoDB connection via `MONGODB_URI`
+- **Service Management**: systemd with `goweb.service` file
 
 ## Common Operations
 
@@ -282,8 +408,8 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 
 ### Frontend Patterns
 
-- **HTMX**: For dynamic content updates
-- **Alpine.js**: For client-side state and interactions
+- **HTMX → Alpine.js Migration**: Gradually migrating from HTMX to Alpine.js - prefer Alpine.js for new features
+- **Alpine.js**: For client-side state and interactions  
 - **Bootstrap**: For styling and layout
 - **Templ**: For type-safe HTML generation
 
