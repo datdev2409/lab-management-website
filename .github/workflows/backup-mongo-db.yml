@@ -22,6 +22,7 @@ env:
   MONGO_URI: ${{ secrets.MONGODB_URI }}
   BACKUP_DIR: /tmp/mongo-backup
   AWS_REGION: ${{ vars.AWS_REGION }}
+  ENVIRONMENT: ${{ inputs.environment || 'stg' }}
 
 jobs:
   backup-mongodb:
@@ -58,10 +59,10 @@ jobs:
           set -euo pipefail
 
           TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          BACKUP_NAME="mongo-backup-${TIMESTAMP}"
+          BACKUP_NAME="${TIMESTAMP}"
           BACKUP_PATH="${{ env.BACKUP_DIR }}/${BACKUP_NAME}"
           BACKUP_FILE="${BACKUP_NAME}.tar.gz"
-          S3_KEY="mongo-backups/${BACKUP_FILE}"
+          S3_KEY="${{ env.ENVIRONMENT }}/${BACKUP_FILE}"
 
           echo "Generated backup metadata:"
           echo "Timestamp: ${TIMESTAMP}"
@@ -163,7 +164,7 @@ jobs:
           echo "✅ MongoDB backup completed successfully at ${COMPLETION_TIME}"
           echo "Backup file: ${BACKUP_FILE}"
           echo "S3 location: s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
-          echo "Environment: ${{ inputs.environment || 'prod (scheduled)' }}"
+          echo "Environment: ${{ env.ENVIRONMENT }}"
 
       - name: Send failure notification
         if: failure()
