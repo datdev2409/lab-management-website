@@ -83,9 +83,7 @@ jobs:
           echo "Destination: ${S3_URI}"
 
           # Upload to S3 with server-side encryption
-          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}" \
-            --server-side-encryption AES256 \
-            --storage-class STANDARD_IA
+          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}" 
 
           echo "Backup uploaded successfully to S3"
 
