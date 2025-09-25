@@ -13,20 +13,21 @@ on:
           - prod
         default: stg
 
-  # Scheduled trigger - runs daily at 2:00 AM UTC
+  # Scheduled trigger - runs daily at 3:00 AM VNT (8:00 PM UTC)
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 20 * * *"
 
 env:
-  BACKUP_BUCKET: ${{ secrets.MONGODB_BACKUP_S3_BUCKET }}
+  BACKUP_BUCKET: ${{ vars.MONGODB_BACKUP_S3_BUCKET }}
   MONGO_URI: ${{ secrets.MONGODB_URI }}
   BACKUP_DIR: /tmp/mongo-backup
   AWS_REGION: ${{ vars.AWS_REGION }}
+  ENVIRONMENT: ${{ inputs.environment || 'stg' }}
 
 jobs:
   backup-mongodb:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'stg' }}
 
     steps:
       - name: Configure AWS credentials
@@ -52,14 +53,36 @@ jobs:
           mkdir -p ${{ env.BACKUP_DIR }}
           echo "Created backup directory: ${{ env.BACKUP_DIR }}"
 
-      - name: Backup MongoDB, Upload to S3, and Verify
+      - name: Generate backup metadata
+        id: backup-metadata
         run: |
           set -euo pipefail
 
           TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
-          BACKUP_NAME="mongo-backup-${TIMESTAMP}"
+          BACKUP_NAME="${TIMESTAMP}"
           BACKUP_PATH="${{ env.BACKUP_DIR }}/${BACKUP_NAME}"
           BACKUP_FILE="${BACKUP_NAME}.tar.gz"
+          S3_KEY="${{ env.ENVIRONMENT }}/${BACKUP_FILE}"
+
+          echo "Generated backup metadata:"
+          echo "Timestamp: ${TIMESTAMP}"
+          echo "Backup name: ${BACKUP_NAME}"
+          echo "Backup path: ${BACKUP_PATH}"
+          echo "Backup file: ${BACKUP_FILE}"
+          echo "S3 key: ${S3_KEY}"
+
+          # Set outputs for subsequent steps
+          echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
+          echo "backup-name=${BACKUP_NAME}" >> $GITHUB_OUTPUT
+          echo "backup-path=${BACKUP_PATH}" >> $GITHUB_OUTPUT
+          echo "backup-file=${BACKUP_FILE}" >> $GITHUB_OUTPUT
+          echo "s3-key=${S3_KEY}" >> $GITHUB_OUTPUT
+
+      - name: Create MongoDB backup
+        run: |
+          set -euo pipefail
+
+          BACKUP_PATH="${{ steps.backup-metadata.outputs.backup-path }}"
 
           echo "Starting MongoDB backup..."
           echo "Backup path: ${BACKUP_PATH}"
@@ -67,15 +90,30 @@ jobs:
           # Create mongodump backup
           mongodump --uri="${{ env.MONGO_URI }}" --out="${BACKUP_PATH}"
 
+          echo "MongoDB backup completed successfully"
+
+      - name: Compress backup
+        run: |
+          set -euo pipefail
+
+          BACKUP_NAME="${{ steps.backup-metadata.outputs.backup-name }}"
+          BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
+
+          echo "Compressing backup..."
+
           # Create compressed archive
           cd ${{ env.BACKUP_DIR }}
           tar -czf "${BACKUP_FILE}" "${BACKUP_NAME}"
 
-          echo "MongoDB backup completed successfully"
+          echo "Backup compression completed"
           echo "Backup size: $(du -sh ${BACKUP_FILE} | cut -f1)"
 
-          # Upload to S3
-          S3_KEY="mongo-backups/${BACKUP_FILE}"
+      - name: Upload backup to S3
+        run: |
+          set -euo pipefail
+
+          BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
+          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
           S3_URI="s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
 
           echo "Uploading backup to S3..."
@@ -83,13 +121,17 @@ jobs:
           echo "Destination: ${S3_URI}"
 
           # Upload to S3 with server-side encryption
-          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}" \
-            --server-side-encryption AES256 \
-            --storage-class STANDARD_IA
+          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}"
 
           echo "Backup uploaded successfully to S3"
 
-          # Verify backup integrity
+      - name: Verify backup integrity
+        run: |
+          set -euo pipefail
+
+          BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
+          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
+
           echo "Verifying backup integrity..."
 
           # Check if S3 object exists and get its size
@@ -106,16 +148,23 @@ jobs:
 
           if [[ "$LOCAL_SIZE" == "$S3_SIZE" ]]; then
             echo "✅ Backup integrity verified - sizes match"
-            
-            # Send success notification
-            COMPLETION_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-            echo "✅ MongoDB backup completed successfully at ${COMPLETION_TIME}"
-            echo "Backup file: ${BACKUP_FILE}"
-            echo "S3 location: s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
           else
             echo "❌ Backup integrity check failed - size mismatch"
             exit 1
           fi
+
+      - name: Send success notification
+        run: |
+          set -euo pipefail
+
+          BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
+          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
+          COMPLETION_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+
+          echo "✅ MongoDB backup completed successfully at ${COMPLETION_TIME}"
+          echo "Backup file: ${BACKUP_FILE}"
+          echo "S3 location: s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
+          echo "Environment: ${{ env.ENVIRONMENT }}"
 
       - name: Send failure notification
         if: failure()
