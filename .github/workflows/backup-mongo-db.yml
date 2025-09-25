@@ -1,0 +1,135 @@
+name: Backup MongoDB to S3
+
+on:
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select environment to run the backup"
+        required: true
+        type: choice
+        options:
+          - stg
+          - prod
+        default: stg
+
+  # Scheduled trigger - runs daily at 2:00 AM UTC
+  schedule:
+    - cron: "0 2 * * *"
+
+env:
+  BACKUP_BUCKET: ${{ secrets.MONGODB_BACKUP_S3_BUCKET }}
+  MONGO_URI: ${{ secrets.MONGODB_URI }}
+  BACKUP_DIR: /tmp/mongo-backup
+  AWS_REGION: ${{ vars.AWS_REGION }}
+
+jobs:
+  backup-mongodb:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5.0.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install MongoDB Database Tools
+        run: |
+          # Download and install MongoDB Database Tools
+          wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.13.0.deb
+          chmod o+r ./mongodb-database-tools-ubuntu2404-x86_64-100.13.0.deb
+          sudo apt install ./mongodb-database-tools-ubuntu2404-x86_64-100.13.0.deb
+
+          # Verify installation
+          mongodump --version
+          echo "MongoDB Database Tools installed successfully"
+
+      - name: Create backup directory
+        run: |
+          mkdir -p ${{ env.BACKUP_DIR }}
+          echo "Created backup directory: ${{ env.BACKUP_DIR }}"
+
+      - name: Backup MongoDB, Upload to S3, and Verify
+        run: |
+          set -euo pipefail
+
+          TIMESTAMP=$(date +'%Y%m%d_%H%M%S')
+          BACKUP_NAME="mongo-backup-${TIMESTAMP}"
+          BACKUP_PATH="${{ env.BACKUP_DIR }}/${BACKUP_NAME}"
+          BACKUP_FILE="${BACKUP_NAME}.tar.gz"
+
+          echo "Starting MongoDB backup..."
+          echo "Backup path: ${BACKUP_PATH}"
+
+          # Create mongodump backup
+          mongodump --uri="${{ env.MONGO_URI }}" --out="${BACKUP_PATH}"
+
+          # Create compressed archive
+          cd ${{ env.BACKUP_DIR }}
+          tar -czf "${BACKUP_FILE}" "${BACKUP_NAME}"
+
+          echo "MongoDB backup completed successfully"
+          echo "Backup size: $(du -sh ${BACKUP_FILE} | cut -f1)"
+
+          # Upload to S3
+          S3_KEY="mongo-backups/${BACKUP_FILE}"
+          S3_URI="s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
+
+          echo "Uploading backup to S3..."
+          echo "Source: ${{ env.BACKUP_DIR }}/${BACKUP_FILE}"
+          echo "Destination: ${S3_URI}"
+
+          # Upload to S3 with server-side encryption
+          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}" \
+            --server-side-encryption AES256 \
+            --storage-class STANDARD_IA
+
+          echo "Backup uploaded successfully to S3"
+
+          # Verify backup integrity
+          echo "Verifying backup integrity..."
+
+          # Check if S3 object exists and get its size
+          S3_SIZE=$(aws s3api head-object \
+            --bucket "${{ env.BACKUP_BUCKET }}" \
+            --key "${S3_KEY}" \
+            --query 'ContentLength' \
+            --output text)
+
+          LOCAL_SIZE=$(stat -c%s "${{ env.BACKUP_DIR }}/${BACKUP_FILE}")
+
+          echo "Local backup size: ${LOCAL_SIZE} bytes"
+          echo "S3 backup size: ${S3_SIZE} bytes"
+
+          if [[ "$LOCAL_SIZE" == "$S3_SIZE" ]]; then
+            echo "✅ Backup integrity verified - sizes match"
+            
+            # Send success notification
+            COMPLETION_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+            echo "✅ MongoDB backup completed successfully at ${COMPLETION_TIME}"
+            echo "Backup file: ${BACKUP_FILE}"
+            echo "S3 location: s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
+          else
+            echo "❌ Backup integrity check failed - size mismatch"
+            exit 1
+          fi
+
+      - name: Send failure notification
+        if: failure()
+        run: |
+          TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
+          echo "❌ MongoDB backup failed at ${TIMESTAMP}"
+          echo "Please check the workflow logs for details"
+          echo "Repository: ${{ github.repository }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+      - name: Cleanup local files
+        if: always()
+        run: |
+          echo "Cleaning up local backup files..."
+          rm -rf ${{ env.BACKUP_DIR }}
+          echo "Local cleanup completed"
