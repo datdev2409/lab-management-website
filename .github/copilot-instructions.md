@@ -8,11 +8,15 @@ This is a **Lab Management System** for **Anh Quan Laboratory** built with Go, H
 
 - **Backend**: Go 1.24.7 with Chi router
 - **Frontend**: HTMX + Alpine.js + Bootstrap (server-side rendered with Templ). Please note that we are migrating the HTMX parts to Alpine.js gradually, so prefer using Alpine.js over HTMX.
-- **Database**: MongoDB v2
+- **Database**: PostgreSQL 16 (migrating from MongoDB v2) - using pgx v5 driver
 - **Authentication**: JWT with HTTP-only cookies
 - **Report Generation**: Excel files using excelize, PDF conversion with Gotenberg
 - **Deployment**: Docker, Docker Compose, systemd service
 - **Monitoring**: Traefik reverse proxy, structured logging with Zap
+
+### Database Migration Status
+
+**Currently migrating from MongoDB to PostgreSQL** - This is an ongoing process where we're implementing PostgreSQL storage layer step by step while maintaining MongoDB compatibility. The system uses a Storage interface to abstract database operations, allowing both implementations to coexist during the migration period.
 
 ## Architecture Overview
 
@@ -91,7 +95,22 @@ This is a **Lab Management System** for **Anh Quan Laboratory** built with Go, H
 - **Purpose**: Define which tests to compare across multiple records
 - **Fields**: Name, Tests[] (test configurations for comparison)
 
-### Database Collections
+### Database Collections/Tables
+
+#### PostgreSQL Tables (Current)
+
+- **patients**: Patient records
+- **doctors**: Doctor information
+- **tests**: Test definition records
+- **combos**: Test combo/package records
+- **combo_tests**: Junction table for combo-test relationships
+- **records**: Lab record documents
+- **test_results**: Individual test results within records
+- **trackings**: Tracking configuration records
+- **tracking_tests**: Junction table for tracking-test relationships
+- **users**: User authentication records
+
+#### MongoDB Collections (Legacy)
 
 - **patients**: Patient documents
 - **tests**: Test definition documents
@@ -205,8 +224,26 @@ var ErrUserNotFound = errors.New("user not found")
 
 ### Database Operations
 
+#### PostgreSQL (Current - pgx v5)
+
 ```go
-// Use generic MongoDB functions
+// Use prepared statements and parameterized queries
+query := `INSERT INTO patients (id, name, phone) VALUES ($1, $2, $3) RETURNING id`
+err := pool.QueryRow(ctx, query, id, name, phone).Scan(&returnedID)
+
+// Use pgx connection pool
+func (p *PostgresStorage) GetPatientById(ctx context.Context, id string) (*models.Patient, error) {
+    query := `SELECT id, name, phone FROM patients WHERE id = $1`
+    var patient models.Patient
+    err := p.pool.QueryRow(ctx, query, id).Scan(&patient.ID, &patient.Name, &patient.Phone)
+    return &patient, err
+}
+```
+
+#### MongoDB (Legacy - being phased out)
+
+```go
+// Generic MongoDB functions (legacy)
 result, err := MongoInsert(ctx, col, entity)
 entity, err := MongoGetById[Model](ctx, col, id)
 entities, pagination, err := MongoList[Model](ctx, col, filter, opts)
@@ -223,31 +260,33 @@ func (m *MongoStorage) CreateEntity(ctx context.Context, entity *Model) (string,
 Based on query pattern analysis, create these indexes for optimal performance:
 
 **Essential Indexes (High Priority):**
+
 ```javascript
 // Records collection - date filtering & embedded patient search
-db.records.createIndex({ "created_at": -1 })                                // Date filtering & sorting
-db.records.createIndex({ "patient.name": 1, "patient.phone": 1 })          // Patient search in records
-db.records.createIndex({ "patient._id": 1 })                               // Patient lookup
-db.records.createIndex({ "status": 1 })                                    // Status filtering
+db.records.createIndex({ created_at: -1 }); // Date filtering & sorting
+db.records.createIndex({ "patient.name": 1, "patient.phone": 1 }); // Patient search in records
+db.records.createIndex({ "patient._id": 1 }); // Patient lookup
+db.records.createIndex({ status: 1 }); // Status filtering
 
 // Patients collection - frequent searches
-db.patients.createIndex({ "name": 1, "phone": 1 })                         // Compound search (primary use case)
-db.patients.createIndex({ "name": "text", "phone": "text", "address": "text" })  // Text search fallback
+db.patients.createIndex({ name: 1, phone: 1 }); // Compound search (primary use case)
+db.patients.createIndex({ name: "text", phone: "text", address: "text" }); // Text search fallback
 
 // Users collection - authentication
-db.users.createIndex({ "username": 1 }, { unique: true })  // Login queries + uniqueness
+db.users.createIndex({ username: 1 }, { unique: true }); // Login queries + uniqueness
 
 // Tests collection - name-based search
-db.tests.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+db.tests.createIndex({ name: 1 }); // Exact & prefix matching for autocomplete
 
-// Combos collection - name-based search  
-db.combos.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+// Combos collection - name-based search
+db.combos.createIndex({ name: 1 }); // Exact & prefix matching for autocomplete
 
 // Trackings collection - name-based search
-db.trackings.createIndex({ "name": 1 })  // Name search functionality
+db.trackings.createIndex({ name: 1 }); // Name search functionality
 ```
 
 **Evidence for indexes:**
+
 - **Records patient search**: `ListRecords()` uses `$or` with `$regex` on `patient.name` and `patient.phone` (lines 19-23)
 - **Records date filtering**: Date range filtering with `$gte` and `$lte` on `created_at` (lines 34, 37)
 - **Patient compound search**: `FindPatientByNameAndPhone()` queries both fields together (line 15)
@@ -295,12 +334,14 @@ db.trackings.getIndexes()
 
 ```javascript
 // Check index usage statistics
-db.records.aggregate([{ $indexStats: {} }])
+db.records.aggregate([{ $indexStats: {} }]);
 
 // Analyze query performance
-db.records.find({
-  "patient.name": /john/i
-}).explain("executionStats")
+db.records
+  .find({
+    "patient.name": /john/i,
+  })
+  .explain("executionStats");
 
 // Drop index if needed (be careful!)
 // db.collection.dropIndex("indexName")
@@ -357,13 +398,13 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 
 - **Unit tests**: Storage layer functions
 - **Integration tests**: HTTP handlers
-- **E2E tests**: Cypress in `tests/` directory  
+- **E2E tests**: Cypress in `tests/` directory
 - **Pre-commit workflow**: `./scripts/pre-commit.sh` runs:
   - `templ generate` for templates
   - `go fmt` and `go vet` for code formatting
   - `golangci-lint run` for linting
   - Unit tests with Go test runner
-- **Test commands**: 
+- **Test commands**:
   - `go test ./...` for all tests
   - `npm test` in `tests/` for Cypress
 
@@ -407,7 +448,7 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 ### Frontend Patterns
 
 - **HTMX → Alpine.js Migration**: Gradually migrating from HTMX to Alpine.js - prefer Alpine.js for new features
-- **Alpine.js**: For client-side state and interactions  
+- **Alpine.js**: For client-side state and interactions
 - **Bootstrap**: For styling and layout
 - **Templ**: For type-safe HTML generation
 

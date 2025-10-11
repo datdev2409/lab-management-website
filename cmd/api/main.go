@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
@@ -68,15 +67,24 @@ func main() {
 	}
 
 	// Init storage
-	mongoClient := db.NewMongoClient(config.DB.Addr)
-	defer func() {
-		if err := mongoClient.Disconnect(context.TODO()); err != nil {
-			log.Error("Mongo disconnect error", zap.Error(err))
-		}
-	}()
+	// mongoClient := db.NewMongoClient(config.DB.Addr)
+	// defer func() {
+	// 	if err := mongoClient.Disconnect(context.TODO()); err != nil {
+	// 		log.Error("Mongo disconnect error", zap.Error(err))
+	// 	}
+	// }()
 
-	store := storage.NewMongoStorage(mongoClient)
-	handler := handlers.NewHandler(store, log)
+	pgPool, err := db.NewPostgresPool(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Error("Postgres pool error", zap.Error(err))
+		return
+	}
+	defer pgPool.Close()
+
+	pgStore := storage.NewPostgresStorage(pgPool)
+
+	// store := storage.NewMongoStorage(mongoClient)
+	handler := handlers.NewHandler(pgStore, log)
 
 	app.Init(config, handler.Router)
 

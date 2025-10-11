@@ -43,8 +43,8 @@ func (h *Handler) RegisterHandler(w http.ResponseWriter, r *http.Request) error 
 
 	// Check if user already exists
 	ctx := r.Context()
-	existingUser, err := h.Store.GetUserByUsername(ctx, req.Username)
-	if err == nil && existingUser != nil {
+	isUserExists, err := h.Store.IsUserExists(ctx, req.Username)
+	if err != nil || isUserExists {
 		return BadRequestError(AUTH_USER_EXISTS_ERROR)
 	}
 	// If error is not user not found, return error

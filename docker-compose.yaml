@@ -1,20 +1,21 @@
 services:
-  mongo_db:
-    image: mongo:latest
-    restart: always # Restart the container if it crashes
+  postgres_db:
+    image: postgres:16.10-alpine3.21
+    restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password123
+      POSTGRES_USER: labadmin
+      POSTGRES_PASSWORD: labadmin123
+      POSTGRES_DB: labadmin
     ports:
-      - 27017:27017
+      - 5432:5432
     volumes:
-      - mongo_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: '1m30s'
+      test: ["CMD-SHELL", "pg_isready -U labadmin -d labadmin"]
+      interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 10s
     networks:
       - default
 
@@ -24,9 +25,9 @@ services:
       - "3000:3000"
     networks:
       - default
-  
+
 volumes:
-  mongo_data:
+  postgres_data:
 
 networks:
   default:
