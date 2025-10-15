@@ -24,14 +24,13 @@ type Storage interface {
 	UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error
 	DeletePatientById(ctx context.Context, id string) error
 	SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error)
-	FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error)
+	IsPatientExists(ctx context.Context, name, phone string) (bool, error)
 	// Doctor
 	InsertDoctor(ctx context.Context, doctor *models.Doctor) (string, error)
 	GetDoctorById(ctx context.Context, id string) (*models.Doctor, error)
 	UpdateDoctorById(ctx context.Context, id string, update models.DoctorUpdate) error
 	DeleteDoctorById(ctx context.Context, id string) error
-	SearchDoctorByNameOrPhone(ctx context.Context, filterOpts models.DoctorQueryOptions, opts models.GenericQueryOptions) ([]*models.Doctor, *models.PaginationResponse, error)
-	FindDoctorByNameAndPhone(ctx context.Context, name, phone string) (*models.Doctor, error)
+	SearchDoctorByNameOrPhone(ctx context.Context, filterOpts models.DoctorQueryOptions, opts models.GenericQueryOptions) ([]models.Doctor, *models.PaginationResponse, error)
 	// Test
 	InsertTest(ctx context.Context, test *models.Test) (string, error)
 	ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error)
@@ -86,23 +85,24 @@ var ErrNotImplemented = errors.New("not implemented yet")
 func (p *PostgresStorage) CreateUser(ctx context.Context, user *models.User) (string, error) {
 	query := `
 		INSERT INTO users (id, username, password, role, active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		VALUES (@id, @username, @password, @role, @active, @created_at, @updated_at)
 		RETURNING id
 	`
 
-	id := uuid.New()
 	now := time.Now()
 
+	args := pgx.NamedArgs{
+		"id":         uuid.New(),
+		"username":   user.Username,
+		"password":   user.Password,
+		"role":       user.Role,
+		"active":     user.Active,
+		"created_at": now,
+		"updated_at": now,
+	}
+
 	var returnedID uuid.UUID
-	err := p.pool.QueryRow(ctx, query,
-		id,
-		user.Username,
-		user.Password,
-		user.Role,
-		user.Active,
-		now,
-		now,
-	).Scan(&returnedID)
+	err := p.pool.QueryRow(ctx, query, args).Scan(&returnedID)
 
 	if err != nil {
 		return "", fmt.Errorf("failed to create user: %w", err)
@@ -117,21 +117,11 @@ func (p *PostgresStorage) GetUserByUsername(ctx context.Context, username string
 		SELECT id, username, password, role, active, created_at, updated_at
 		FROM users
 		WHERE username = $1 AND active = true
+		LIMIT 1
 	`
 
-	var user models.User
-	var dbID uuid.UUID
-
-	err := p.pool.QueryRow(ctx, query, username).Scan(
-		&dbID,
-		&user.Username,
-		&user.Password,
-		&user.Role,
-		&user.Active,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-
+	row, _ := p.pool.Query(ctx, query, username)
+	user, err := pgx.CollectExactlyOneRow(row, pgx.RowToStructByName[models.User])
 	if err == pgx.ErrNoRows {
 		return nil, fmt.Errorf("user not found or inactive")
 	}
@@ -139,7 +129,6 @@ func (p *PostgresStorage) GetUserByUsername(ctx context.Context, username string
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	user.ID = dbID.String()
 	return &user, nil
 }
 
@@ -158,77 +147,6 @@ func (p *PostgresStorage) IsUserExists(ctx context.Context, username string) (bo
 	}
 
 	return true, nil
-}
-
-// Patient methods
-func (p *PostgresStorage) InsertPatient(ctx context.Context, patient *models.Patient) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (p *PostgresStorage) GetPatientById(ctx context.Context, id string) (*models.Patient, error) {
-	return nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) UpdatePatientById(ctx context.Context, id string, update models.PatientUpdate) error {
-	return ErrNotImplemented
-}
-
-func (p *PostgresStorage) DeletePatientById(ctx context.Context, id string) error {
-	return ErrNotImplemented
-}
-
-func (p *PostgresStorage) SearchPatientByNameOrPhone(ctx context.Context, filterOpts models.PatientQueryOptions, opts models.GenericQueryOptions) ([]*models.Patient, *models.PaginationResponse, error) {
-	return nil, nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) FindPatientByNameAndPhone(ctx context.Context, name, phone string) (*models.Patient, error) {
-	return nil, ErrNotImplemented
-}
-
-// Doctor methods
-func (p *PostgresStorage) InsertDoctor(ctx context.Context, doctor *models.Doctor) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (p *PostgresStorage) GetDoctorById(ctx context.Context, id string) (*models.Doctor, error) {
-	return nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) UpdateDoctorById(ctx context.Context, id string, update models.DoctorUpdate) error {
-	return ErrNotImplemented
-}
-
-func (p *PostgresStorage) DeleteDoctorById(ctx context.Context, id string) error {
-	return ErrNotImplemented
-}
-
-func (p *PostgresStorage) SearchDoctorByNameOrPhone(ctx context.Context, filterOpts models.DoctorQueryOptions, opts models.GenericQueryOptions) ([]*models.Doctor, *models.PaginationResponse, error) {
-	return nil, nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) FindDoctorByNameAndPhone(ctx context.Context, name, phone string) (*models.Doctor, error) {
-	return nil, ErrNotImplemented
-}
-
-// Test methods
-func (p *PostgresStorage) InsertTest(ctx context.Context, test *models.Test) (string, error) {
-	return "", ErrNotImplemented
-}
-
-func (p *PostgresStorage) ListTests(ctx context.Context, filterOpts models.TestQueryOptions, opts models.GenericQueryOptions) ([]*models.Test, *models.PaginationResponse, error) {
-	return nil, nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) GetTestById(ctx context.Context, id string) (*models.Test, error) {
-	return nil, ErrNotImplemented
-}
-
-func (p *PostgresStorage) UpdateTestById(ctx context.Context, id string, update map[string]interface{}) error {
-	return ErrNotImplemented
-}
-
-func (p *PostgresStorage) DeleteTestById(ctx context.Context, id string) error {
-	return ErrNotImplemented
 }
 
 // Combo methods

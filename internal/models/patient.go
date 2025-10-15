@@ -6,14 +6,14 @@ import (
 
 type Patient struct {
 	// ID        bson.ObjectID `json:"id" bson:"_id,omitempty"`
-	ID        string    `json:"id" bson:"_id"`
-	Name      string    `json:"name" bson:"name"`
-	YOB       string    `json:"yob" bson:"yob"`
-	Gender    string    `json:"gender" bson:"gender"`
-	Address   string    `json:"address" bson:"address"`
-	Phone     string    `json:"phone" bson:"phone"`
-	CreatedAt time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
+	ID        string    `json:"id" bson:"_id" db:"id"`
+	Name      string    `json:"name" bson:"name" db:"name"`
+	YOB       string    `json:"yob" bson:"yob" db:"yob"`
+	Gender    string    `json:"gender" bson:"gender" db:"gender"`
+	Address   string    `json:"address" bson:"address" db:"address"`
+	Phone     string    `json:"phone" bson:"phone" db:"phone"`
+	CreatedAt time.Time `json:"created_at" bson:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at" db:"updated_at"`
 }
 
 func NewPatient(name string, yob string, gender string, address string, phone string) *Patient {

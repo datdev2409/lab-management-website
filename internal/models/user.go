@@ -8,13 +8,13 @@ import (
 )
 
 type User struct {
-	ID        string    `bson:"_id,omitempty" json:"id"`
-	Username  string    `bson:"username" json:"username"`
-	Password  string    `bson:"password" json:"-"`
-	Role      string    `bson:"role" json:"role"`
-	Active    bool      `bson:"active" json:"active"`
-	CreatedAt time.Time `bson:"created_at" json:"created_at"`
-	UpdatedAt time.Time `bson:"updated_at" json:"updated_at"`
+	ID        string    `bson:"_id,omitempty" json:"id" db:"id"`
+	Username  string    `bson:"username" json:"username" db:"username"`
+	Password  string    `bson:"password" json:"-" db:"password"`
+	Role      string    `bson:"role" json:"role" db:"role"`
+	Active    bool      `bson:"active" json:"active" db:"active"`
+	CreatedAt time.Time `bson:"created_at" json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `bson:"updated_at" json:"updated_at" db:"updated_at"`
 }
 
 func NewUser(username, password string) *User {

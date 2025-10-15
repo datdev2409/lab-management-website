@@ -5,11 +5,11 @@ import (
 )
 
 type Combo struct {
-	ID        string    `json:"id" bson:"_id,omitempty"`
-	Name      string    `json:"name" bson:"name"`
-	TestIDs   []string  `json:"test_ids" bson:"test_ids"`
-	CreatedAt time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
+	ID        string    `json:"id" bson:"_id,omitempty" db:"id"`
+	Name      string    `json:"name" bson:"name" db:"name"`
+	TestIDs   []string  `json:"test_ids" bson:"test_ids" db:"-"` // Not directly mapped, handled by junction table
+	CreatedAt time.Time `json:"created_at" bson:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" bson:"updated_at" db:"updated_at"`
 }
 
 type ComboDetailsResponse struct {

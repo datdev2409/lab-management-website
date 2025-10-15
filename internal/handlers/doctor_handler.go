@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
@@ -46,17 +47,14 @@ func (h *Handler) CreateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	existing, err := h.Store.FindDoctorByNameAndPhone(r.Context(), req.Name, req.Phone)
-	if err != nil {
-		return err
-	}
-	if existing != nil {
-		return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
-	}
+	// Database constraint will handle duplicate checking
 
 	doctor := models.NewDoctor(req.Name, req.Phone, req.Address)
 	newDoctor, err := h.Store.InsertDoctor(r.Context(), doctor)
 	if err != nil {
+		if strings.Contains(err.Error(), "unique_doctor_name_phone") {
+			return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
+		}
 		return err
 	}
 	RespondJSON(w, http.StatusCreated, newDoctor)
@@ -85,34 +83,8 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return err
 	}
-	
-	// Check for duplicate if name or phone is being updated
-	if req.Name != nil || req.Phone != nil {
-		// Get current doctor to check if name/phone combination is changing
-		currentDoctor, err := h.Store.GetDoctorById(r.Context(), id)
-		if err != nil {
-			return err
-		}
-		
-		// Use current values if not being updated
-		newName := currentDoctor.Name
-		newPhone := currentDoctor.Phone
-		if req.Name != nil {
-			newName = *req.Name
-		}
-		if req.Phone != nil {
-			newPhone = *req.Phone
-		}
-		
-		// Check if this name+phone combination exists for a different doctor
-		existing, err := h.Store.FindDoctorByNameAndPhone(r.Context(), newName, newPhone)
-		if err != nil {
-			return err
-		}
-		if existing != nil && existing.ID != id {
-			return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
-		}
-	}
+
+	// Database constraint will handle duplicate checking
 
 	update := models.DoctorUpdate{
 		Name:    req.Name,
@@ -120,6 +92,10 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 		Address: req.Address,
 	}
 	if err := h.Store.UpdateDoctorById(r.Context(), id, update); err != nil {
+		// Check for unique constraint violation
+		if strings.Contains(err.Error(), "unique_doctor_name_phone") {
+			return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
+		}
 		return err
 	}
 	doctor, err := h.Store.GetDoctorById(r.Context(), id)

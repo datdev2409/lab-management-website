@@ -79,14 +79,14 @@ func (h *Handler) CreatePatientV1(w http.ResponseWriter, r *http.Request) error 
 		Phone   string `json:"phone"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
+		return &AppError{http.StatusBadRequest, "invalid request body"}
 	}
 
-	existing, err := h.Store.FindPatientByNameAndPhone(r.Context(), req.Name, req.Phone)
+	exists, err := h.Store.IsPatientExists(r.Context(), req.Name, req.Phone)
 	if err != nil {
 		return err
 	}
-	if existing != nil {
+	if exists {
 		return &AppError{http.StatusBadRequest, DUPLICATE_PATIENT_ERROR}
 	}
 

@@ -23,13 +23,13 @@ func (h *Handler) validateAndSetDoctor(ctx context.Context, doctorID string) (st
 	if doctorID == "" {
 		return "", nil
 	}
-	
+
 	doctor, err := h.Store.GetDoctorById(ctx, doctorID)
 	if err != nil {
 		logger.FromCtx(ctx).Error("Doctor not found", zap.String("doctor_id", doctorID), zap.Error(err))
 		return "", BadRequestError(DOCTOR_NOT_FOUND_ERROR)
 	}
-	
+
 	// Return the doctor's name from the database to ensure consistency
 	return doctor.Name, nil
 }
@@ -152,7 +152,7 @@ func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
 	if request.PatientID == "" || len(request.TestResults) == 0 {
 		return BadRequestError("patient_id and test_results are required")
 	}
-	
+
 	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err
@@ -166,9 +166,9 @@ func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
 	request.DoctorName = doctorName
 
 	recordTestResults := []models.TestResult{}
-	for _, tr := range request.TestResults {
-		recordTestResults = append(recordTestResults, models.TestResult(tr))
-	}
+	// for _, tr := range request.TestResults {
+	// 	recordTestResults = append(recordTestResults, models.TestResult(tr))
+	// }
 
 	var record models.Record
 	if request.DoctorID != "" && request.DoctorName != "" {

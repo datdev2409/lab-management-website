@@ -5,6 +5,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -124,6 +125,10 @@ func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
 	)
 	newTest, err := h.Store.InsertTest(r.Context(), test)
 	if err != nil {
+		// Check for unique constraint violation on test name
+		if strings.Contains(err.Error(), "tests_name_key") || strings.Contains(err.Error(), "duplicate key") {
+			return &AppError{http.StatusBadRequest, DUPLICATE_TEST_ERROR}
+		}
 		return err
 	}
 	RespondJSON(w, http.StatusCreated, newTest)
@@ -179,6 +184,10 @@ func (h *Handler) UpdateTestV1(w http.ResponseWriter, r *http.Request) error {
 		return nil
 	}
 	if err := h.Store.UpdateTestById(r.Context(), id, update); err != nil {
+		// Check for unique constraint violation on test name
+		if strings.Contains(err.Error(), "tests_name_key") || strings.Contains(err.Error(), "duplicate key") {
+			return &AppError{http.StatusBadRequest, DUPLICATE_TEST_ERROR}
+		}
 		return err
 	}
 	test, err := h.Store.GetTestById(r.Context(), id)

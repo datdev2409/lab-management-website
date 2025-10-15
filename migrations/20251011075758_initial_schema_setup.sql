@@ -11,9 +11,6 @@ CREATE TABLE users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-CREATE INDEX idx_users_username ON users (username);
-CREATE INDEX idx_users_active ON users (active);
-
 CREATE TABLE patients (
     id UUID PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

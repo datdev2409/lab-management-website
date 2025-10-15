@@ -5,35 +5,39 @@ import (
 )
 
 type TestResult struct {
-	ID                     string  `json:"id" bson:"_id"`
-	Name                   string  `json:"name" bson:"name"`
-	Price                  int     `json:"price" bson:"price"`
-	NormalValue            string  `json:"normal_value" bson:"normal_value"`
-	Unit                   string  `json:"unit" bson:"unit"`
-	LowerBound             float64 `json:"lower_bound" bson:"lower_bound"`
-	UpperBound             float64 `json:"upper_bound" bson:"upper_bound"`
-	Result                 string  `json:"result" bson:"result"`
-	ResultText             string  `json:"result_text" bson:"result_text"`
-	Abnormal               bool    `json:"abnormal" bson:"abnormal"`
-	ManualAbnormalOverride bool    `json:"manual_abnormal_override" bson:"manual_abnormal_override"`
+	ID                     string  `json:"id" bson:"_id" db:"id"`
+	RecordID               string  `json:"record_id" bson:"record_id" db:"record_id"` // Foreign key to records table
+	TestID                 *string `json:"test_id" bson:"test_id" db:"test_id"`       // Foreign key to tests table (nullable)
+	Name                   string  `json:"name" bson:"name" db:"name"`
+	Price                  int     `json:"price" bson:"price" db:"price"`
+	NormalValue            string  `json:"normal_value" bson:"normal_value" db:"normal_value"`
+	Unit                   string  `json:"unit" bson:"unit" db:"unit"`
+	LowerBound             float64 `json:"lower_bound" bson:"lower_bound" db:"lower_bound"`
+	UpperBound             float64 `json:"upper_bound" bson:"upper_bound" db:"upper_bound"`
+	Result                 string  `json:"result" bson:"result" db:"result"`
+	ResultText             string  `json:"result_text" bson:"result_text" db:"result_text"`
+	Abnormal               bool    `json:"abnormal" bson:"abnormal" db:"abnormal"`
+	ManualAbnormalOverride bool    `json:"manual_abnormal_override" bson:"manual_abnormal_override" db:"manual_abnormal_override"`
 }
 
 type Record struct {
-	ID          string       `json:"id" bson:"_id,omitempty"`
-	ComboName   string       `json:"combo_name" bson:"combo_name"`
-	Patient     Patient      `json:"patient" bson:"patient"`
-	DoctorID    string       `json:"doctor_id,omitempty" bson:"doctor_id,omitempty"`
-	DoctorName  string       `json:"doctor_name,omitempty" bson:"doctor_name,omitempty"`
-	TestResults []TestResult `json:"test_results" bson:"test_results"`
-	Status      string       `json:"status" bson:"status"`
-	CreatedAt   time.Time    `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time    `json:"updated_at" bson:"updated_at"`
+	ID          string       `json:"id" bson:"_id,omitempty" db:"id"`
+	PatientID   string       `json:"patient_id" bson:"patient_id" db:"patient_id"`                  // Foreign key to patients table
+	DoctorID    *string      `json:"doctor_id,omitempty" bson:"doctor_id,omitempty" db:"doctor_id"` // Foreign key to doctors table (nullable)
+	ComboName   string       `json:"combo_name" bson:"combo_name" db:"combo_name"`
+	DoctorName  string       `json:"doctor_name,omitempty" bson:"doctor_name,omitempty" db:"doctor_name"`
+	Patient     Patient      `json:"patient" bson:"patient" db:"-"`           // Not directly mapped, populated via join
+	TestResults []TestResult `json:"test_results" bson:"test_results" db:"-"` // Not directly mapped, handled via separate table
+	Status      string       `json:"status" bson:"status" db:"status"`
+	CreatedAt   time.Time    `json:"created_at" bson:"created_at" db:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at" bson:"updated_at" db:"updated_at"`
 }
 
 func NewRecord(patient Patient, comboName string, testResults []TestResult) Record {
 	now := time.Now()
 	record := Record{
 		ID:          GenerateRandomID("record_"),
+		PatientID:   patient.ID,
 		Patient:     patient,
 		ComboName:   comboName,
 		TestResults: testResults,
@@ -47,25 +51,31 @@ func NewRecord(patient Patient, comboName string, testResults []TestResult) Reco
 // NewRecordWithDoctor creates a new record with optional doctor information
 func NewRecordWithDoctor(patient Patient, comboName string, testResults []TestResult, doctorID, doctorName string) Record {
 	record := NewRecord(patient, comboName, testResults)
-	record.DoctorID = doctorID
+	if doctorID != "" {
+		record.DoctorID = &doctorID
+	}
 	record.DoctorName = doctorName
 	return record
 }
 
 // HasDoctor returns true if the record has doctor information
 func (r *Record) HasDoctor() bool {
-	return r.DoctorID != "" && r.DoctorName != ""
+	return r.DoctorID != nil && *r.DoctorID != "" && r.DoctorName != ""
 }
 
 // SetDoctor sets the doctor information for the record
 func (r *Record) SetDoctor(doctorID, doctorName string) {
-	r.DoctorID = doctorID
+	if doctorID != "" {
+		r.DoctorID = &doctorID
+	} else {
+		r.DoctorID = nil
+	}
 	r.DoctorName = doctorName
 }
 
 // ClearDoctor removes the doctor information from the record
 func (r *Record) ClearDoctor() {
-	r.DoctorID = ""
+	r.DoctorID = nil
 	r.DoctorName = ""
 }
 

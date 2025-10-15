@@ -2,18 +2,20 @@ package models
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Test struct {
-	ID          string    `json:"id" bson:"_id,omitempty"`
-	Name        string    `json:"name" bson:"name"`
-	Price       int       `json:"price" bson:"price"`
-	NormalValue string    `json:"normal_value" bson:"normal_value"`
-	Unit        string    `json:"unit" bson:"unit"`
-	LowerBound  float64   `json:"lower_bound" bson:"lower_bound"`
-	UpperBound  float64   `json:"upper_bound" bson:"upper_bound"`
-	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
+	ID          string    `json:"id" bson:"_id,omitempty" db:"id"`
+	Name        string    `json:"name" bson:"name" db:"name"`
+	Price       int       `json:"price" bson:"price" db:"price"`
+	NormalValue string    `json:"normal_value" bson:"normal_value" db:"normal_value"`
+	Unit        string    `json:"unit" bson:"unit" db:"unit"`
+	LowerBound  float64   `json:"lower_bound" bson:"lower_bound" db:"lower_bound"`
+	UpperBound  float64   `json:"upper_bound" bson:"upper_bound" db:"upper_bound"`
+	CreatedAt   time.Time `json:"created_at" bson:"created_at" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at" db:"updated_at"`
 }
 
 type CreateTestRequest struct {
@@ -39,7 +41,7 @@ type TestQueryOptions struct {
 func NewTest(name string, price int, normalValue, unit string, lowerBound, upperBound float64) *Test {
 	now := time.Now()
 	return &Test{
-		ID:          GenerateRandomID("test_"),
+		ID:          uuid.New().String(),
 		Name:        name,
 		Price:       price,
 		NormalValue: normalValue,

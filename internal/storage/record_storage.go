@@ -91,9 +91,9 @@ func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, update
 		update["doctor_name"] = ""
 	}
 	updatedTestResults := []models.TestResult{}
-	for _, testResult := range updateRequest.TestResults {
-		updatedTestResults = append(updatedTestResults, models.TestResult(testResult))
-	}
+	// for _, testResult := range updateRequest.TestResults {
+	// updatedTestResults = append(updatedTestResults, models.TestResult(testResult))
+	// }
 	update["test_results"] = updatedTestResults
 	update["updated_at"] = GetCurrentTime()
 	col := m.getCollection("records")
