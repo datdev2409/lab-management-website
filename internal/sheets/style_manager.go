@@ -12,17 +12,30 @@ import (
 const FontMyriadPro = "MyRIAD PRO"
 
 // StyleName represents available style names
-type StyleName string
+type StyleName int
 
 const (
-	StylePatientName            StyleName = "patientName"
-	StylePatientInfo            StyleName = "patientInfo"
-	StyleDateCenter             StyleName = "dateCenter"
-	StyleTestResult             StyleName = "testResult"
-	StyleTestName               StyleName = "testName"
-	StyleAbnormal               StyleName = "abnormal"
-	StylePriceRight             StyleName = "priceRight"
-	StylePatientNameLargeCenter StyleName = "patientNameLargeCenter"
+	StylePatientName StyleName = iota
+	StylePatientInfo
+	StyleDateCenter
+	StyleTestResult
+	StyleTestName
+	StyleAbnormal
+	StylePriceRight
+	LabNameStyle
+	LabAddressStyle
+	ReportNameStyle
+	ReportDateStyle
+	PatientInfoStyle
+	PatientNameStyle
+	TestTableHeaderStyle
+	TotalPriceLabelStyle
+	TotalPriceStyle
+	TestIndexStyle
+	TestNameStyle
+	TestQuantityStyle
+	TestPriceStyle
+	StylePatientNameLargeCenter
 )
 
 // CommonStyles holds commonly used style IDs to reduce repetitive style retrieval
@@ -39,7 +52,7 @@ type CommonStyles struct {
 
 // GetPriceRightStyle returns style for price cells (same as testResultStyle but right aligned)
 func (sm *StyleManager) GetPriceRightStyle() (int, error) {
-	if styleID, exists := sm.styles[StylePriceRight]; exists {
+	if styleID, exists := sm.cache[StylePriceRight]; exists {
 		return styleID, nil
 	}
 	styleID, err := sm.file.NewStyle(&excelize.Style{
@@ -54,7 +67,7 @@ func (sm *StyleManager) GetPriceRightStyle() (int, error) {
 		logger.FromCtx(sm.ctx).Debug("Failed to create price right style", zap.Error(err))
 		return 0, err
 	}
-	sm.styles[StylePriceRight] = styleID
+	sm.cache[StylePriceRight] = styleID
 	return styleID, nil
 }
 
@@ -62,16 +75,112 @@ func (sm *StyleManager) GetPriceRightStyle() (int, error) {
 type StyleManager struct {
 	file   *excelize.File
 	ctx    context.Context
-	styles map[StyleName]int // Cache created styles by name
+	styles map[StyleName]*excelize.Style // Cache created styles by name
+	cache  map[StyleName]int
 }
 
 // NewStyleManager creates a new StyleManager instance
 func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
-	return &StyleManager{
-		file:   file,
-		ctx:    ctx,
-		styles: make(map[StyleName]int),
+	sm := &StyleManager{
+		file:  file,
+		ctx:   ctx,
+		cache: make(map[StyleName]int),
 	}
+
+	alignCenter := &excelize.Alignment{
+		Horizontal: "center",
+		Vertical:   "center",
+	}
+
+	alignLeft := &excelize.Alignment{
+		Horizontal: "left",
+		Vertical:   "center",
+	}
+	alignRight := &excelize.Alignment{
+		Horizontal: "right",
+		Vertical:   "center",
+	}
+
+	font12 := &excelize.Font{Size: 12, Family: FontMyriadPro}
+	font11 := &excelize.Font{Size: 11, Family: FontMyriadPro}
+	font11Bold := &excelize.Font{Size: 11, Family: FontMyriadPro, Bold: true}
+
+	border := []excelize.Border{
+		{Type: "left", Color: "000000", Style: 1},
+		{Type: "right", Color: "000000", Style: 1},
+		{Type: "top", Color: "000000", Style: 1},
+		{Type: "bottom", Color: "000000", Style: 1},
+	}
+
+	err := file.SetDefaultFont(FontMyriadPro)
+	if err != nil {
+		return nil
+	}
+
+	sm.styles = map[StyleName]*excelize.Style{
+		LabNameStyle: {
+			Font:      &excelize.Font{Size: 18, Family: FontMyriadPro},
+			Alignment: alignCenter,
+		},
+
+		LabAddressStyle: {
+			Font:      font12,
+			Alignment: alignCenter,
+		},
+		ReportNameStyle: {
+			Font:      &excelize.Font{Size: 18, Family: FontMyriadPro},
+			Alignment: alignCenter,
+		},
+		ReportDateStyle: {
+			Font:      font12,
+			Alignment: alignCenter,
+		},
+		PatientInfoStyle: {
+			Font:      font12,
+			Alignment: alignLeft,
+		},
+		PatientNameStyle: {
+			Font:      &excelize.Font{Size: 14, Family: FontMyriadPro, Bold: true},
+			Alignment: alignLeft,
+		},
+		TestTableHeaderStyle: {
+			Font:      font12,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TotalPriceLabelStyle: {
+			Font:      font11Bold,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TotalPriceStyle: {
+			Font:      font11Bold,
+			Alignment: alignRight,
+			Border:    border,
+		},
+		TestIndexStyle: {
+			Font:      font11,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TestNameStyle: {
+			Font:      font11,
+			Alignment: alignLeft,
+			Border:    border,
+		},
+		TestQuantityStyle: {
+			Font:      font11,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TestPriceStyle: {
+			Font:      font11,
+			Alignment: alignRight,
+			Border:    border,
+		},
+	}
+
+	return sm
 }
 
 // getStandardBorder returns the standard border configuration used across multiple styles
@@ -82,6 +191,27 @@ func (sm *StyleManager) getStandardBorder() []excelize.Border {
 		{Type: "top", Color: "000000", Style: 1},
 		{Type: "bottom", Color: "000000", Style: 1},
 	}
+}
+
+func (sm *StyleManager) GetStyleV2(styleName StyleName) int {
+	if styleID, exists := sm.cache[styleName]; exists {
+		return styleID
+	}
+
+	style, exists := sm.styles[styleName]
+	if !exists {
+		logger.FromCtx(sm.ctx).Error(fmt.Sprintf("style %s not found", styleName))
+		return -1
+	}
+
+	styleId, err := sm.file.NewStyle(style)
+	if err != nil {
+		logger.FromCtx(sm.ctx).Error(fmt.Sprintf("can not create style %s", styleName))
+		return -1
+	}
+
+	sm.cache[styleName] = styleId
+	return styleId
 }
 
 // GetStyle returns the style ID for the given style name
@@ -99,6 +229,7 @@ func (sm *StyleManager) GetStyle(styleName StyleName) (int, error) {
 		return sm.GetTestNameStyle()
 	case StyleAbnormal:
 		return sm.GetAbnormalStyle()
+
 	default:
 		return 0, fmt.Errorf("unknown style name: %s", styleName)
 	}
@@ -160,7 +291,7 @@ func (sm *StyleManager) GetCommonStyles() (*CommonStyles, error) {
 
 // GetPatientNameStyle returns style for patient names (14pt, bold)
 func (sm *StyleManager) GetPatientNameStyle() (int, error) {
-	if styleID, exists := sm.styles[StylePatientName]; exists {
+	if styleID, exists := sm.cache[StylePatientName]; exists {
 		return styleID, nil
 	}
 
@@ -172,13 +303,13 @@ func (sm *StyleManager) GetPatientNameStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StylePatientName] = styleID
+	sm.cache[StylePatientName] = styleID
 	return styleID, nil
 }
 
 // GetPatientInfoStyle returns style for patient information (12pt)
 func (sm *StyleManager) GetPatientInfoStyle() (int, error) {
-	if styleID, exists := sm.styles[StylePatientInfo]; exists {
+	if styleID, exists := sm.cache[StylePatientInfo]; exists {
 		return styleID, nil
 	}
 
@@ -190,13 +321,13 @@ func (sm *StyleManager) GetPatientInfoStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StylePatientInfo] = styleID
+	sm.cache[StylePatientInfo] = styleID
 	return styleID, nil
 }
 
 // GetDateCenterStyle returns style for centered date fields (12pt, center aligned)
 func (sm *StyleManager) GetDateCenterStyle() (int, error) {
-	if styleID, exists := sm.styles[StyleDateCenter]; exists {
+	if styleID, exists := sm.cache[StyleDateCenter]; exists {
 		return styleID, nil
 	}
 
@@ -212,13 +343,13 @@ func (sm *StyleManager) GetDateCenterStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StyleDateCenter] = styleID
+	sm.cache[StyleDateCenter] = styleID
 	return styleID, nil
 }
 
 // GetTestResultStyle returns style for test results (13pt, center aligned with borders)
 func (sm *StyleManager) GetTestResultStyle() (int, error) {
-	if styleID, exists := sm.styles[StyleTestResult]; exists {
+	if styleID, exists := sm.cache[StyleTestResult]; exists {
 		return styleID, nil
 	}
 
@@ -235,13 +366,13 @@ func (sm *StyleManager) GetTestResultStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StyleTestResult] = styleID
+	sm.cache[StyleTestResult] = styleID
 	return styleID, nil
 }
 
 // GetTestNameStyle returns style for test names (13pt, left aligned with borders)
 func (sm *StyleManager) GetTestNameStyle() (int, error) {
-	if styleID, exists := sm.styles[StyleTestName]; exists {
+	if styleID, exists := sm.cache[StyleTestName]; exists {
 		return styleID, nil
 	}
 
@@ -258,12 +389,12 @@ func (sm *StyleManager) GetTestNameStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StyleTestName] = styleID
+	sm.cache[StyleTestName] = styleID
 	return styleID, nil
 }
 
 func (sm *StyleManager) GetPatientNameLargeCenter() (int, error) {
-	if styleID, exists := sm.styles[StylePatientNameLargeCenter]; exists {
+	if styleID, exists := sm.cache[StylePatientNameLargeCenter]; exists {
 		return styleID, nil
 	}
 
@@ -280,13 +411,13 @@ func (sm *StyleManager) GetPatientNameLargeCenter() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StylePatientNameLargeCenter] = styleID
+	sm.cache[StylePatientNameLargeCenter] = styleID
 	return styleID, nil
 }
 
 // GetAbnormalStyle returns style for abnormal test results (13pt, bold, center aligned with borders)
 func (sm *StyleManager) GetAbnormalStyle() (int, error) {
-	if styleID, exists := sm.styles[StyleAbnormal]; exists {
+	if styleID, exists := sm.cache[StyleAbnormal]; exists {
 		return styleID, nil
 	}
 
@@ -307,6 +438,6 @@ func (sm *StyleManager) GetAbnormalStyle() (int, error) {
 		return 0, err
 	}
 
-	sm.styles[StyleAbnormal] = styleID
+	sm.cache[StyleAbnormal] = styleID
 	return styleID, nil
 }
