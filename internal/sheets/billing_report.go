@@ -42,7 +42,7 @@ func CreateRecordBillingFile(ctx context.Context, record *models.Record) (string
 	}
 
 	for col, width := range columnWidth {
-		err := f.SetColWidth("Sheet1", col, col, width)
+		err := f.SetColWidth("Sheet1", col, col, width+0.89)
 		if err != nil {
 			return "", err
 		}
