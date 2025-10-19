@@ -36,6 +36,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 COPY --from=builder /app/bin/main /main
 COPY --from=builder /app/templates /templates
 COPY --from=builder /app/reports /reports
+COPY --from=builder /app/assets /assets
 COPY --from=esbuild /app/static/index.js /static/index.js
 
 # Create empty reports directory
