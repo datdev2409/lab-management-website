@@ -18,9 +18,11 @@ type MarginConfig struct {
 }
 
 type PageSetup struct {
+	SheetName   string
 	PageSize    int    // e.g., excelize.PaperA4
 	Orientation string // "portrait" or "landscape"
 	Margins     MarginConfig
+	ColumnWidth map[string]float64 // column letter to width in characters
 }
 
 func (ps *PageSetup) ApplyPageSetup(ctx context.Context, f *excelize.File, sheetName string, printArea string) error {
@@ -29,11 +31,11 @@ func (ps *PageSetup) ApplyPageSetup(ctx context.Context, f *excelize.File, sheet
 		Orientation: &ps.Orientation,
 	})
 	if err != nil {
-		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", sheetName), zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", ps.SheetName), zap.Error(err))
 		return err
 	}
 
-	err = f.SetPageMargins(sheetName, &excelize.PageLayoutMarginsOptions{
+	err = f.SetPageMargins(ps.SheetName, &excelize.PageLayoutMarginsOptions{
 		Top:    &ps.Margins.Top,
 		Bottom: &ps.Margins.Bottom,
 		Left:   &ps.Margins.Left,
@@ -42,19 +44,60 @@ func (ps *PageSetup) ApplyPageSetup(ctx context.Context, f *excelize.File, sheet
 		Footer: &ps.Margins.Footer,
 	})
 	if err != nil {
-		logger.FromCtx(ctx).Error("Failed to set page margins", zap.String("sheetName", sheetName), zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to set page margins", zap.String("sheetName", ps.SheetName), zap.Error(err))
 		return err
 	}
 
+	return nil
+}
+
+func (ps *PageSetup) ApplyColumnWidths(ctx context.Context, f *excelize.File) error {
+	for col, width := range ps.ColumnWidth {
+		err := f.SetColWidth(ps.SheetName, col, col, width+0.89)
+		if err != nil {
+			logger.FromCtx(ctx).Error("Failed to set column width", zap.String("sheetName", ps.SheetName), zap.String("column", col), zap.Float64("width", width), zap.Error(err))
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (ps *PageSetup) ApplyPrintArea(ctx context.Context, f *excelize.File, printArea string) error {
 	printAreaZone := &excelize.DefinedName{
 		Name:     "_xlnm.Print_Area",
-		RefersTo: "'" + sheetName + "'!" + printArea,
-		Scope:    sheetName,
+		RefersTo: "'" + ps.SheetName + "'!" + printArea,
+		Scope:    ps.SheetName,
 	}
-	f.DeleteDefinedName(printAreaZone) // Remove existing print area if any
-	err = f.SetDefinedName(printAreaZone)
+	_ = f.DeleteDefinedName(printAreaZone)
+	err := f.SetDefinedName(printAreaZone)
 	if err != nil {
-		logger.FromCtx(ctx).Error("Failed to set print area", zap.String("sheetName", sheetName), zap.Error(err))
+		logger.FromCtx(ctx).Error("Failed to set print area", zap.String("sheetName", ps.SheetName), zap.Error(err))
+		return err
+	}
+	return nil
+}
+
+func (ps *PageSetup) ApplyPageSetupV2(ctx context.Context, f *excelize.File) error {
+	err := f.SetPageLayout(ps.SheetName, &excelize.PageLayoutOptions{
+		Size:        &ps.PageSize,
+		Orientation: &ps.Orientation,
+	})
+	if err != nil {
+		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", ps.SheetName), zap.Error(err))
+		return err
+	}
+
+	err = f.SetPageMargins(ps.SheetName, &excelize.PageLayoutMarginsOptions{
+		Top:    &ps.Margins.Top,
+		Bottom: &ps.Margins.Bottom,
+		Left:   &ps.Margins.Left,
+		Right:  &ps.Margins.Right,
+		Header: &ps.Margins.Header,
+		Footer: &ps.Margins.Footer,
+	})
+	if err != nil {
+		logger.FromCtx(ctx).Error("Failed to set page margins", zap.String("sheetName", ps.SheetName), zap.Error(err))
 		return err
 	}
 
