@@ -1,4 +1,4 @@
-FROM golang:1.24.7-alpine as builder
+FROM golang:1.24.9-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN mkdir -p /app/reports
 
 RUN go build -o /app/bin/main /app/cmd/api/main.go
 
-FROM node:alpine3.22 as esbuild
+FROM node:alpine3.22 AS esbuild
 
 WORKDIR /app
 
