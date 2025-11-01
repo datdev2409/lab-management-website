@@ -22,6 +22,8 @@ func NewReportGenerator(ctx context.Context, reportType models.ReportType) (Repo
 		return NewResultOnlineReport(ctx)
 	case models.ResultsWithSignaturePDF:
 		return NewResultOnlineReport(ctx)
+	case models.TrackingReport:
+		return NewTrackingReport(ctx)
 	}
 	return nil, fmt.Errorf("report type not support")
 }
