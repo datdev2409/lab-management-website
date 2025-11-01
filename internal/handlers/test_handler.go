@@ -114,6 +114,10 @@ func (h *Handler) CreateTestV1(w http.ResponseWriter, r *http.Request) error {
 	// 	return BadRequestError("invalid upper_bound value")
 	// }
 
+	if req.Unit == "" {
+		req.Unit = "."
+	}
+
 	test := models.NewTest(
 		req.Name,
 		req.Price,
