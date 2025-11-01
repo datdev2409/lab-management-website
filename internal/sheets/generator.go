@@ -16,7 +16,12 @@ func NewReportGenerator(ctx context.Context, reportType models.ReportType) (Repo
 	switch reportType {
 	case models.BillingReport:
 		return NewBillingReport(ctx)
-	default:
-		return nil, fmt.Errorf("report type not support")
+	case models.ResultsReport:
+		return NewResultReport(ctx)
+	case models.ResultsWithSignature:
+		return NewResultOnlineReport(ctx)
+	case models.ResultsWithSignaturePDF:
+		return NewResultOnlineReport(ctx)
 	}
+	return nil, fmt.Errorf("report type not support")
 }

@@ -24,10 +24,12 @@ const (
 	StylePriceRight
 	LabNameStyle
 	LabAddressStyle
+	LabContactStyle
 	ReportNameStyle
 	ReportDateStyle
 	PatientInfoStyle
 	PatientNameStyle
+	PatientNameTrackingPageStyle
 	TestTableHeaderStyle
 	TotalPriceLabelStyle
 	TotalPriceStyle
@@ -35,6 +37,11 @@ const (
 	TestNameStyle
 	TestQuantityStyle
 	TestPriceStyle
+	TestResultStyle
+	TestAbnormalResultStyle
+	TestUnitStyle
+	TestNormalRangeStyle
+	SignatureStyle
 	StylePatientNameLargeCenter
 )
 
@@ -101,9 +108,11 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 		Vertical:   "center",
 	}
 
-	font12 := &excelize.Font{Size: 12, Family: FontMyriadPro}
 	font11 := &excelize.Font{Size: 11, Family: FontMyriadPro}
+	font12 := &excelize.Font{Size: 12, Family: FontMyriadPro}
+	font13 := &excelize.Font{Size: 13, Family: FontMyriadPro}
 	font11Bold := &excelize.Font{Size: 11, Family: FontMyriadPro, Bold: true}
+	font12Bold := &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true}
 
 	border := []excelize.Border{
 		{Type: "left", Color: "000000", Style: 1},
@@ -143,6 +152,10 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Font:      &excelize.Font{Size: 14, Family: FontMyriadPro, Bold: true},
 			Alignment: alignLeft,
 		},
+		PatientNameTrackingPageStyle: {
+			Font:      font12Bold,
+			Alignment: alignCenter,
+		},
 		TestTableHeaderStyle: {
 			Font:      font12,
 			Alignment: alignCenter,
@@ -177,6 +190,34 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Font:      font11,
 			Alignment: alignRight,
 			Border:    border,
+		},
+		TestResultStyle: {
+			Font:      font12,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TestAbnormalResultStyle: {
+			Font:      font12Bold,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TestUnitStyle: {
+			Font:      font11,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		TestNormalRangeStyle: {
+			Font:      font11,
+			Alignment: alignCenter,
+			Border:    border,
+		},
+		LabContactStyle: {
+			Font:      font13,
+			Alignment: alignLeft,
+		},
+		SignatureStyle: {
+			Font:      font12Bold,
+			Alignment: alignCenter,
 		},
 	}
 

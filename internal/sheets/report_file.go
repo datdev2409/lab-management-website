@@ -29,3 +29,12 @@ func (rf *ReportFile) GetIOReader(ctx context.Context) (io.Reader, error) {
 
 	return r, nil
 }
+
+func (rf *ReportFile) OpenTemplate(ctx context.Context, templatePath string) error {
+	var err error
+	rf.File, err = excelize.OpenFile(templatePath)
+	if err != nil {
+		return fmt.Errorf("failed to open template file: %w", err)
+	}
+	return nil
+}

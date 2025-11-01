@@ -83,35 +83,16 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	//var filePath string
-	//var pdfPath string
-	//
-	//switch models.ReportType(req.ReportType) {
-	//case models.BillingReport:
-	//	filePath, err = sheets.CreateRecordBillingFile(r.Context(), record)
-	//case models.ResultsReport:
-	//	filePath, err = sheets.CreateRecordResultFile(r.Context(), record)
-	//case models.ResultsWithSignature:
-	//	filePath, err = sheets.CreateRecordResultWithSignatureFile(r.Context(), record)
-	//case models.ResultsWithSignaturePDF:
-	//	filePath, err = sheets.CreateRecordResultPDF(r.Context(), record)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	pdfPath, err = sheets.ConvertExcelToPDF(r.Context(), filePath)
-	//	if err != nil {
-	//		return err
-	//	}
-	//	return WriteJSON(w, http.StatusOK, map[string]string{
-	//		"pdf_path": pdfPath,
-	//	})
-	//default:
-	//	return errors.New("invalid export type")
-	//}
-	//
-	//if err != nil {
-	//	return err
-	//}
+	if models.ReportType(req.ReportType) == models.ResultsWithSignaturePDF {
+		pdfPath, err := sheets.ConvertExcelToPDF(r.Context(), filePath)
+		if err != nil {
+			return err
+		}
+
+		return WriteJSON(w, http.StatusOK, map[string]string{
+			"pdf_path": pdfPath,
+		})
+	}
 
 	return WriteJSON(w, http.StatusOK, map[string]string{
 		"excel_path": filePath,

@@ -33,3 +33,8 @@ func (br *BaseReport) Save(ctx context.Context, f *excelize.File) (string, error
 
 	return br.OutputFilePath, nil
 }
+
+type Cell struct {
+	value     interface{}
+	styleName *StyleName
+}

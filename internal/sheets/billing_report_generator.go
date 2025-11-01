@@ -6,9 +6,12 @@ import (
 	"io"
 	"time"
 
+	_ "image/png"
+
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/xuri/excelize/v2"
+	"go.uber.org/zap"
 )
 
 type BillingReport struct {
@@ -58,14 +61,13 @@ func NewBillingReport(ctx context.Context) (*BillingReport, error) {
 	return report, nil
 }
 
-func (b *BillingReport) Generate(ctx context.Context, data interface{}) (io.Reader, error) {
+func (r *BillingReport) Generate(ctx context.Context, data interface{}) (io.Reader, error) {
 	record, ok := data.(*models.Record)
 	if !ok {
-		logger.FromCtx(ctx).Error("Invalid data type for billing report generation")
 		return nil, fmt.Errorf("invalid data type for billing report generation")
 	}
 
-	f := b.File
+	f := r.File
 	defer f.Close()
 
 	// Create style manager
@@ -99,6 +101,7 @@ func (b *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 		LockAspectRatio: true,
 	})
 	if err != nil {
+		logger.FromCtx(ctx).Error("Failed to add logo picture", zap.Error(err))
 		return nil, err
 	}
 
@@ -228,10 +231,10 @@ func (b *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$E$%d", lastRow)
 
-	err = b.ApplyPrintArea(ctx, b.File, printArea)
+	err = r.ApplyPrintArea(ctx, r.File, printArea)
 	if err != nil {
 		return nil, err
 	}
 
-	return b.GetIOReader(ctx)
+	return r.GetIOReader(ctx)
 }

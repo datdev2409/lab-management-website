@@ -46,3 +46,7 @@ func FormatResult(result string) string {
 	// If it's not a number, return as is
 	return result
 }
+
+func GetStyleNamePtr(styleName StyleName) *StyleName {
+	return &styleName
+}
