@@ -25,32 +25,6 @@ type PageSetup struct {
 	ColumnWidth map[string]float64 // column letter to width in characters
 }
 
-func (ps *PageSetup) ApplyPageSetup(ctx context.Context, f *excelize.File, sheetName string, printArea string) error {
-	err := f.SetPageLayout(sheetName, &excelize.PageLayoutOptions{
-		Size:        &ps.PageSize,
-		Orientation: &ps.Orientation,
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", ps.SheetName), zap.Error(err))
-		return err
-	}
-
-	err = f.SetPageMargins(ps.SheetName, &excelize.PageLayoutMarginsOptions{
-		Top:    &ps.Margins.Top,
-		Bottom: &ps.Margins.Bottom,
-		Left:   &ps.Margins.Left,
-		Right:  &ps.Margins.Right,
-		Header: &ps.Margins.Header,
-		Footer: &ps.Margins.Footer,
-	})
-	if err != nil {
-		logger.FromCtx(ctx).Error("Failed to set page margins", zap.String("sheetName", ps.SheetName), zap.Error(err))
-		return err
-	}
-
-	return nil
-}
-
 func (ps *PageSetup) ApplyColumnWidths(ctx context.Context, f *excelize.File) error {
 	for col, width := range ps.ColumnWidth {
 		err := f.SetColWidth(ps.SheetName, col, col, width+0.89)

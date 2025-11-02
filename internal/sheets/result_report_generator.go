@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 )
@@ -71,47 +70,10 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 
 	sm := NewStyleManager(ctx, f)
 
-	cells := map[string]Cell{
-		"C2": {
-			value:     time.Now().Format("02/01/2006"),
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-		"C3": {
-			value:     record.Patient.Name,
-			styleName: GetStyleNamePtr(PatientNameStyle),
-		},
-		"C4": {
-			value:     record.Patient.Address,
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-		"E2": {
-			value:     record.Patient.Phone,
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-		"E3": {
-			value:     record.Patient.YOB,
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-		"E4": {
-			value:     record.Patient.Gender,
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-		"D3": {
-			value:     "Năm sinh",
-			styleName: GetStyleNamePtr(PatientInfoStyle),
-		},
-	}
-
-	for cell, config := range cells {
-		if err := f.SetCellValue("Sheet1", cell, config.value); err != nil {
-			return nil, err
-		}
-		if config.styleName != nil {
-			err := f.SetCellStyle("Sheet1", cell, cell, sm.GetStyleV2(*config.styleName))
-			if err != nil {
-				return nil, err
-			}
-		}
+	// Create and apply the patient info component
+	patientTable := NewPatientInfoTable(f, sm, &record.Patient, 2, "B")
+	if err := patientTable.Apply(ctx); err != nil {
+		return nil, err
 	}
 
 	f.MergeCell("Sheet1", "B5", "C5")
