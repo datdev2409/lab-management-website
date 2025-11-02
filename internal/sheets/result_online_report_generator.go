@@ -121,44 +121,14 @@ func (r ResultOnlineReport) Generate(ctx context.Context, data interface{}) (io.
 		}
 	}
 
-	startTestRow := 15
-	for range len(record.TestResults) - 1 {
-		f.DuplicateRow("Sheet1", startTestRow)
-	}
-
-	for i, testResult := range record.TestResults {
-		row := startTestRow + i
-
-		testFieldValue := FormatResult(testResult.Result)
-		if testResult.ResultText != "" {
-			testFieldValue += testResult.ResultText
-		}
-
-		dataRow := []interface{}{i + 1, testResult.Name, testFieldValue, testResult.Unit, testResult.NormalValue}
-		f.SetSheetRow("Sheet1", fmt.Sprintf("B%d", row), &dataRow)
-		f.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), sm.GetStyleV2(TestIndexStyle))
-
-		f.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), sm.GetStyleV2(TestNameStyle))
-
-		resultCell := fmt.Sprintf("D%d", row)
-
-		// Apply bold and underline style if result is abnormal, otherwise normal style
-		// Manual override has higher priority than automatic detection
-		if testResult.Abnormal {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(TestAbnormalResultStyle))
-		} else {
-			f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(TestResultStyle))
-		}
-
-		f.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), sm.GetStyleV2(TestUnitStyle))
-		f.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), sm.GetStyleV2(TestNormalRangeStyle))
-
-		// Set row height for better spacing (in points, default is usually ~15)
-		f.SetRowHeight("Sheet1", row, 19.0)
+	// Create and apply the test result table component
+	testTable := NewTestResultTable(f, sm, 15, "B", record.TestResults)
+	if err := testTable.Apply(ctx); err != nil {
+		return nil, err
 	}
 
 	// Calculate print area based on content (A1 to F + last row with data)
-	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows
+	lastRow := testTable.GetEndRow() + 2 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow+7)
 
 	err := r.ApplyPrintArea(ctx, f, printArea)
