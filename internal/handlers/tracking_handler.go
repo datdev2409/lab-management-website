@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/datdev2409/lab-admin-go/internal/logger"
@@ -120,12 +122,36 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 		return fmt.Errorf("failed to build test list: %v", err)
 	}
 
-	filename, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)
+	// Generate tracking report using new strategy pattern
+	reportGenerator, err := sheets.NewReportGenerator(r.Context(), models.TrackingReport)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create report generator: %v", err)
 	}
 
-	HTMXRedirect(w, filename)
+	trackingData := &sheets.TrackingReportData{
+		Records:  records,
+		TestList: testList,
+	}
+
+	reader, err := reportGenerator.Generate(r.Context(), trackingData)
+	if err != nil {
+		return fmt.Errorf("failed to generate tracking report: %v", err)
+	}
+
+	storer := sheets.LocalFileStoreStrategy{
+		BaseDir: "./reports",
+	}
+
+	fileName := fmt.Sprintf("%s-%s-tracking.xlsx",
+		time.Now().Format("20060102"),
+		strings.ReplaceAll(records[0].Patient.Name, " ", "_"))
+
+	filePath, err := storer.Store(r.Context(), reader, fileName)
+	if err != nil {
+		return fmt.Errorf("failed to store tracking report: %v", err)
+	}
+
+	HTMXRedirect(w, filePath)
 	return nil
 }
 

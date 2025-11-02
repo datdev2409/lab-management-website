@@ -3,9 +3,12 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -268,10 +271,33 @@ func (h *Handler) ComparePatientRecordsV1(w http.ResponseWriter, r *http.Request
 		return BadRequestError("failed to build test list: " + err.Error())
 	}
 
-	// Generate Excel file
-	filePath, err := sheets.CreateRecordTrackingFile(r.Context(), records, testList)
+	// Generate tracking report using new strategy pattern
+	reportGenerator, err := sheets.NewReportGenerator(r.Context(), models.TrackingReport)
 	if err != nil {
-		return InternalServerError("failed to create comparison file")
+		return InternalServerError("failed to create report generator")
+	}
+
+	trackingData := &sheets.TrackingReportData{
+		Records:  records,
+		TestList: testList,
+	}
+
+	reader, err := reportGenerator.Generate(r.Context(), trackingData)
+	if err != nil {
+		return InternalServerError("failed to generate tracking report")
+	}
+
+	storer := sheets.LocalFileStoreStrategy{
+		BaseDir: "./reports",
+	}
+
+	fileName := fmt.Sprintf("%s-%s-tracking.xlsx",
+		time.Now().Format("20060102"),
+		strings.ReplaceAll(records[0].Patient.Name, " ", "_"))
+
+	filePath, err := storer.Store(r.Context(), reader, fileName)
+	if err != nil {
+		return InternalServerError("failed to store tracking report")
 	}
 
 	RespondJSON(w, http.StatusOK, map[string]string{

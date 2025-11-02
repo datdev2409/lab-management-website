@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "time/tzdata"
@@ -23,13 +24,13 @@ func (h *Handler) validateAndSetDoctor(ctx context.Context, doctorID string) (st
 	if doctorID == "" {
 		return "", nil
 	}
-	
+
 	doctor, err := h.Store.GetDoctorById(ctx, doctorID)
 	if err != nil {
 		logger.FromCtx(ctx).Error("Doctor not found", zap.String("doctor_id", doctorID), zap.Error(err))
 		return "", BadRequestError(DOCTOR_NOT_FOUND_ERROR)
 	}
-	
+
 	// Return the doctor's name from the database to ensure consistency
 	return doctor.Name, nil
 }
@@ -62,34 +63,35 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	var filePath string
-	var pdfPath string
+	reportGenerator, err := sheets.NewReportGenerator(r.Context(), models.ReportType(req.ReportType))
+	if err != nil {
+		return err
+	}
 
-	switch models.ReportType(req.ReportType) {
-	case models.BillingReport:
-		filePath, err = sheets.CreateRecordBillingFile(r.Context(), record)
-	case models.ResultsReport:
-		filePath, err = sheets.CreateRecordResultFile(r.Context(), record)
-	case models.ResultsWithSignature:
-		filePath, err = sheets.CreateRecordResultWithSignatureFile(r.Context(), record)
-	case models.ResultsWithSignaturePDF:
-		filePath, err = sheets.CreateRecordResultPDF(r.Context(), record)
+	reader, err := reportGenerator.Generate(r.Context(), record)
+	if err != nil {
+		return err
+	}
+
+	storer := sheets.LocalFileStoreStrategy{
+		BaseDir: "./reports",
+	}
+
+	fileName := fmt.Sprintf("%s-%s-%s.xlsx", time.Now().Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"), req.ReportType)
+	filePath, err := storer.Store(r.Context(), reader, fileName)
+	if err != nil {
+		return err
+	}
+
+	if models.ReportType(req.ReportType) == models.ResultsWithSignaturePDF {
+		pdfPath, err := sheets.ConvertExcelToPDF(r.Context(), filePath)
 		if err != nil {
 			return err
 		}
-		pdfPath, err = sheets.ConvertExcelToPDF(r.Context(), filePath)
-		if err != nil {
-			return err
-		}
+
 		return WriteJSON(w, http.StatusOK, map[string]string{
 			"pdf_path": pdfPath,
 		})
-	default:
-		return errors.New("invalid export type")
-	}
-
-	if err != nil {
-		return err
 	}
 
 	return WriteJSON(w, http.StatusOK, map[string]string{
@@ -152,7 +154,7 @@ func (h *Handler) CreateRecordV1(w http.ResponseWriter, r *http.Request) error {
 	if request.PatientID == "" || len(request.TestResults) == 0 {
 		return BadRequestError("patient_id and test_results are required")
 	}
-	
+
 	patient, err := h.Store.GetPatientById(r.Context(), request.PatientID)
 	if err != nil {
 		return err

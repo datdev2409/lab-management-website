@@ -1,4 +1,4 @@
-FROM golang:1.24.7-alpine as builder
+FROM golang:1.24.9-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN mkdir -p /app/reports
 
 RUN go build -o /app/bin/main /app/cmd/api/main.go
 
-FROM node:alpine3.22 as esbuild
+FROM node:alpine3.22 AS esbuild
 
 WORKDIR /app
 
@@ -36,6 +36,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 COPY --from=builder /app/bin/main /main
 COPY --from=builder /app/templates /templates
 COPY --from=builder /app/reports /reports
+COPY --from=builder /app/assets /assets
 COPY --from=esbuild /app/static/index.js /static/index.js
 
 # Create empty reports directory
