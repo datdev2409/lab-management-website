@@ -126,6 +126,12 @@ Typical test execution times:
 **Issue**: Browser not found
 - **Solution**: Ensure `playwright install --with-deps` ran successfully
 
+**Issue**: Tests failing due to CDN resources being blocked
+- **Solution**: GitHub Actions doesn't have ad blockers, so CDN resources load normally in CI
+
+**Issue**: Static assets (index.js) not found
+- **Solution**: Ensure `static/` directory exists and contains bundled JS. The CI workflow creates this during build.
+
 ## Configuration Files
 
 - `.github/workflows/e2e-tests.yml` - CI workflow definition
@@ -152,9 +158,29 @@ The CI pipeline is optimized for:
 - No production credentials are used
 - All services run in isolated Docker network
 
+## Known Issues
+
+### CDN Resource Dependencies
+
+The application depends on external CDN resources:
+- Alpine.js (https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js)
+- Bootstrap CSS & JS (https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/)
+- HTMX (https://unpkg.com/htmx.org@2.0.4)
+
+**Impact**: Tests may fail locally if:
+- Ad blockers or privacy extensions are enabled
+- Corporate firewall blocks CDN access
+- Network has content filtering policies
+
+**Solution**: 
+- CI environment doesn't have ad blockers (tests pass in CI)
+- For local testing, disable ad blockers or whitelist the CDN domains
+- Future enhancement: Bundle dependencies locally instead of using CDNs
+
 ## Future Enhancements
 
 Potential improvements:
+- [ ] Bundle Alpine.js, Bootstrap, and HTMX locally to eliminate CDN dependencies
 - [ ] Add test result comments to PRs
 - [ ] Implement test result trends/history
 - [ ] Add performance benchmarks

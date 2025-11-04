@@ -282,6 +282,25 @@ If tests fail due to network issues, check:
 2. No firewall blocking local connections
 3. Correct base URL in configuration
 
+### CDN Resource Blocking
+
+**Important**: The application uses CDN resources (Alpine.js, Bootstrap, HTMX) that may be blocked by:
+- Ad blockers or privacy extensions
+- Corporate firewalls
+- Network security policies
+
+If tests fail with errors about blocked resources:
+1. **Disable browser extensions** that might block CDN requests
+2. **Run tests in CI** where ad blockers are not present
+3. **Check network policies** if running behind corporate firewall
+4. **Verify static assets**: Ensure `static/index.js` exists (run `npm run build` if needed)
+
+To verify CDN accessibility:
+```bash
+curl -I https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js
+curl -I https://unpkg.com/htmx.org@2.0.4
+```
+
 ## CI/CD Integration
 
 The E2E tests are automatically run in GitHub Actions on every pull request and push to `main` or `develop` branches.
