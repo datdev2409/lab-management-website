@@ -28,7 +28,7 @@ templ RecordTestTable() {
 						<div class="position-relative">
 							<input
 								x-model="test.result"
-								@input="checkAbnormalWithPrompt(test)"
+								@input="checkAbnormalWithPrompt(test); checkForChanges()"
 								:class="test.abnormal ? 'form-control border-danger' : 'form-control'"
 								:readonly="!isEditMode"
 								@click="!isEditMode && showViewModeTooltip(test.id, 'result')"
@@ -43,6 +43,7 @@ templ RecordTestTable() {
 							<input
 								x-model="test.result_text"
 								class="form-control"
+								@input="checkForChanges()"
 								:readonly="!isEditMode"
 								@click="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
 								@focus="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
@@ -57,7 +58,7 @@ templ RecordTestTable() {
 								<input
 									type="checkbox"
 									x-model="test.abnormal"
-									@change="markManualOverride(test)"
+									@change="markManualOverride(test); checkForChanges()"
 									:class="test.abnormal ? 'text-danger' : ''"
 									:disabled="!isEditMode"
 									:title="!isEditMode ? '' : 

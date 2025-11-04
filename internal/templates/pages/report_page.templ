@@ -57,6 +57,11 @@ templ ReportPage() {
 							<button type="button" class="btn btn-outline-secondary" @click="clearFilters()">
 								Xóa bộ lọc
 							</button>
+							<button type="button" class="btn btn-success ms-2" @click="exportToExcel()" :disabled="!data || !data.records || data.records.length === 0 || isExporting" x-cloak>
+								<span x-show="isExporting" class="spinner-border spinner-border-sm me-1"></span>
+								<i x-show="!isExporting" class="fas fa-download me-1"></i>
+								Xuất Excel
+							</button>
 						</div>
 					</form>
 				</div>
@@ -195,23 +200,22 @@ templ ReportPage() {
 		</div>
 		<!-- Alpine.js Script -->
 		<script>
-			function revenueReport() {
-				return {
-					data: null,
-					error: null,
-					isLoading: false,
-					filters: {
-						start_date: '',
-						end_date: ''
-					},
+		function revenueReport() {
+			return {
+			data: null,
+			error: null,
+			isLoading: false,
+			isExporting: false,
+			filters: {
+				start_date: '',
+				end_date: ''
+			},
 
-					init() {
-						// Set default dates (current month) in local timezone
-						const now = new Date();
-						const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-						const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-						
-						// Format dates correctly for Vietnam timezone
+			init() {
+				// Set default dates (current month) in local timezone
+				const now = new Date();
+				const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+				const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);						// Format dates correctly for Vietnam timezone
 						const formatLocalDate = (date) => {
 							const year = date.getFullYear();
 							const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -393,24 +397,68 @@ templ ReportPage() {
 						).length || 1;
 					},
 
-					getNoDocterRecords() {
-						if (!this.data || !this.data.records) return { count: 0, revenue: 0 };
+				getNoDocterRecords() {
+					if (!this.data || !this.data.records) return { count: 0, revenue: 0 };
+					
+					const noDocterRecords = this.data.records.filter(record => 
+						!record.doctor_name || !record.doctor_id
+					);
+					
+					const totalRevenue = noDocterRecords.reduce((sum, record) => 
+						sum + (record.total_price || 0), 0
+					);
+					
+					return {
+						count: noDocterRecords.length,
+						revenue: totalRevenue
+					};
+				},
+
+				async exportToExcel() {
+					this.isExporting = true;
+					try {
+						const params = new URLSearchParams();
+						if (this.filters.start_date) params.append('start_date', this.filters.start_date);
+						if (this.filters.end_date) params.append('end_date', this.filters.end_date);
 						
-						const noDocterRecords = this.data.records.filter(record => 
-							!record.doctor_name || !record.doctor_id
-						);
+						const response = await fetch(`/api/v1/records/revenue/export?${params}`, {
+							method: 'GET'
+						});
+
+						if (!response.ok) {
+							throw new Error('Không thể xuất báo cáo');
+						}
+
+						// Get the filename from Content-Disposition header if available
+						const contentDisposition = response.headers.get('content-disposition');
+						let filename = 'revenue_report.xlsx';
 						
-						const totalRevenue = noDocterRecords.reduce((sum, record) => 
-							sum + (record.total_price || 0), 0
-						);
-						
-						return {
-							count: noDocterRecords.length,
-							revenue: totalRevenue
-						};
+						if (contentDisposition) {
+							const matches = contentDisposition.match(/filename=(.+)/);
+							if (matches && matches[1]) {
+								filename = matches[1].replace(/"/g, '');
+							}
+						}
+
+						// Create blob and trigger download
+						const blob = await response.blob();
+						const url = window.URL.createObjectURL(blob);
+						const link = document.createElement('a');
+						link.href = url;
+						link.download = filename;
+						document.body.appendChild(link);
+						link.click();
+						window.URL.revokeObjectURL(url);
+						document.body.removeChild(link);
+					} catch (err) {
+						this.error = err.message;
+						console.error('Error exporting report:', err);
+					} finally {
+						this.isExporting = false;
 					}
 				}
 			}
+		}
 		</script>
 	}
 }

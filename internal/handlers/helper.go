@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 )
@@ -72,4 +73,47 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	return json.NewEncoder(w).Encode(v)
+}
+
+// ParseDateInVietnamTimezone parses a date string (format: "2006-01-02") and converts it to a specific time
+// in Vietnamese timezone, then returns it as UTC time.
+// The hour, minute, second, and nanosecond parameters allow specifying the exact time of day.
+func ParseDateInVietnamTimezone(dateStr string, hour, minute, second, nanosecond int) (*time.Time, error) {
+	// Parse the date string
+	parsedDate, err := time.Parse("2006-01-02", dateStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Load Vietnam timezone
+	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		vietnamLocation = time.UTC // Fallback to UTC
+	}
+
+	// Create time in Vietnam timezone with specified hour, minute, second, nanosecond
+	vietnamTime := time.Date(
+		parsedDate.Year(),
+		parsedDate.Month(),
+		parsedDate.Day(),
+		hour,
+		minute,
+		second,
+		nanosecond,
+		vietnamLocation,
+	)
+
+	// Convert to UTC
+	utcTime := vietnamTime.UTC()
+	return &utcTime, nil
+}
+
+// ParseStartOfDayInVietnamTimezone parses a date string and returns the start of day (00:00:00) in UTC
+func ParseStartOfDayInVietnamTimezone(dateStr string) (*time.Time, error) {
+	return ParseDateInVietnamTimezone(dateStr, 0, 0, 0, 0)
+}
+
+// ParseEndOfDayInVietnamTimezone parses a date string and returns the end of day (23:59:59.999999999) in UTC
+func ParseEndOfDayInVietnamTimezone(dateStr string) (*time.Time, error) {
+	return ParseDateInVietnamTimezone(dateStr, 23, 59, 59, 999999999)
 }

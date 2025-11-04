@@ -121,6 +121,7 @@ const (
 	ResultsWithSignature    ReportType = "phieu_ket_qua_chu_ky"
 	ResultsWithSignaturePDF ReportType = "phieu_ket_qua_chu_ky_pdf"
 	TrackingReport          ReportType = "phieu_theo_doi"
+	RevenueReport           ReportType = "bao_cao_doanh_thu"
 )
 
 // RecordWithTotal represents a record with its calculated total price

@@ -30,10 +30,28 @@ templ RecordCreateForm(recordId string) {
 				test_results: [],
 				number_of_empty_tests: 1,
 				isEditMode: true, // Default to edit mode for new records
+				initialFormState: null, // Store initial state for change detection
+				hasUnsavedChanges: false, // Track if there are unsaved changes
 
 				async init() {
+					// Set up beforeunload listener for unsaved changes warning
+					// Note: Alpine.js automatically cleans up when component is destroyed,
+					// and only one recordForm instance exists per page
+					window.addEventListener('beforeunload', (e) => {
+						if (this.hasUnsavedChanges) {
+							e.preventDefault()
+							e.returnValue = '' // Chrome requires returnValue to be set
+							return '' // Some browsers show this message
+						}
+					})
+
 					if (recordId == '') {
 						console.log("Create new record flow")
+						// For new records, capture initial state after a brief delay
+						// to allow Alpine.js to fully initialize all reactive properties
+						setTimeout(() => {
+							this.captureInitialState()
+						}, 100)
 						return
 					}
 
@@ -64,11 +82,57 @@ templ RecordCreateForm(recordId string) {
 							}
 						})
 						
+						// Capture initial state after loading data
+						this.captureInitialState()
+						
 						console.log(data)
 					}
 					catch (error) {
 						this.flow = "create-record"
 						console.error("Error fetching record data:", error)
+					}
+				},
+
+				captureInitialState() {
+					// Capture the current form state as the initial state
+					this.initialFormState = JSON.stringify(this.getCurrentFormState())
+					this.hasUnsavedChanges = false
+					console.log("Initial form state captured")
+				},
+
+				getCurrentFormState() {
+					// Return current form state for comparison
+					return {
+						patient: this.patient ? { id: this.patient.id, name: this.patient.name } : null,
+						doctor: this.doctor ? { id: this.doctor.id, name: this.doctor.name } : null,
+						combo_name: this.combo_name,
+						combo_name_input: this.combo_name_input,
+						test_results: this.test_results.map(test => ({
+							id: test.id,
+							name: test.name,
+							result: test.result,
+							result_text: test.result_text,
+							abnormal: test.abnormal,
+							manual_abnormal_override: test.manual_abnormal_override
+						}))
+					}
+				},
+
+				checkForChanges() {
+					// Compare current state with initial state
+					if (!this.initialFormState) {
+						return
+					}
+					
+					// Using JSON.stringify for comparison is appropriate here because:
+					// 1. We control property order in getCurrentFormState()
+					// 2. Form data is small (single record)
+					// 3. Simple and reliable for this use case
+					const currentState = JSON.stringify(this.getCurrentFormState())
+					this.hasUnsavedChanges = currentState !== this.initialFormState
+					
+					if (this.hasUnsavedChanges) {
+						console.log("Unsaved changes detected")
 					}
 				},
 
@@ -81,6 +145,7 @@ templ RecordCreateForm(recordId string) {
 
 						const { data } = await response.json()
 						this.patient = data
+						this.checkForChanges()
 					}
 					catch (error) {
 						console.error("Error fetching patient data:", error)
@@ -96,6 +161,7 @@ templ RecordCreateForm(recordId string) {
 
 						const { data } = await response.json()
 						this.doctor = data
+						this.checkForChanges()
 					}
 					catch (error) {
 						console.error("Error fetching doctor data:", error)
@@ -124,6 +190,8 @@ templ RecordCreateForm(recordId string) {
 								this.checkAbnormal(test)
 							}
 						})
+						
+						this.checkForChanges()
 					}
 					catch (error) {
 						console.error("Error fetching combo data:", error)
@@ -148,6 +216,7 @@ templ RecordCreateForm(recordId string) {
 					test.manual_abnormal_override = false
 					
 					this.test_results.push(test)
+					this.checkForChanges()
 				},
 
 				async addTest(data) {
@@ -178,6 +247,8 @@ templ RecordCreateForm(recordId string) {
 					if (data.result) {
 						this.checkAbnormal(data)
 					}
+					
+					this.checkForChanges()
 				},
 
 				async submit() {
@@ -216,6 +287,10 @@ templ RecordCreateForm(recordId string) {
 						}
 
 						const data = await response.json()
+						
+						// Clear unsaved changes flag after successful save
+						this.hasUnsavedChanges = false
+						this.captureInitialState()
 						
 						if (this.flow === 'create-record') {
 							// Show success notification and redirect
@@ -302,6 +377,7 @@ templ RecordCreateForm(recordId string) {
 					if (index !== -1) {
 						this.test_results.splice(index, 1)
 						console.log(`Removed test "${testToRemove.name}" from record`)
+						this.checkForChanges()
 					}
 				},
 
@@ -363,6 +439,10 @@ templ RecordCreateForm(recordId string) {
 							<div class="d-flex align-items-center justify-content-between">
 								<div class="d-flex align-items-center gap-2">
 									<span class="badge text-bg-secondary">New</span>
+									<span x-show="hasUnsavedChanges" class="badge text-bg-warning">
+										<i class="bi bi-exclamation-triangle-fill"></i>
+										Chưa lưu
+									</span>
 									<small x-show="flow === 'update-record'" class="text-muted">
 										<i class="bi" :class="isEditMode ? 'bi-unlock text-warning' : 'bi-lock text-success'"></i>
 										<span x-text="isEditMode ? 'Đang chỉnh sửa' : 'Chỉ đọc'"></span>
@@ -419,7 +499,7 @@ templ RecordCreateForm(recordId string) {
 							<div x-show="combo_name != ''">
 								<div class="d-flex align-items-center justify-content-between">
 									<div x-text="combo_name"></div>
-									<a x-show="isEditMode" @click="combo_name='';open=false" class="link-primary">Chọn gói xét nghiệm khác</a>
+									<a x-show="isEditMode" @click="combo_name='';open=false;checkForChanges()" class="link-primary">Chọn gói xét nghiệm khác</a>
 								</div>
 							</div>
 							<div x-show="combo_name == '' && !isEditMode">
