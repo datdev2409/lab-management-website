@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "test:ui": "playwright test"
+    "test:ui": "playwright test --config=./playwright.config.js"
   },
   "repository": {
     "type": "git",

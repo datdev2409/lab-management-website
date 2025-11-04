@@ -29,6 +29,9 @@ compose-local:
 build:
 	@GOOS=linux GOARCH=amd64 go build -o bin/main cmd/api/main.go
 
+e2e:
+	npm run test:ui
+
 start:
 	@GO_ENV=production ./bin/main
 
