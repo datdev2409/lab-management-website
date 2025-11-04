@@ -80,6 +80,42 @@ func parseRevenueReportFilters(r *http.Request) (models.RecordQueryOptions, mode
 	return filters, opts, nil
 }
 
+// getRevenueReportData is a helper function to fetch revenue report data with common error handling
+func (h *Handler) getRevenueReportData(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*models.ReportResponse, error) {
+	log := logger.FromCtx(ctx)
+	
+	reportData, err := h.Store.GetRecordsWithRevenue(ctx, filters, opts)
+	if err != nil {
+		log.Error("Failed to get records with revenue", zap.Error(err))
+		return nil, err
+	}
+	
+	log.Info("Revenue report data retrieved successfully",
+		zap.Int("record_count", len(reportData.Records)),
+		zap.Int("total_revenue", reportData.Summary.TotalRevenue))
+	
+	return reportData, nil
+}
+
+// generateRevenueReportFilename creates a filename for revenue report based on date filters
+func generateRevenueReportFilename(filters models.RecordQueryOptions) string {
+	baseFilename := "revenue_report"
+	
+	if filters.StartDate != nil && filters.EndDate != nil {
+		startDateStr := filters.StartDate.Format("2006-01-02")
+		endDateStr := filters.EndDate.Format("2006-01-02")
+		return fmt.Sprintf("%s_%s_to_%s.xlsx", baseFilename, startDateStr, endDateStr)
+	} else if filters.StartDate != nil {
+		startDateStr := filters.StartDate.Format("2006-01-02")
+		return fmt.Sprintf("%s_from_%s.xlsx", baseFilename, startDateStr)
+	} else if filters.EndDate != nil {
+		endDateStr := filters.EndDate.Format("2006-01-02")
+		return fmt.Sprintf("%s_to_%s.xlsx", baseFilename, endDateStr)
+	}
+	
+	return baseFilename + ".xlsx"
+}
+
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
 	return Render(context.Background(), w, pages.RecordPage())
 }
@@ -300,18 +336,13 @@ func (h *Handler) GetRecordsWithRevenue(w http.ResponseWriter, r *http.Request) 
 		})
 	}
 
-	// Get report data from storage
-	reportData, err := h.Store.GetRecordsWithRevenue(ctx, filters, opts)
+	// Get report data using helper
+	reportData, err := h.getRevenueReportData(ctx, filters, opts)
 	if err != nil {
-		log.Error("Failed to get records with revenue", zap.Error(err))
 		return WriteJSON(w, http.StatusInternalServerError, map[string]string{
 			"error": "Failed to get records with revenue",
 		})
 	}
-
-	log.Info("Revenue report data retrieved successfully",
-		zap.Int("record_count", len(reportData.Records)),
-		zap.Int("total_revenue", reportData.Summary.TotalRevenue))
 
 	return WriteJSON(w, http.StatusOK, reportData)
 }
@@ -330,17 +361,13 @@ func (h *Handler) ExportRecordsRevenue(w http.ResponseWriter, r *http.Request) e
 		})
 	}
 
-	// Get report data from storage
-	reportData, err := h.Store.GetRecordsWithRevenue(ctx, filters, opts)
+	// Get report data using helper
+	reportData, err := h.getRevenueReportData(ctx, filters, opts)
 	if err != nil {
-		log.Error("Failed to get records with revenue for export", zap.Error(err))
 		return WriteJSON(w, http.StatusInternalServerError, map[string]string{
 			"error": "Failed to export revenue report",
 		})
 	}
-
-	log.Info("Revenue export report generated successfully",
-		zap.Int("record_count", len(reportData.Records)))
 
 	// Generate Excel report
 	generator, err := sheets.NewReportGenerator(ctx, models.RevenueReport)
@@ -359,19 +386,8 @@ func (h *Handler) ExportRecordsRevenue(w http.ResponseWriter, r *http.Request) e
 		})
 	}
 
-	// Generate filename with date range
-	filename := "revenue_report.xlsx"
-	if filters.StartDate != nil && filters.EndDate != nil {
-		startDateStr := filters.StartDate.Format("2006-01-02")
-		endDateStr := filters.EndDate.Format("2006-01-02")
-		filename = fmt.Sprintf("revenue_report_%s_to_%s.xlsx", startDateStr, endDateStr)
-	} else if filters.StartDate != nil {
-		startDateStr := filters.StartDate.Format("2006-01-02")
-		filename = fmt.Sprintf("revenue_report_from_%s.xlsx", startDateStr)
-	} else if filters.EndDate != nil {
-		endDateStr := filters.EndDate.Format("2006-01-02")
-		filename = fmt.Sprintf("revenue_report_to_%s.xlsx", endDateStr)
-	}
+	// Generate filename using helper
+	filename := generateRevenueReportFilename(filters)
 
 	// Set response headers for file download
 	w.Header().Set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
