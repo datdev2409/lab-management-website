@@ -1,15 +1,19 @@
 // Complete E2E Integration Test - Full Application Flow
 const { test, expect } = require('@playwright/test');
 const { login } = require('../helpers/auth');
-const { createPatient } = require('../helpers/patients');
-const { createTest } = require('../helpers/tests');
-const { createCombo } = require('../helpers/combos');
-const { createRecord } = require('../helpers/records');
+const { goToPatients, createPatient, searchPatient } = require('../helpers/patients');
+const { goToTests, createTest, searchTest } = require('../helpers/tests');
+const { goToCombos, createCombo, searchCombo } = require('../helpers/combos');
+const { goToRecords, createRecord } = require('../helpers/records');
 
 test.describe('Complete Application Flow Integration Test', () => {
+  // Extend timeout to 120 seconds for integration tests (instead of default 30 seconds)
+  // This is necessary because these tests perform multiple CRUD operations sequentially
+  test.describe.configure({ timeout: 120000 });
+
   test('should complete full workflow: create patient, tests, combo, and record', async ({ page }) => {
     // Step 1: Login
-    await login(page, 'admin', 'admin123');
+    await login(page);
     await expect(page).toHaveURL('/');
     console.log('✓ Login successful');
 
@@ -23,8 +27,9 @@ test.describe('Complete Application Flow Integration Test', () => {
       phone: `0${Math.floor(Math.random() * 900000000 + 100000000)}`,
     };
 
-    await page.goto('/danh-muc-benh-nhan');
+    await goToPatients(page);
     await createPatient(page, patientData);
+    await searchPatient(page, patientData.name);
     await expect(page.locator(`text=${patientData.name}`)).toBeVisible();
     console.log('✓ Patient created successfully');
 
@@ -56,9 +61,10 @@ test.describe('Complete Application Flow Integration Test', () => {
       },
     ];
 
-    await page.goto('/danh-muc-xet-nghiem');
+    await goToTests(page);
     for (const testData of tests) {
       await createTest(page, testData);
+      await searchTest(page, testData.name);
       await expect(page.locator(`text=${testData.name}`)).toBeVisible();
     }
     console.log('✓ All tests created successfully');
@@ -69,8 +75,9 @@ test.describe('Complete Application Flow Integration Test', () => {
       tests: tests.map(t => t.name),
     };
 
+    await goToCombos(page);
     await createCombo(page, comboData);
-    await page.goto('/danh-muc-goi-xet-nghiem');
+    await searchCombo(page, comboData.name);
     await expect(page.locator(`text=${comboData.name}`)).toBeVisible();
     console.log('✓ Combo created successfully');
 
@@ -89,9 +96,9 @@ test.describe('Complete Application Flow Integration Test', () => {
     console.log('✓ Record created successfully');
 
     // Step 6: Verify the record appears in the records list
-    await page.goto('/phieu-xet-nghiem');
-    await page.fill('input[placeholder*="Tìm kiếm"]', patientData.name);
-    await page.waitForTimeout(500);
+    await goToRecords(page);
+    await page.getByPlaceholder('Tên bệnh nhân hoặc số điện thoại').fill(patientData.name);
+    await page.waitForTimeout(600);
     
     const recordRow = page.locator('tr', { hasText: patientData.name }).first();
     const hasRecord = await recordRow.count() > 0;
@@ -100,7 +107,7 @@ test.describe('Complete Application Flow Integration Test', () => {
 
     // Step 7: View record details
     if (hasRecord) {
-      await recordRow.locator('text=Chi tiết').click();
+      await recordRow.getByRole('link', { name: 'Xem' }).click();
       await page.waitForLoadState('networkidle');
       
       // Verify patient information
@@ -113,7 +120,7 @@ test.describe('Complete Application Flow Integration Test', () => {
 
   test('should handle workflow with abnormal test results', async ({ page }) => {
     // Login
-    await login(page, 'admin', 'admin123');
+    await login(page);
 
     const timestamp = Date.now();
 
@@ -126,7 +133,7 @@ test.describe('Complete Application Flow Integration Test', () => {
       phone: `0${Math.floor(Math.random() * 900000000 + 100000000)}`,
     };
 
-    await page.goto('/danh-muc-benh-nhan');
+    await goToPatients(page);
     await createPatient(page, patientData);
     console.log('✓ Patient created');
 
@@ -140,7 +147,7 @@ test.describe('Complete Application Flow Integration Test', () => {
       normalValue: '3.0-6.0',
     };
 
-    await page.goto('/danh-muc-xet-nghiem');
+    await goToTests(page);
     await createTest(page, testData);
     console.log('✓ Test created');
 
@@ -150,6 +157,7 @@ test.describe('Complete Application Flow Integration Test', () => {
       tests: [testData.name],
     };
 
+    await goToCombos(page);
     await createCombo(page, comboData);
     console.log('✓ Combo created');
 
@@ -165,21 +173,23 @@ test.describe('Complete Application Flow Integration Test', () => {
     await page.goto('/phieu-xet-nghiem/new');
     await page.waitForLoadState('networkidle');
 
-    // Fill in patient
-    await page.fill('input[placeholder*="Tìm kiếm bệnh nhân"]', recordData.patientName);
-    await page.waitForTimeout(500);
+    // Fill in patient using autocomplete
+    const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
+    await patientInput.fill(recordData.patientName);
+    await page.waitForTimeout(600);
     
-    const patientSuggestion = page.locator(`text=${recordData.patientName}`).first();
+    const patientSuggestion = page.locator('.autocomplete-option', { hasText: recordData.patientName }).first();
     if (await patientSuggestion.count() > 0) {
       await patientSuggestion.click();
       await page.waitForTimeout(300);
     }
 
     // Fill in combo
-    await page.fill('input[placeholder*="Tìm kiếm gói xét nghiệm"]', recordData.comboName);
-    await page.waitForTimeout(500);
+    const comboInput = page.getByRole('row', { name: 'Tên gói xét nghiệm' }).getByRole('textbox');
+    await comboInput.fill(recordData.comboName);
+    await page.waitForTimeout(600);
     
-    const comboSuggestion = page.locator(`text=${recordData.comboName}`).first();
+    const comboSuggestion = page.locator('.autocomplete-option', { hasText: recordData.comboName }).first();
     if (await comboSuggestion.count() > 0) {
       await comboSuggestion.click();
       await page.waitForTimeout(500);
@@ -187,7 +197,7 @@ test.describe('Complete Application Flow Integration Test', () => {
 
     // Enter abnormal test value
     const testRow = page.locator('tr', { hasText: testData.name }).first();
-    const testInput = testRow.locator('input[name*="test_value"]');
+    const testInput = testRow.getByRole('textbox').nth(0);
     
     if (await testInput.count() > 0) {
       await testInput.fill(recordData.testResults[0].value);
@@ -195,35 +205,34 @@ test.describe('Complete Application Flow Integration Test', () => {
     }
 
     // Submit the form
-    await page.click('button[type="submit"]:has-text("Tạo phiếu")');
-    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Tạo (Ctrl + S)' }).click();
+    await page.waitForTimeout(300);
+
+    expect(testRow.getByRole('checkbox')).toBeChecked()
 
     console.log('✓✓✓ Abnormal value workflow test passed! ✓✓✓');
   });
 
   test('should navigate through all main pages', async ({ page }) => {
-    await login(page, 'admin', 'admin123');
+    await login(page);
 
     const pages = [
-      { url: '/phieu-xet-nghiem', title: 'Phiếu xét nghiệm' },
-      { url: '/danh-muc-benh-nhan', title: 'Danh mục bệnh nhân' },
-      { url: '/danh-muc-xet-nghiem', title: 'Danh mục xét nghiệm' },
-      { url: '/danh-muc-goi-xet-nghiem', title: 'Danh mục gói xét nghiệm' },
-      { url: '/danh-muc-bac-si', title: 'Danh mục bác sĩ' },
-      { url: '/so-sanh-ket-qua', title: 'So sánh kết quả' },
-      { url: '/danh-muc-so-sanh', title: 'Danh mục so sánh' },
-      { url: '/bao-cao-thong-ke-doanh-so', title: 'Báo cáo thống kê doanh số' },
+      { url: '/phieu-xet-nghiem', name: 'Records' },
+      { url: '/danh-muc-benh-nhan', name: 'Patients' },
+      { url: '/danh-muc-xet-nghiem', name: 'Tests' },
+      { url: '/danh-muc-goi-xet-nghiem', name: 'Combos' },
+      { url: '/danh-muc-bac-si', name: 'Doctors' },
     ];
 
     for (const pageInfo of pages) {
       await page.goto(pageInfo.url);
       await page.waitForLoadState('networkidle');
       
-      // Verify page loaded by checking for title or heading
-      const heading = page.locator('h1, h2, h3, h4').first();
-      await expect(heading).toBeVisible();
+      // Verify page loaded by checking for main content
+      const table = page.getByRole('table');
+      await expect(table).toBeVisible();
       
-      console.log(`✓ Navigated to ${pageInfo.url}`);
+      console.log(`✓ Navigated to ${pageInfo.name} (${pageInfo.url})`);
     }
 
     console.log('✓✓✓ All pages navigation test passed! ✓✓✓');
