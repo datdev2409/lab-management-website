@@ -56,12 +56,14 @@ func (b *BaseReportBuilder) InitializeFromTemplate(ctx context.Context, template
 	return nil
 }
 
-// SetCellWithStyle is a helper to set cell value and apply style in one call
+// SetCellWithStyle is a helper to set cell value and apply style in one call.
+// If styleID is -1, no style will be applied (useful when style is optional).
 func (b *BaseReportBuilder) SetCellWithStyle(sheetName, cell string, value interface{}, styleID int) error {
 	if err := b.File.SetCellValue(sheetName, cell, value); err != nil {
 		return err
 	}
-	if styleID >= 0 {
+	// Only apply style if a valid style ID is provided (not -1)
+	if styleID != -1 {
 		if err := b.File.SetCellStyle(sheetName, cell, cell, styleID); err != nil {
 			return err
 		}
@@ -69,7 +71,8 @@ func (b *BaseReportBuilder) SetCellWithStyle(sheetName, cell string, value inter
 	return nil
 }
 
-// MergeCellsWithStyle merges cells and applies style to the merged area
+// MergeCellsWithStyle merges cells and applies style to the merged area.
+// If styleID is -1, no style will be applied (useful when style is optional).
 func (b *BaseReportBuilder) MergeCellsWithStyle(sheetName, startCell, endCell string, value interface{}, styleID int) error {
 	if err := b.File.MergeCell(sheetName, startCell, endCell); err != nil {
 		return err
@@ -77,7 +80,8 @@ func (b *BaseReportBuilder) MergeCellsWithStyle(sheetName, startCell, endCell st
 	if err := b.File.SetCellValue(sheetName, startCell, value); err != nil {
 		return err
 	}
-	if styleID >= 0 {
+	// Only apply style if a valid style ID is provided (not -1)
+	if styleID != -1 {
 		if err := b.File.SetCellStyle(sheetName, startCell, endCell, styleID); err != nil {
 			return err
 		}
