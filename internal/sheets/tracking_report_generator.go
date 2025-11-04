@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/xuri/excelize/v2"
@@ -18,48 +17,39 @@ type TrackingReportData struct {
 }
 
 type TrackingReport struct {
-	*PageSetup
-	*ReportFile
+	*BaseReportBuilder
 }
 
 func NewTrackingReport(ctx context.Context) (*TrackingReport, error) {
-	report := &TrackingReport{
-		ReportFile: &ReportFile{
-			File: nil,
+	pageSetup := &PageSetup{
+		SheetName:   "Sheet1",
+		PageSize:    9,
+		Orientation: "landscape",
+		Margins: MarginConfig{
+			Top:    0.25,
+			Bottom: 0.5,
+			Left:   0.5,
+			Right:  0.5,
+			Header: 0.5,
+			Footer: 0.5,
 		},
-		PageSetup: &PageSetup{
-			SheetName:   "Sheet1",
-			PageSize:    9,
-			Orientation: "landscape",
-			Margins: MarginConfig{
-				Top:    0.25,
-				Bottom: 0.5,
-				Left:   0.5,
-				Right:  0.5,
-				Header: 0.5,
-				Footer: 0.5,
-			},
-			ColumnWidth: map[string]float64{
-				"A": 4.0,  // STT column
-				"B": 38.0, // Test name column
-				"C": 20.0, // Normal range column
-			},
+		ColumnWidth: map[string]float64{
+			"A": 4.0,  // STT column
+			"B": 38.0, // Test name column
+			"C": 20.0, // Normal range column
 		},
 	}
 
-	report.File = excelize.NewFile()
-
-	err := report.ApplyColumnWidths(ctx, report.File)
+	builder, err := NewBaseReportBuilder(ctx, pageSetup)
 	if err != nil {
 		return nil, err
 	}
 
-	err = report.ApplyPageSetupV2(ctx, report.File)
-	if err != nil {
+	if err := builder.InitializeNewFile(ctx); err != nil {
 		return nil, err
 	}
 
-	return report, nil
+	return &TrackingReport{BaseReportBuilder: builder}, nil
 }
 
 func (r *TrackingReport) Generate(ctx context.Context, data interface{}) (io.Reader, error) {
@@ -106,11 +96,10 @@ func (r *TrackingReport) Generate(ctx context.Context, data interface{}) (io.Rea
 
 	// Build signature section
 	tableEndRow := 7 + len(testList) - 1 // Last row of test data
-	signatureEndRow, err := r.buildSignatureSection(f, sm, tableEndRow+2, 'B', 'B')
-	if err != nil {
+	signature := NewSignatureComponent(f, sm, "Sheet1", tableEndRow+2, 'B', 'B')
+	if err := signature.Apply(ctx); err != nil {
 		return nil, err
 	}
-	_ = signatureEndRow // Use this for print area setup if needed
 
 	if err := r.ApplyPageSetupV2(ctx, r.File); err != nil {
 		return nil, err
@@ -227,55 +216,6 @@ func (r *TrackingReport) buildTestTable(f *excelize.File, sm *StyleManager, reco
 	}
 
 	return nil
-}
-
-// buildSignatureSection creates the signature area at the specified position
-// Returns the last row used by the signature section for print area calculations
-func (r *TrackingReport) buildSignatureSection(f *excelize.File, sm *StyleManager, startRow int, startCol, endCol rune) (int, error) {
-	signatureCol := string(startCol)
-
-	// Location and date (center, italic)
-	locationDateRow := startRow
-	locationDateCell := fmt.Sprintf("%s%d", signatureCol, locationDateRow)
-	now := time.Now()
-	dateText := fmt.Sprintf("Cao Lãnh. Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
-	_ = f.SetCellValue("Sheet1", locationDateCell, dateText)
-
-	// Merge cells if startCol != endCol
-	if startCol != endCol {
-		endLocationDateCell := fmt.Sprintf("%s%d", string(endCol), locationDateRow)
-		_ = f.MergeCell("Sheet1", locationDateCell, endLocationDateCell)
-	}
-	_ = f.SetCellStyle("Sheet1", locationDateCell, locationDateCell, sm.GetStyleV2(LocationDateStyle))
-
-	// Lab department (center, bold)
-	labDeptRow := locationDateRow + 1
-	labDeptCell := fmt.Sprintf("%s%d", signatureCol, labDeptRow)
-	_ = f.SetCellValue("Sheet1", labDeptCell, "PHÒNG XÉT NGHIỆM")
-
-	// Merge cells if startCol != endCol
-	if startCol != endCol {
-		endLabDeptCell := fmt.Sprintf("%s%d", string(endCol), labDeptRow)
-		_ = f.MergeCell("Sheet1", labDeptCell, endLabDeptCell)
-	}
-	_ = f.SetCellStyle("Sheet1", labDeptCell, labDeptCell, sm.GetStyleV2(LabDepartmentStyle))
-
-	// 5 empty rows for signature space
-	// (rows labDeptRow+1 to labDeptRow+5 are left empty)
-
-	// Signature name (center, bold)
-	signatureNameRow := labDeptRow + 6 // +1 for lab dept row + 5 for signature space
-	signatureNameCell := fmt.Sprintf("%s%d", signatureCol, signatureNameRow)
-	_ = f.SetCellValue("Sheet1", signatureNameCell, "CKI.XN NGUYỄN CÔNG MẪN")
-
-	// Merge cells if startCol != endCol
-	if startCol != endCol {
-		endSignatureNameCell := fmt.Sprintf("%s%d", string(endCol), signatureNameRow)
-		_ = f.MergeCell("Sheet1", signatureNameCell, endSignatureNameCell)
-	}
-	_ = f.SetCellStyle("Sheet1", signatureNameCell, signatureNameCell, sm.GetStyleV2(SignatureNameStyle))
-
-	return signatureNameRow, nil
 }
 
 // formatTestResultDisplay formats the test result for display based on Result and ResultText fields

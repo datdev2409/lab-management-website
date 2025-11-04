@@ -120,6 +120,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 			r.Put("/{id}", Make(h.UpdateRecordV1))
 			r.Delete("/{id}", Make(h.DeleteRecordV1))
 			r.Get("/revenue", Make(h.GetRecordsWithRevenue))
+			r.Get("/revenue/export", Make(h.ExportRecordsRevenue))
 		})
 	})
 

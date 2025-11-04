@@ -44,9 +44,9 @@ const (
 	LabAddressLeftStyle
 	PatientNameCenterStyle
 	TrackingTableHeaderCyanStyle
+	RevenueTableDataStyle
+	RevenueTableDataRightStyle
 )
-
-
 
 // StyleManager handles creation and caching of Excel styles
 type StyleManager struct {
@@ -236,6 +236,16 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 				Color:   []string{"CCFFFF"}, // Light cyan color
 			},
 		},
+		RevenueTableDataStyle: {
+			Font:      font12,
+			Alignment: alignLeft,
+			Border:    border,
+		},
+		RevenueTableDataRightStyle: {
+			Font:      font12,
+			Alignment: alignRight,
+			Border:    border,
+		},
 	}
 
 	return sm
@@ -271,5 +281,3 @@ func (sm *StyleManager) GetStyleV2(styleName StyleName) int {
 	sm.cache[styleName] = styleId
 	return styleId
 }
-
-
