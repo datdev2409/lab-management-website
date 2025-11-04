@@ -119,16 +119,26 @@ func (h *HeaderComponent) SetDateValue(dateValue string) {
 
 // SignatureComponent represents a reusable signature section
 type SignatureComponent struct {
-	file         *excelize.File
-	styleManager *StyleManager
-	sheetName    string
-	startRow     int
-	startCol     rune
-	endCol       rune
-	endRow       int
+	file             *excelize.File
+	styleManager     *StyleManager
+	sheetName        string
+	startRow         int
+	startCol         rune
+	endCol           rune
+	endRow           int
+	includeDate      bool
+	signatureSpace   int    // Number of rows between lab dept and signature name
+	writeSignatureName bool // Whether to write the signature name (false if template already has it)
 }
 
-// NewSignatureComponent creates a new signature component
+// SignatureConfig holds configuration options for the signature component
+type SignatureConfig struct {
+	IncludeDate        bool // Whether to include location and date row
+	SignatureSpace     int  // Number of empty rows between lab dept and signature name (default: 5)
+	WriteSignatureName bool // Whether to write the signature name (default: true, set to false if template has it)
+}
+
+// NewSignatureComponent creates a new signature component with default configuration
 func NewSignatureComponent(
 	file *excelize.File,
 	styleManager *StyleManager,
@@ -137,12 +147,41 @@ func NewSignatureComponent(
 	startCol, endCol rune,
 ) *SignatureComponent {
 	return &SignatureComponent{
-		file:         file,
-		styleManager: styleManager,
-		sheetName:    sheetName,
-		startRow:     startRow,
-		startCol:     startCol,
-		endCol:       endCol,
+		file:               file,
+		styleManager:       styleManager,
+		sheetName:          sheetName,
+		startRow:           startRow,
+		startCol:           startCol,
+		endCol:             endCol,
+		includeDate:        true,
+		signatureSpace:     5,
+		writeSignatureName: true,
+	}
+}
+
+// NewSignatureComponentWithConfig creates a new signature component with custom configuration
+func NewSignatureComponentWithConfig(
+	file *excelize.File,
+	styleManager *StyleManager,
+	sheetName string,
+	startRow int,
+	startCol, endCol rune,
+	config SignatureConfig,
+) *SignatureComponent {
+	signatureSpace := config.SignatureSpace
+	if signatureSpace == 0 {
+		signatureSpace = 5 // Default
+	}
+	return &SignatureComponent{
+		file:               file,
+		styleManager:       styleManager,
+		sheetName:          sheetName,
+		startRow:           startRow,
+		startCol:           startCol,
+		endCol:             endCol,
+		includeDate:        config.IncludeDate,
+		signatureSpace:     signatureSpace,
+		writeSignatureName: config.WriteSignatureName,
 	}
 }
 
@@ -152,36 +191,39 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 	sm := s.styleManager
 	signatureCol := string(s.startCol)
 
-	// Location and date
-	locationDateRow := s.startRow
-	locationDateCell := fmt.Sprintf("%s%d", signatureCol, locationDateRow)
-	now := time.Now()
-	dateText := fmt.Sprintf("Cao Lãnh. Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
-	if err := f.SetCellValue(s.sheetName, locationDateCell, dateText); err != nil {
-		return err
-	}
+	currentRow := s.startRow
 
-	// Merge cells if needed
-	if s.startCol != s.endCol {
-		endLocationDateCell := fmt.Sprintf("%s%d", string(s.endCol), locationDateRow)
-		if err := f.MergeCell(s.sheetName, locationDateCell, endLocationDateCell); err != nil {
+	// Location and date (optional)
+	if s.includeDate {
+		locationDateCell := fmt.Sprintf("%s%d", signatureCol, currentRow)
+		now := time.Now()
+		dateText := fmt.Sprintf("Cao Lãnh. Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
+		if err := f.SetCellValue(s.sheetName, locationDateCell, dateText); err != nil {
 			return err
 		}
-	}
-	if err := f.SetCellStyle(s.sheetName, locationDateCell, locationDateCell, sm.GetStyleV2(LocationDateStyle)); err != nil {
-		return err
+
+		// Merge cells if needed
+		if s.startCol != s.endCol {
+			endLocationDateCell := fmt.Sprintf("%s%d", string(s.endCol), currentRow)
+			if err := f.MergeCell(s.sheetName, locationDateCell, endLocationDateCell); err != nil {
+				return err
+			}
+		}
+		if err := f.SetCellStyle(s.sheetName, locationDateCell, locationDateCell, sm.GetStyleV2(LocationDateStyle)); err != nil {
+			return err
+		}
+		currentRow++
 	}
 
 	// Lab department
-	labDeptRow := locationDateRow + 1
-	labDeptCell := fmt.Sprintf("%s%d", signatureCol, labDeptRow)
+	labDeptCell := fmt.Sprintf("%s%d", signatureCol, currentRow)
 	if err := f.SetCellValue(s.sheetName, labDeptCell, "PHÒNG XÉT NGHIỆM"); err != nil {
 		return err
 	}
 
 	// Merge cells if needed
 	if s.startCol != s.endCol {
-		endLabDeptCell := fmt.Sprintf("%s%d", string(s.endCol), labDeptRow)
+		endLabDeptCell := fmt.Sprintf("%s%d", string(s.endCol), currentRow)
 		if err := f.MergeCell(s.sheetName, labDeptCell, endLabDeptCell); err != nil {
 			return err
 		}
@@ -190,22 +232,27 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 		return err
 	}
 
-	// Signature name (5 rows down for signature space)
-	signatureNameRow := labDeptRow + 6
-	signatureNameCell := fmt.Sprintf("%s%d", signatureCol, signatureNameRow)
-	if err := f.SetCellValue(s.sheetName, signatureNameCell, "CKI.XN NGUYỄN CÔNG MẪN"); err != nil {
-		return err
-	}
-
-	// Merge cells if needed
-	if s.startCol != s.endCol {
-		endSignatureNameCell := fmt.Sprintf("%s%d", string(s.endCol), signatureNameRow)
-		if err := f.MergeCell(s.sheetName, signatureNameCell, endSignatureNameCell); err != nil {
+	// Signature name (customizable space)
+	// The signature space represents the number of rows between lab dept and signature name
+	signatureNameRow := currentRow + s.signatureSpace
+	
+	// Only write signature name if configured to do so
+	if s.writeSignatureName {
+		signatureNameCell := fmt.Sprintf("%s%d", signatureCol, signatureNameRow)
+		if err := f.SetCellValue(s.sheetName, signatureNameCell, "CKI.XN NGUYỄN CÔNG MẪN"); err != nil {
 			return err
 		}
-	}
-	if err := f.SetCellStyle(s.sheetName, signatureNameCell, signatureNameCell, sm.GetStyleV2(SignatureNameStyle)); err != nil {
-		return err
+
+		// Merge cells if needed
+		if s.startCol != s.endCol {
+			endSignatureNameCell := fmt.Sprintf("%s%d", string(s.endCol), signatureNameRow)
+			if err := f.MergeCell(s.sheetName, signatureNameCell, endSignatureNameCell); err != nil {
+				return err
+			}
+		}
+		if err := f.SetCellStyle(s.sheetName, signatureNameCell, signatureNameCell, sm.GetStyleV2(SignatureNameStyle)); err != nil {
+			return err
+		}
 	}
 
 	s.endRow = signatureNameRow

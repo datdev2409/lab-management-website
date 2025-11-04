@@ -72,9 +72,14 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 		return nil, err
 	}
 
-	// Create and apply signature component
+	// Create and apply signature component with custom config for result report
+	// Result report template already has signature name, so we need to override it
 	startSignatureRow := testTable.GetEndRow() + 2
-	signature := NewSignatureComponent(f, sm, "Sheet1", startSignatureRow, 'D', 'F')
+	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", startSignatureRow, 'D', 'F', SignatureConfig{
+		IncludeDate:        false, // Result report doesn't include date in signature
+		SignatureSpace:     5,     // 5 rows between lab dept and signature name
+		WriteSignatureName: true,  // Override the signature name in template
+	})
 	if err := signature.Apply(ctx); err != nil {
 		return nil, err
 	}
