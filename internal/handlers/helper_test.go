@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -213,4 +214,74 @@ func TestHTMXRedirect(t *testing.T) {
 	
 	assert.Equal(t, http.StatusFound, w.Code)
 	assert.Equal(t, path, w.Header().Get("HX-Redirect"))
+}
+
+func TestParseDateInVietnamTimezone(t *testing.T) {
+	t.Run("valid date with specific time", func(t *testing.T) {
+		result, err := ParseDateInVietnamTimezone("2024-01-15", 10, 30, 45, 0)
+		
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+		assert.Equal(t, 2024, result.Year())
+		assert.Equal(t, time.January, result.Month())
+		assert.Equal(t, 15, result.Day())
+	})
+
+	t.Run("invalid date format", func(t *testing.T) {
+		_, err := ParseDateInVietnamTimezone("invalid-date", 0, 0, 0, 0)
+		assert.Error(t, err)
+	})
+
+	t.Run("midnight time", func(t *testing.T) {
+		result, err := ParseDateInVietnamTimezone("2024-12-25", 0, 0, 0, 0)
+		
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("end of day time", func(t *testing.T) {
+		result, err := ParseDateInVietnamTimezone("2024-12-25", 23, 59, 59, 999999999)
+		
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+	})
+}
+
+func TestParseStartOfDayInVietnamTimezone(t *testing.T) {
+	t.Run("valid date", func(t *testing.T) {
+		result, err := ParseStartOfDayInVietnamTimezone("2024-06-15")
+		
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("invalid date", func(t *testing.T) {
+		_, err := ParseStartOfDayInVietnamTimezone("not-a-date")
+		assert.Error(t, err)
+	})
+}
+
+func TestParseEndOfDayInVietnamTimezone(t *testing.T) {
+	t.Run("valid date", func(t *testing.T) {
+		result, err := ParseEndOfDayInVietnamTimezone("2024-06-15")
+		
+		require.NoError(t, err)
+		assert.NotNil(t, result)
+	})
+
+	t.Run("invalid date", func(t *testing.T) {
+		_, err := ParseEndOfDayInVietnamTimezone("invalid")
+		assert.Error(t, err)
+	})
+
+	t.Run("start and end of same day difference", func(t *testing.T) {
+		start, err1 := ParseStartOfDayInVietnamTimezone("2024-01-01")
+		end, err2 := ParseEndOfDayInVietnamTimezone("2024-01-01")
+		
+		require.NoError(t, err1)
+		require.NoError(t, err2)
+		
+		// End should be after start
+		assert.True(t, end.After(*start))
+	})
 }

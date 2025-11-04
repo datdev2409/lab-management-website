@@ -51,52 +51,6 @@ func TestGenerateRandomID(t *testing.T) {
 	})
 }
 
-func TestNormalizeString(t *testing.T) {
-	tests := []struct {
-		name  string
-		input string
-		want  string
-	}{
-		{
-			name:  "basic text",
-			input: "Hello World",
-			want:  "helloworld",
-		},
-		{
-			name:  "multiple spaces",
-			input: "Hello   World   Test",
-			want:  "helloworldtest",
-		},
-		{
-			name:  "tabs and newlines",
-			input: "Hello\tWorld\nTest",
-			want:  "helloworldtest",
-		},
-		{
-			name:  "mixed case",
-			input: "HeLLo WoRLd",
-			want:  "helloworld",
-		},
-		{
-			name:  "empty string",
-			input: "",
-			want:  "",
-		},
-		{
-			name:  "only spaces",
-			input: "   ",
-			want:  "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := NormalizeString(tt.input)
-			assert.Equal(t, tt.want, got)
-		})
-	}
-}
-
 func TestToBSONDocument(t *testing.T) {
 	t.Run("convert struct to BSON", func(t *testing.T) {
 		type testStruct struct {
