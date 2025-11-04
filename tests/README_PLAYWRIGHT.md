@@ -282,6 +282,47 @@ If tests fail due to network issues, check:
 2. No firewall blocking local connections
 3. Correct base URL in configuration
 
+## CI/CD Integration
+
+The E2E tests are automatically run in GitHub Actions on every pull request and push to `main` or `develop` branches.
+
+### CI Workflow
+
+The CI pipeline:
+1. Sets up Go, Node.js, and dependencies
+2. Starts MongoDB and Gotenberg services via Docker Compose
+3. Seeds test database with admin user (username: `admin`, password: `admin123`)
+4. Builds and starts the application server
+5. Runs all Playwright tests
+6. Uploads test reports and screenshots as artifacts
+
+### Running Tests with CI Setup Locally
+
+To replicate the CI environment:
+
+```bash
+# Start services
+docker-compose -f docker-compose.test.yml up -d
+
+# Seed test data
+MONGODB_URI="mongodb://root:password123@localhost:27017" tests/scripts/seed-test-data.sh
+
+# Build and start application
+go build -o bin/server cmd/api/main.go
+MONGODB_URI="mongodb://root:password123@localhost:27017/labadmin?authSource=admin" \
+SERVER_PORT=7331 \
+ENV=test \
+./bin/server &
+
+# Run tests
+cd tests && npm test
+
+# Cleanup
+docker-compose -f docker-compose.test.yml down -v
+```
+
+For detailed CI setup documentation, see [CI_INTEGRATION.md](CI_INTEGRATION.md).
+
 ## Contributing
 
 When adding new tests:
