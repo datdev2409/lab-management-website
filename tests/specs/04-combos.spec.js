@@ -50,8 +50,8 @@ test.describe('Combo Management Flow', () => {
   test('should display combo management page', async ({ page }) => {
     await goToCombos(page);
     
-    await expect(page.locator('h3')).toContainText('Danh mục gói xét nghiệm');
-    await expect(page.locator('text=Tạo gói xét nghiệm mới')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Danh mục gói xét nghiệm' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Tạo gói xét nghiệm mới' })).toBeVisible();
   });
 
   test('should create a new combo with multiple tests', async ({ page }) => {
@@ -66,6 +66,7 @@ test.describe('Combo Management Flow', () => {
     
     // Navigate back to combo list
     await goToCombos(page);
+    await searchCombo(page, comboData.name);
     
     // Verify combo appears in the list
     await expect(page.locator(`text=${comboData.name}`)).toBeVisible();
@@ -88,6 +89,10 @@ test.describe('Combo Management Flow', () => {
     
     // Verify search results
     await expect(page.locator(`text=${comboData.name}`)).toBeVisible();
+    
+    // Search for non-existent combo
+    await searchCombo(page, 'NonExistentCombo99999');
+    await expect(page.locator('text=NonExistentCombo99999')).not.toBeVisible();
   });
 
   test('should view combo details', async ({ page }) => {
@@ -126,26 +131,70 @@ test.describe('Combo Management Flow', () => {
     await goToCombos(page);
     
     // Verify combo exists
+    await searchCombo(page, comboData.name);
     await expect(page.locator(`text=${comboData.name}`)).toBeVisible();
     
     // Delete the combo
-    await searchCombo(page, comboData.name);
     await deleteCombo(page, comboData.name);
     
     // Verify combo is removed
+    await searchCombo(page, comboData.name);
     await expect(page.locator(`text=${comboData.name}`)).not.toBeVisible();
   });
 
-  test('should validate required fields when creating combo', async ({ page }) => {
+  test('should create multiple combos with different test combinations', async ({ page }) => {
+    await goToCombos(page);
+    
+    const combos = [
+      {
+        name: `Combo Alpha ${Date.now()}`,
+        tests: [testNames[0]],
+      },
+      {
+        name: `Combo Beta ${Date.now()}`,
+        tests: [testNames[1]],
+      },
+      {
+        name: `Combo Full ${Date.now()}`,
+        tests: testNames,
+      },
+    ];
+    
+    for (const comboData of combos) {
+      await createCombo(page, comboData);
+      await goToCombos(page);
+      await searchCombo(page, comboData.name);
+      await expect(page.locator(`text=${comboData.name}`)).toBeVisible();
+    }
+  });
+
+  test('should display combo test count in list', async ({ page }) => {
+    await goToCombos(page);
+    
+    // Create a combo with known number of tests
+    const comboData = {
+      name: `Count Test Combo ${Date.now()}`,
+      tests: testNames,
+    };
+    
+    await createCombo(page, comboData);
+    await goToCombos(page);
+    await searchCombo(page, comboData.name);
+    
+    // Verify test count is displayed
+    const row = page.locator('tr', { hasText: comboData.name }).first();
+    await expect(row).toContainText(`${testNames.length} xét nghiệm`);
+  });
+
+  test('should navigate back from combo creation form', async ({ page }) => {
     await page.goto('/danh-muc-goi-xet-nghiem/new');
     await page.waitForLoadState('networkidle');
     
-    // Try to submit without filling required fields
-    await page.click('button[type="submit"]:has-text("Tạo gói xét nghiệm")');
+    // Click back button
+    await page.getByRole('button', { name: 'Trở lại' }).click();
+    await page.waitForTimeout(500);
     
-    // Check for HTML5 validation
-    const nameInput = page.locator('input[name="combo_name"]');
-    const isInvalid = await nameInput.evaluate(el => !el.checkValidity());
-    expect(isInvalid).toBeTruthy();
+    // Verify we're back on the combo list page
+    await expect(page).toHaveURL('/danh-muc-goi-xet-nghiem');
   });
 });

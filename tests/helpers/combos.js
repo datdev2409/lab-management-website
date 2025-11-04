@@ -20,21 +20,26 @@ async function goToCombos(page) {
 async function createCombo(page, comboData) {
   await page.goto('/danh-muc-goi-xet-nghiem/new');
   await page.waitForLoadState('networkidle');
-  
-  await page.fill('input[name="combo_name"]', comboData.name);
-  
-  // Select tests for the combo
+
+  // Fill combo name
+  await page.getByRole('textbox', { name: 'Tên gói xét nghiệm' }).fill(comboData.name);
+  await page.waitForTimeout(300);
+
+  // Select tests for the combo using the autocomplete
   for (const testName of comboData.tests) {
-    // Type in search to find test
-    await page.fill('input[placeholder*="Tìm kiếm xét nghiệm"]', testName);
-    await page.waitForTimeout(500); // Wait for autocomplete
+    // Type in the test autocomplete field
+    const autocompleteInput = page.locator('input#test-autocomplete');
+    await autocompleteInput.fill(testName);
+    await page.waitForTimeout(600); // Wait for autocomplete to load
     
-    // Click on the test in the dropdown
-    await page.click(`text=${testName}`);
+    // Click on the test option in the dropdown
+    const testOption = page.locator('.autocomplete-option', { hasText: testName }).first();
+    await testOption.click();
     await page.waitForTimeout(300);
   }
   
-  await page.click('button[type="submit"]:has-text("Tạo gói xét nghiệm")');
+  // Submit the form
+  await page.getByRole('button', { name: /Tạo gói xét nghiệm|Cập nhật gói xét nghiệm/ }).click();
   await page.waitForLoadState('networkidle');
 }
 
@@ -44,9 +49,8 @@ async function createCombo(page, comboData) {
  * @param {string} searchTerm
  */
 async function searchCombo(page, searchTerm) {
-  await page.fill('#combo-search', searchTerm);
-  await page.click('#combo-search-form button[type="submit"]');
-  await page.waitForLoadState('networkidle');
+  await page.getByPlaceholder('Tên gói xét nghiệm').fill(searchTerm);
+  await page.waitForTimeout(500); // Wait for debounced search
 }
 
 /**
@@ -63,7 +67,7 @@ async function deleteCombo(page, comboName) {
     dialog.accept();
   });
   
-  await row.locator('text=Xoá').click();
+  await row.locator('text=Xóa').click();
   await page.waitForLoadState('networkidle');
 }
 
