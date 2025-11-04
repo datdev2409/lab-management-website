@@ -9,3 +9,11 @@ internal/templates/*/*_templ.txt
 static/
 reports/
 alloy/config.alloy
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

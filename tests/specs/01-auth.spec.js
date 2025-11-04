@@ -22,7 +22,7 @@ test.describe('Authentication Flow', () => {
     
     // Should redirect to home page
     await expect(page).toHaveURL('/');
-    await expect(page.locator('text=Phiếu xét nghiệm')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Phiếu xét nghiệm' })).toBeVisible();
   });
 
   test('should show error with invalid credentials', async ({ page }) => {
@@ -45,7 +45,7 @@ test.describe('Authentication Flow', () => {
     await expect(page.locator('h3')).toContainText('Đăng ký');
     await expect(page.locator('input[name="username"]')).toBeVisible();
     await expect(page.locator('input[name="password"]')).toBeVisible();
-    await expect(page.locator('input[name="confirm_password"]')).toBeVisible();
+    await expect(page.locator('input[name="passwordConfirm"]')).toBeVisible();
   });
 
   test('should navigate between login and register pages', async ({ page }) => {

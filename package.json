@@ -1,0 +1,25 @@
+{
+  "name": "lab-admin-go",
+  "version": "1.0.0",
+  "description": "Business: An Admin website to manage the Anh Quan laboratory.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datdev2409/lab-management-website.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/datdev2409/lab-management-website/issues"
+  },
+  "homepage": "https://github.com/datdev2409/lab-management-website#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0"
+  }
+}
