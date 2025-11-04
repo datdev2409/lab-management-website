@@ -43,34 +43,23 @@ func parseRevenueReportFilters(r *http.Request) (models.RecordQueryOptions, mode
 
 	filters := models.RecordQueryOptions{}
 
-	// Load Vietnam timezone
-	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
-	if err != nil {
-		log.Error("Failed to load Vietnam timezone", zap.Error(err))
-		vietnamLocation = time.UTC // Fallback to UTC
-	}
-
 	// Parse start_date
 	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
-		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
-			// Set to start of day in Vietnam timezone, then convert to UTC
-			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
-			startOfDayUTC := startOfDay.UTC()
-			filters.StartDate = &startOfDayUTC
-		} else {
+		startDate, err := ParseStartOfDayInVietnamTimezone(startDateStr)
+		if err != nil {
 			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
+		} else {
+			filters.StartDate = startDate
 		}
 	}
 
 	// Parse end_date
 	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
-		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
-			// Set to end of day in Vietnam timezone, then convert to UTC
-			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
-			endOfDayUTC := endOfDay.UTC()
-			filters.EndDate = &endOfDayUTC
-		} else {
+		endDate, err := ParseEndOfDayInVietnamTimezone(endDateStr)
+		if err != nil {
 			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
+		} else {
+			filters.EndDate = endDate
 		}
 	}
 
