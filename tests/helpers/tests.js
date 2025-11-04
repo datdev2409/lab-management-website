@@ -32,7 +32,7 @@ async function createTest(page, testData) {
   await page.fill('input[name="test_normal_value"]', testData.normalValue);
   
   await page.click('button[type="submit"]:has-text("Thêm xét nghiệm")');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(500);
 }
 
 /**
@@ -41,9 +41,8 @@ async function createTest(page, testData) {
  * @param {string} searchTerm
  */
 async function searchTest(page, searchTerm) {
-  await page.fill('#test-search', searchTerm);
-  await page.click('#test-search-form button[type="submit"]');
-  await page.waitForLoadState('networkidle');
+  await page.getByPlaceholder('Tên xét nghiệm').fill(searchTerm);
+  await page.waitForTimeout(5000);
 }
 
 /**

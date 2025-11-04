@@ -11,10 +11,10 @@ test.describe('Test Management Flow', () => {
 
   test('should display test management page', async ({ page }) => {
     await goToTests(page);
-    
-    await expect(page.locator('h3')).toContainText('Danh mục xét nghiệm');
-    await expect(page.locator('text=Thêm xét nghiệm')).toBeVisible();
-    await expect(page.locator('#test-search')).toBeVisible();
+
+    await expect(page.getByRole('heading', { name: 'Danh mục xét nghiệm' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Thêm xét nghiệm' })).toBeVisible();
+    await expect(page.getByPlaceholder('Tên xét nghiệm')).toBeVisible();
   });
 
   test('should create a new test', async ({ page }) => {
@@ -30,6 +30,8 @@ test.describe('Test Management Flow', () => {
     };
     
     await createTest(page, testData);
+
+    await searchTest(page, testData.name);
     
     // Verify test appears in the list
     await expect(page.locator(`text=${testData.name}`)).toBeVisible();
@@ -60,6 +62,7 @@ test.describe('Test Management Flow', () => {
     
     for (const testData of tests) {
       await createTest(page, testData);
+      await searchTest(page, testData.name);
       await expect(page.locator(`text=${testData.name}`)).toBeVisible();
     }
   });
@@ -104,15 +107,16 @@ test.describe('Test Management Flow', () => {
     };
     
     await createTest(page, testData);
-    
+
     // Verify test exists
+    await searchTest(page, testData.name);
     await expect(page.locator(`text=${testData.name}`)).toBeVisible();
     
     // Delete the test
-    await searchTest(page, testData.name);
     await deleteTest(page, testData.name);
     
     // Verify test is removed
+    await searchTest(page, testData.name);
     await expect(page.locator(`text=${testData.name}`)).not.toBeVisible();
   });
 
@@ -136,7 +140,7 @@ test.describe('Test Management Flow', () => {
     // Verify all details are displayed
     const row = page.locator('tr', { hasText: testData.name }).first();
     await expect(row).toContainText(testData.unit);
-    await expect(row).toContainText(String(testData.price));
+    await expect(row).toContainText('75,000'); // Price formatted
     await expect(row).toContainText(testData.normalValue);
   });
 
@@ -149,7 +153,7 @@ test.describe('Test Management Flow', () => {
     await page.click('button[type="submit"]:has-text("Thêm xét nghiệm")');
     
     // Check for HTML5 validation
-    const nameInput = page.locator('input[name="test_name"]');
+    const nameInput = page.getByLabel('Tên xét nghiệm');
     const isInvalid = await nameInput.evaluate(el => !el.checkValidity());
     expect(isInvalid).toBeTruthy();
   });
