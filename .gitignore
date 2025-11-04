@@ -9,3 +9,8 @@ internal/templates/*/*_templ.txt
 static/
 reports/
 alloy/config.alloy
+
+# Test coverage files
+coverage.out
+coverage_*.out
+*.coverprofile
