@@ -12,9 +12,9 @@ test.describe('Patient Management Flow', () => {
   test('should display patient management page', async ({ page }) => {
     await goToPatients(page);
     
-    await expect(page.locator('h3')).toContainText('Danh mục bệnh nhân');
-    await expect(page.locator('text=Thêm bệnh nhân')).toBeVisible();
-    await expect(page.locator('#patient-search')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Danh mục bệnh nhân' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Thêm bệnh nhân' })).toBeVisible();
+    await expect(page.getByPlaceholder('Tên bệnh nhân hoặc số điện thoại')).toBeVisible();
   });
 
   test('should create a new patient', async ({ page }) => {
@@ -29,6 +29,8 @@ test.describe('Patient Management Flow', () => {
     };
     
     await createPatient(page, patientData);
+
+    await searchPatient(page, patientData.name);
     
     // Verify patient appears in the list
     await expect(page.locator(`text=${patientData.name}`)).toBeVisible();
@@ -83,6 +85,7 @@ test.describe('Patient Management Flow', () => {
     
     await searchPatient(page, originalData.name);
     await editPatient(page, originalData.name, updatedData);
+    await searchPatient(page, updatedData.name);
     
     // Verify updates
     await expect(page.locator(`text=${updatedData.name}`)).toBeVisible();
@@ -103,8 +106,9 @@ test.describe('Patient Management Flow', () => {
     };
     
     await createPatient(page, patientData);
-    
+
     // Verify patient exists
+    await searchPatient(page, patientData.name);
     await expect(page.locator(`text=${patientData.name}`)).toBeVisible();
     
     // Delete the patient
@@ -112,6 +116,7 @@ test.describe('Patient Management Flow', () => {
     await deletePatient(page, patientData.name);
     
     // Verify patient is removed
+    await searchPatient(page, patientData.name);
     await expect(page.locator(`text=${patientData.name}`)).not.toBeVisible();
   });
 
@@ -124,7 +129,7 @@ test.describe('Patient Management Flow', () => {
     await page.click('button[type="submit"]');
     
     // Check for HTML5 validation
-    const nameInput = page.locator('input[name="patient_name"]');
+    const nameInput = page.getByRole('textbox', { name: 'Bệnh nhân', exact: true });
     const isInvalid = await nameInput.evaluate(el => !el.checkValidity());
     expect(isInvalid).toBeTruthy();
   });

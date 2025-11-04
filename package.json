@@ -6,7 +6,9 @@
   "directories": {
     "doc": "docs"
   },
-  "scripts": {},
+  "scripts": {
+    "test:ui": "playwright test"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/datdev2409/lab-management-website.git"

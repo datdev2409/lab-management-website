@@ -30,7 +30,7 @@ async function createPatient(page, patientData) {
   await page.fill('input[name="patient_phone"]', patientData.phone);
   
   await page.click('button[type="submit"]');
-  await page.waitForLoadState('networkidle');
+  await page.waitForSelector('.alert-success');
 }
 
 /**
@@ -39,9 +39,8 @@ async function createPatient(page, patientData) {
  * @param {string} searchTerm
  */
 async function searchPatient(page, searchTerm) {
-  await page.fill('#patient-search', searchTerm);
-  await page.click('#patient-search-form button[type="submit"]');
-  await page.waitForLoadState('networkidle');
+  await page.getByRole('textbox', { name: 'Tên bệnh nhân hoặc số điện thoại' }).fill(searchTerm);
+  await page.waitForTimeout(500);
 }
 
 /**
@@ -54,18 +53,20 @@ async function editPatient(page, patientName, newData) {
   // Find the patient row and click edit
   const row = page.locator('tr', { hasText: patientName }).first();
   await row.locator('text=Sửa').click();
+
+  await page.waitForLoadState('networkidle');
   
-  if (newData.name) await page.fill('input[name="patient_name"]', newData.name);
-  if (newData.yob) await page.fill('input[name="patient_yob"]', newData.yob);
-  if (newData.gender) await page.check(`input[name="patient_gender"][value="${newData.gender}"]`);
-  if (newData.address) await page.fill('input[name="patient_address"]', newData.address);
-  if (newData.phone) await page.fill('input[name="patient_phone"]', newData.phone);
-  
+  if (newData.name) await row.getByTestId('patient-name-input').getByRole('textbox').fill(newData.name);
+  if (newData.yob) await row.getByTestId('patient-yob-input').getByRole('textbox').fill(newData.yob);
+  if (newData.gender) await row.getByTestId('patient-gender-input').getByRole('textbox').fill(newData.gender);
+  if (newData.address) await row.getByTestId('patient-address-input').getByRole('textbox').fill(newData.address);
+  if (newData.phone) await row.getByTestId('patient-phone-input').getByRole('textbox').fill(newData.phone);
+
   await page.click('text=Lưu');
   
   // Handle confirmation dialog if any
   page.on('dialog', dialog => dialog.accept());
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(500);
 }
 
 /**
