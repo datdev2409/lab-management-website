@@ -85,7 +85,7 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return err
 	}
-	
+
 	// Check for duplicate if name or phone is being updated
 	if req.Name != nil || req.Phone != nil {
 		// Get current doctor to check if name/phone combination is changing
@@ -93,7 +93,7 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 		if err != nil {
 			return err
 		}
-		
+
 		// Use current values if not being updated
 		newName := currentDoctor.Name
 		newPhone := currentDoctor.Phone
@@ -103,7 +103,7 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 		if req.Phone != nil {
 			newPhone = *req.Phone
 		}
-		
+
 		// Check if this name+phone combination exists for a different doctor
 		existing, err := h.Store.FindDoctorByNameAndPhone(r.Context(), newName, newPhone)
 		if err != nil {
