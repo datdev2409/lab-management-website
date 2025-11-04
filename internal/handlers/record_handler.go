@@ -36,6 +36,61 @@ func (h *Handler) validateAndSetDoctor(ctx context.Context, doctorID string) (st
 	return doctor.Name, nil
 }
 
+// parseRevenueReportFilters parses date range and query options from request for revenue reports
+func parseRevenueReportFilters(r *http.Request) (models.RecordQueryOptions, models.GenericQueryOptions, error) {
+	ctx := r.Context()
+	log := logger.FromCtx(ctx)
+
+	filters := models.RecordQueryOptions{}
+
+	// Load Vietnam timezone
+	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		log.Error("Failed to load Vietnam timezone", zap.Error(err))
+		vietnamLocation = time.UTC // Fallback to UTC
+	}
+
+	// Parse start_date
+	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
+		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
+			// Set to start of day in Vietnam timezone, then convert to UTC
+			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
+			startOfDayUTC := startOfDay.UTC()
+			filters.StartDate = &startOfDayUTC
+		} else {
+			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
+		}
+	}
+
+	// Parse end_date
+	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
+		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
+			// Set to end of day in Vietnam timezone, then convert to UTC
+			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
+			endOfDayUTC := endOfDay.UTC()
+			filters.EndDate = &endOfDayUTC
+		} else {
+			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
+		}
+	}
+
+	// Parse optional sorting parameters
+	opts := models.GenericQueryOptions{
+		Page:      1,
+		PageSize:  0, // No pagination for reports
+		SortBy:    r.URL.Query().Get("sort_by"),
+		SortOrder: r.URL.Query().Get("sort_order"),
+	}
+
+	// Default sorting by created_at desc if not specified
+	if opts.SortBy == "" {
+		opts.SortBy = "created_at"
+		opts.SortOrder = "desc"
+	}
+
+	return filters, opts, nil
+}
+
 func (h *Handler) HandleRecordPage(w http.ResponseWriter, r *http.Request) error {
 	return Render(context.Background(), w, pages.RecordPage())
 }
@@ -248,51 +303,12 @@ func (h *Handler) GetRecordsWithRevenue(w http.ResponseWriter, r *http.Request) 
 	log := logger.FromCtx(ctx)
 
 	// Parse query parameters
-	filters := models.RecordQueryOptions{}
-
-	// Load Vietnam timezone
-	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	filters, opts, err := parseRevenueReportFilters(r)
 	if err != nil {
-		log.Error("Failed to load Vietnam timezone", zap.Error(err))
-		vietnamLocation = time.UTC // Fallback to UTC
-	}
-
-	// Parse start_date
-	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
-		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
-			// Set to start of day in Vietnam timezone, then convert to UTC
-			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
-			startOfDayUTC := startOfDay.UTC()
-			filters.StartDate = &startOfDayUTC
-		} else {
-			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
-		}
-	}
-
-	// Parse end_date
-	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
-		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
-			// Set to end of day in Vietnam timezone, then convert to UTC
-			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
-			endOfDayUTC := endOfDay.UTC()
-			filters.EndDate = &endOfDayUTC
-		} else {
-			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
-		}
-	}
-
-	// Parse optional sorting parameters
-	opts := models.GenericQueryOptions{
-		Page:      1,
-		PageSize:  0, // No pagination for reports
-		SortBy:    r.URL.Query().Get("sort_by"),
-		SortOrder: r.URL.Query().Get("sort_order"),
-	}
-
-	// Default sorting by created_at desc if not specified
-	if opts.SortBy == "" {
-		opts.SortBy = "created_at"
-		opts.SortOrder = "desc"
+		log.Error("Failed to parse revenue report filters", zap.Error(err))
+		return WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "Invalid query parameters",
+		})
 	}
 
 	// Get report data from storage
@@ -316,50 +332,13 @@ func (h *Handler) ExportRecordsRevenue(w http.ResponseWriter, r *http.Request) e
 	ctx := r.Context()
 	log := logger.FromCtx(ctx)
 
-	// Parse query parameters (same as GetRecordsWithRevenue)
-	filters := models.RecordQueryOptions{}
-
-	// Load Vietnam timezone
-	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	// Parse query parameters using shared helper
+	filters, opts, err := parseRevenueReportFilters(r)
 	if err != nil {
-		log.Error("Failed to load Vietnam timezone", zap.Error(err))
-		vietnamLocation = time.UTC // Fallback to UTC
-	}
-
-	// Parse start_date
-	if startDateStr := r.URL.Query().Get("start_date"); startDateStr != "" {
-		if startDate, err := time.Parse("2006-01-02", startDateStr); err == nil {
-			startOfDay := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, vietnamLocation)
-			startOfDayUTC := startOfDay.UTC()
-			filters.StartDate = &startOfDayUTC
-		} else {
-			log.Warn("Invalid start_date format", zap.String("start_date", startDateStr), zap.Error(err))
-		}
-	}
-
-	// Parse end_date
-	if endDateStr := r.URL.Query().Get("end_date"); endDateStr != "" {
-		if endDate, err := time.Parse("2006-01-02", endDateStr); err == nil {
-			endOfDay := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 999999999, vietnamLocation)
-			endOfDayUTC := endOfDay.UTC()
-			filters.EndDate = &endOfDayUTC
-		} else {
-			log.Warn("Invalid end_date format", zap.String("end_date", endDateStr), zap.Error(err))
-		}
-	}
-
-	// Parse sorting parameters
-	opts := models.GenericQueryOptions{
-		Page:      1,
-		PageSize:  0, // No pagination for reports
-		SortBy:    r.URL.Query().Get("sort_by"),
-		SortOrder: r.URL.Query().Get("sort_order"),
-	}
-
-	// Default sorting by created_at desc if not specified
-	if opts.SortBy == "" {
-		opts.SortBy = "created_at"
-		opts.SortOrder = "desc"
+		log.Error("Failed to parse revenue report filters", zap.Error(err))
+		return WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": "Invalid query parameters",
+		})
 	}
 
 	// Get report data from storage
