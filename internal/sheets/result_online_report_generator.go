@@ -9,57 +9,45 @@ import (
 )
 
 type ResultOnlineReport struct {
-	*PageSetup
-	*ReportFile
+	*BaseReportBuilder
 }
 
 func NewResultOnlineReport(ctx context.Context) (*ResultOnlineReport, error) {
-	report := &ResultOnlineReport{
-		ReportFile: &ReportFile{
-			File: nil,
+	pageSetup := &PageSetup{
+		SheetName:   "Sheet1",
+		PageSize:    9,
+		Orientation: "portrait",
+		Margins: MarginConfig{
+			Top:    0.31496063,
+			Bottom: float64(0),
+			Left:   0.4,
+			Right:  0.4,
+			Header: 0.511811023622047,
+			Footer: float64(0),
 		},
-		PageSetup: &PageSetup{
-			SheetName:   "Sheet1",
-			PageSize:    9,
-			Orientation: "portrait",
-			Margins: MarginConfig{
-				Top:    0.31496063,
-				Bottom: float64(0),
-				Left:   0.4,
-				Right:  0.4,
-				Header: 0.511811023622047,
-				Footer: float64(0),
-			},
-			ColumnWidth: map[string]float64{
-				"A": 0,
-				"B": 9.0,
-				// "C": 37.17,
-				"C": 36.83,
-				// "D": 16.83,
-				"D": 15.67,
-				// "E": 13.0,
-				"E": 12.0,
-				"F": 27.0,
-			},
+		ColumnWidth: map[string]float64{
+			"A": 0,
+			"B": 9.0,
+			// "C": 37.17,
+			"C": 36.83,
+			// "D": 16.83,
+			"D": 15.67,
+			// "E": 13.0,
+			"E": 12.0,
+			"F": 27.0,
 		},
 	}
 
-	err := report.OpenTemplate(ctx, "templates/PhieuKetQuaChuKy.xlsx")
+	builder, err := NewBaseReportBuilder(ctx, pageSetup)
 	if err != nil {
 		return nil, err
 	}
 
-	err = report.ApplyColumnWidths(ctx, report.File)
-	if err != nil {
+	if err := builder.InitializeFromTemplate(ctx, "templates/PhieuKetQuaChuKy.xlsx"); err != nil {
 		return nil, err
 	}
 
-	err = report.ApplyPageSetupV2(ctx, report.File)
-	if err != nil {
-		return nil, err
-	}
-
-	return report, nil
+	return &ResultOnlineReport{BaseReportBuilder: builder}, nil
 }
 
 func (r ResultOnlineReport) Generate(ctx context.Context, data interface{}) (io.Reader, error) {

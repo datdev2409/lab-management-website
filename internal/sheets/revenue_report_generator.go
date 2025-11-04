@@ -8,57 +8,47 @@ import (
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/xuri/excelize/v2"
 	"go.uber.org/zap"
 )
 
 type RevenueExportReport struct {
-	*PageSetup
-	*ReportFile
+	*BaseReportBuilder
 }
 
 func NewRevenueExportReport(ctx context.Context) (*RevenueExportReport, error) {
-	report := &RevenueExportReport{
-		ReportFile: &ReportFile{
-			File: nil,
+	pageSetup := &PageSetup{
+		SheetName:   "Sheet1",
+		PageSize:    9,
+		Orientation: "portrait",
+		Margins: MarginConfig{
+			Top:    0.75,
+			Bottom: 0.75,
+			Left:   0.5,
+			Right:  0.5,
+			Header: 0.236220472440945,
+			Footer: 0.511811023622047,
 		},
-		PageSetup: &PageSetup{
-			SheetName:   "Sheet1",
-			PageSize:    9,
-			Orientation: "portrait",
-			Margins: MarginConfig{
-				Top:    0.75,
-				Bottom: 0.75,
-				Left:   0.5,
-				Right:  0.5,
-				Header: 0.236220472440945,
-				Footer: 0.511811023622047,
-			},
-			ColumnWidth: map[string]float64{
-				"A": 5.0,  // STT
-				"B": 12.0, // Ngày
-				"C": 20.0, // Bác sĩ
-				"D": 25.0, // Họ tên
-				"E": 30.0, // Địa chỉ
-				"F": 15.0, // Số điện thoại
-				"G": 15.0, // Thành tiền
-			},
+		ColumnWidth: map[string]float64{
+			"A": 5.0,  // STT
+			"B": 12.0, // Ngày
+			"C": 20.0, // Bác sĩ
+			"D": 25.0, // Họ tên
+			"E": 30.0, // Địa chỉ
+			"F": 15.0, // Số điện thoại
+			"G": 15.0, // Thành tiền
 		},
 	}
 
-	report.File = excelize.NewFile()
-
-	err := report.ApplyColumnWidths(ctx, report.File)
+	builder, err := NewBaseReportBuilder(ctx, pageSetup)
 	if err != nil {
 		return nil, err
 	}
 
-	err = report.ApplyPageSetupV2(ctx, report.File)
-	if err != nil {
+	if err := builder.InitializeNewFile(ctx); err != nil {
 		return nil, err
 	}
 
-	return report, nil
+	return &RevenueExportReport{BaseReportBuilder: builder}, nil
 }
 
 func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (io.Reader, error) {
@@ -84,23 +74,17 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 
 	// 1. Title Row
 	titleCell := fmt.Sprintf("A%d", currentRow)
-	f.MergeCell("Sheet1", titleCell, fmt.Sprintf("G%d", currentRow))
-	f.SetCellValue("Sheet1", titleCell, "Báo Cáo Doanh Thu")
-	f.SetCellStyle("Sheet1", titleCell, fmt.Sprintf("G%d", currentRow), sm.GetStyleV2(ReportNameStyle))
+	_ = r.MergeCellsWithStyle("Sheet1", titleCell, fmt.Sprintf("G%d", currentRow), "Báo Cáo Doanh Thu", sm.GetStyleV2(ReportNameStyle))
 	f.SetRowHeight("Sheet1", currentRow, 25.0)
 
 	currentRow++
 
 	// 2. Date Range Row
 	dateRangeCell := fmt.Sprintf("A%d", currentRow)
-	f.MergeCell("Sheet1", dateRangeCell, fmt.Sprintf("G%d", currentRow))
-
 	startDateStr := reportData.Summary.StartDate.In(vietnamLocation).Format("02/01/2006")
 	endDateStr := reportData.Summary.EndDate.In(vietnamLocation).Format("02/01/2006")
 	dateRangeText := fmt.Sprintf("Từ %s đến %s", startDateStr, endDateStr)
-
-	f.SetCellValue("Sheet1", dateRangeCell, dateRangeText)
-	f.SetCellStyle("Sheet1", dateRangeCell, fmt.Sprintf("G%d", currentRow), sm.GetStyleV2(ReportDateStyle))
+	_ = r.MergeCellsWithStyle("Sheet1", dateRangeCell, fmt.Sprintf("G%d", currentRow), dateRangeText, sm.GetStyleV2(ReportDateStyle))
 	f.SetRowHeight("Sheet1", currentRow, 18.0)
 
 	currentRow += 2 // Add spacing
