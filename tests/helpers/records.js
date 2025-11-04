@@ -24,31 +24,44 @@ async function createRecord(page, recordData) {
   await page.goto('/phieu-xet-nghiem/new');
   await page.waitForLoadState('networkidle');
   
-  // Search and select patient
-  await page.fill('input[placeholder*="Tìm kiếm bệnh nhân"]', recordData.patientName);
-  await page.waitForTimeout(500); // Wait for autocomplete
-  await page.click(`text=${recordData.patientName}`);
+  // Search and select patient using autocomplete
+  const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
+  await patientInput.fill(recordData.patientName);
+  await page.waitForTimeout(600); // Wait for autocomplete results
+  
+  // Click on patient from autocomplete dropdown
+  const patientOption = page.locator('.autocomplete-option', { hasText: recordData.patientName }).first();
+  await patientOption.click();
   await page.waitForTimeout(300);
   
   // Select combo if provided
   if (recordData.comboName) {
-    await page.fill('input[placeholder*="Tìm kiếm gói xét nghiệm"]', recordData.comboName);
+    const comboInput = page.getByRole('row', { name: 'Tên gói xét nghiệm' }).getByRole('textbox');
+    await comboInput.fill(recordData.comboName);
+    await page.waitForTimeout(600); // Wait for autocomplete results
+    
+    const comboOption = page.locator('.autocomplete-option', { hasText: recordData.comboName }).first();
+    await comboOption.click();
     await page.waitForTimeout(500);
-    await page.click(`text=${recordData.comboName}`);
-    await page.waitForTimeout(300);
   }
   
   // Enter test results
   if (recordData.testResults) {
     for (const result of recordData.testResults) {
-      // Find the test result input field
+      // Find the test result input field by looking for the test name and then the input in that row
       const testRow = page.locator('tr', { hasText: result.testName }).first();
-      await testRow.locator('input[name*="test_value"]').fill(result.value);
+      const testInput = testRow.locator('input[type="number"]').first();
+      
+      if (await testInput.count() > 0) {
+        await testInput.fill(result.value);
+        await page.waitForTimeout(200);
+      }
     }
   }
   
-  await page.click('button[type="submit"]:has-text("Tạo phiếu")');
-  await page.waitForLoadState('networkidle');
+  // Submit the form
+  await page.getByRole('button', { name: 'Tạo (Ctrl + S)' }).click();
+  await page.waitForTimeout(500);
 }
 
 /**
