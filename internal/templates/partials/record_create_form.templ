@@ -35,6 +35,8 @@ templ RecordCreateForm(recordId string) {
 
 				async init() {
 					// Set up beforeunload listener for unsaved changes warning
+					// Note: Alpine.js automatically cleans up when component is destroyed,
+					// and only one recordForm instance exists per page
 					window.addEventListener('beforeunload', (e) => {
 						if (this.hasUnsavedChanges) {
 							e.preventDefault()
@@ -46,6 +48,7 @@ templ RecordCreateForm(recordId string) {
 					if (recordId == '') {
 						console.log("Create new record flow")
 						// For new records, capture initial state after a brief delay
+						// to allow Alpine.js to fully initialize all reactive properties
 						setTimeout(() => {
 							this.captureInitialState()
 						}, 100)
@@ -121,6 +124,10 @@ templ RecordCreateForm(recordId string) {
 						return
 					}
 					
+					// Using JSON.stringify for comparison is appropriate here because:
+					// 1. We control property order in getCurrentFormState()
+					// 2. Form data is small (single record)
+					// 3. Simple and reliable for this use case
 					const currentState = JSON.stringify(this.getCurrentFormState())
 					this.hasUnsavedChanges = currentState !== this.initialFormState
 					
