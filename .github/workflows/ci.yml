@@ -93,7 +93,7 @@ jobs:
         uses: docker/setup-compose-action@v1
 
       - name: Start dependencies with Docker Compose
-        run: docker-compose up -d -f docker-compose.ci.yaml
+        run: docker compose up -d -f docker-compose.ci.yaml
 
       - name: Start application container
         run: |
@@ -118,7 +118,7 @@ jobs:
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          docker-compose -f docker-compose.ci.yaml down
+          docker compose -f docker-compose.ci.yaml down
           docker rm -f lab-admin-go
 
       - name: Upload Playwright Test Report
