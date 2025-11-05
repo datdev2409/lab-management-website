@@ -32,6 +32,9 @@ build:
 e2e:
 	npm run test:ui
 
+e2e:ci
+	npm run test:ci
+
 start:
 	@GO_ENV=production ./bin/main
 
