@@ -97,8 +97,7 @@ jobs:
 
       - name: Start application container
         run: |
-          cp .env.ci .env
-          docker run -d --name lab-admin-go -p 9000:9000 ${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
+          docker run -d --env-file .env.ci --name lab-admin-go --network=host -p 9000:9000 ${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
 
       - name: Wait for application to start
         run: |
@@ -116,7 +115,14 @@ jobs:
           CI: true
         run: npm run test:ci
 
-      - uses: actions/upload-artifact@v4
+      - name: Cleanup
+        if: ${{ always() }}
+        run: |
+          docker-compose -f docker-compose.ci.yaml down
+          docker rm -f lab-admin-go
+
+      - name: Upload Playwright Test Report
+        uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
