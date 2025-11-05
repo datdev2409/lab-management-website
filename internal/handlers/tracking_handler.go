@@ -3,8 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -63,12 +61,6 @@ func (h *Handler) ListTrackings(w http.ResponseWriter, r *http.Request) error {
 
 func (h *Handler) ListTestsForTracking(w http.ResponseWriter, r *http.Request) error {
 	r.ParseForm()
-
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read request body: %v", err)
-	}
-	log.Println(string(body))
 
 	records, err := h.Store.GetRecordsByIds(r.Context(), r.Form["record_ids"])
 	if err != nil {
