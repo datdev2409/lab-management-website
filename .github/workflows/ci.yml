@@ -93,7 +93,7 @@ jobs:
         uses: docker/setup-compose-action@v1
 
       - name: Start dependencies with Docker Compose
-        run: docker compose up -d -f docker-compose.ci.yaml
+        run: docker compose -f docker-compose.ci.yaml up -d
 
       - name: Start application container
         run: |
