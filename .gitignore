@@ -9,3 +9,6 @@ internal/templates/*/*_templ.txt
 static/
 reports/
 alloy/config.alloy
+node_modules/
+playwright-report/
+test-results/
