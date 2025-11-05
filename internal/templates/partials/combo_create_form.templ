@@ -8,7 +8,7 @@ templ ComboCreateForm(comboId string) {
 				<input class="form-control" id="combo_name" x-model="combo_name" :disabled="loading"/>
 			</div>
 			<div class="mb-3 position-relative">
-				<label>Tìm xét nghiệm theo tên</label>
+				<label for="test-autocomplete">Tìm xét nghiệm theo tên</label>
 				@TestAutocomplete()
 			</div>
 			<div class="mb-3">
