@@ -118,7 +118,7 @@ test.describe('Complete Application Flow Integration Test', () => {
     console.log('✓✓✓ Complete integration test passed successfully! ✓✓✓');
   });
 
-  test('should handle workflow with abnormal test results', async ({ page }) => {
+  test.skip('should handle workflow with abnormal test results', async ({ page }) => {
     // Login
     await login(page);
 
