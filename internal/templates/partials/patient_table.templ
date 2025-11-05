@@ -45,23 +45,23 @@ templ PatientTable() {
 					<!-- Data rows -->
 					<template x-for="patient in data" :key="patient.id">
 						<tr :id="'pr' + patient.id" x-data="{editable: false}">
-							<td class="text-truncate" style="max-width: 300px">
+							<td data-testid="patient-name-input" class="text-truncate" style="max-width: 300px">
 								<p x-show="!editable" x-text="patient.name"></p>
 								<input x-show="editable" name="patient_name" class="form-control" :value="patient.name"/>
 							</td>
-							<td class="text-truncate" style="max-width: 300px">
+							<td data-testid="patient-address-input" class="text-truncate" style="max-width: 300px">
 								<p x-show="!editable" x-text="patient.address"></p>
 								<input x-show="editable" name="patient_address" class="form-control" :value="patient.address"/>
 							</td>
-							<td class="text-truncate" style="max-width: 150px">
+							<td data-testid="patient-phone-input" class="text-truncate" style="max-width: 150px">
 								<p x-show="!editable" x-text="patient.phone"></p>
 								<input x-show="editable" name="patient_phone" class="form-control" :value="patient.phone"/>
 							</td>
-							<td class="text-truncate" style="max-width: 120px">
+							<td data-testid="patient-yob-input" class="text-truncate" style="max-width: 120px">
 								<p x-show="!editable" x-text="patient.yob"></p>
 								<input x-show="editable" name="patient_yob" class="form-control" :value="patient.yob"/>
 							</td>
-							<td class="text-truncate" style="max-width: 100px">
+							<td data-testid="patient-gender-input" class="text-truncate" style="max-width: 100px">
 								<p x-show="!editable" x-text="patient.gender"></p>
 								<input x-show="editable" name="patient_gender" class="form-control" :value="patient.gender"/>
 							</td>

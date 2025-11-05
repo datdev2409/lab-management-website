@@ -68,6 +68,7 @@ func main() {
 	}
 
 	// Init storage
+	log.Info("DB Addr: " + config.DB.Addr)
 	mongoClient := db.NewMongoClient(config.DB.Addr)
 	defer func() {
 		if err := mongoClient.Disconnect(context.TODO()); err != nil {
