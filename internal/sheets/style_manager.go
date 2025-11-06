@@ -46,6 +46,7 @@ const (
 	TrackingTableHeaderCyanStyle
 	RevenueTableDataStyle
 	RevenueTableDataRightStyle
+	TestPriceTotalStyle
 )
 
 // StyleManager handles creation and caching of Excel styles
@@ -160,6 +161,13 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Font:      font11,
 			Alignment: alignRight,
 			Border:    border,
+			NumFmt:    3, // Format: #,##0 (thousands separator with comma, no decimals)
+		},
+		TestPriceTotalStyle: {
+			Font:      font11Bold,
+			Alignment: alignRight,
+			Border:    border,
+			NumFmt:    3, // Format: #,##0 (thousands separator with comma, no decimals)
 		},
 		TestResultStyle: {
 			Font:      font12,
@@ -249,16 +257,6 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 	}
 
 	return sm
-}
-
-// getStandardBorder returns the standard border configuration used across multiple styles
-func (sm *StyleManager) getStandardBorder() []excelize.Border {
-	return []excelize.Border{
-		{Type: "left", Color: "000000", Style: 1},
-		{Type: "right", Color: "000000", Style: 1},
-		{Type: "top", Color: "000000", Style: 1},
-		{Type: "bottom", Color: "000000", Style: 1},
-	}
 }
 
 func (sm *StyleManager) GetStyleV2(styleName StyleName) int {

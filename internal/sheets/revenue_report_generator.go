@@ -116,10 +116,9 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 		reportData.Records = []*models.RecordWithTotal{}
 	}
 
-	totalRevenue := 0
-	for idx, record := range reportData.Records {
+	dataStartRow := currentRow
+	for _, record := range reportData.Records {
 		dataRow := currentRow
-		rowNum := idx + 1
 
 		// Format date with Vietnam timezone
 		dateStr := ""
@@ -130,21 +129,31 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 		// Handle missing doctor name - just show empty
 		doctorName := record.DoctorName
 
-		// Prepare row data
+		// Prepare row data with numeric price value for proper SUM formula calculation
+		// Use nil for index column, will be set as formula
 		rowData := []interface{}{
-			rowNum,                         // STT
-			dateStr,                        // Ngày
-			doctorName,                     // Bác sĩ (empty if not set)
-			record.Patient.Name,            // Họ tên
-			record.Patient.Address,         // Địa chỉ
-			record.Patient.Phone,           // Số điện thoại
-			FormatPrice(record.TotalPrice), // Thành tiền
+			nil,                    // STT (will be set as formula)
+			dateStr,                // Ngày
+			doctorName,             // Bác sĩ (empty if not set)
+			record.Patient.Name,    // Họ tên
+			record.Patient.Address, // Địa chỉ
+			record.Patient.Phone,   // Số điện thoại
+			record.TotalPrice,      // Thành tiền (numeric value, not formatted string)
 		}
 
 		rowStartCell := fmt.Sprintf("A%d", dataRow)
 		err := f.SetSheetRow("Sheet1", rowStartCell, &rowData)
 		if err != nil {
 			log.Error("Failed to set data row", zap.Error(err), zap.Int("row", dataRow))
+			return nil, err
+		}
+
+		// Set the auto-increment formula for the index cell (Column A)
+		indexCell := fmt.Sprintf("A%d", dataRow)
+		indexFormula := SetAutoIncrementIndexFormula(dataStartRow)
+		err = f.SetCellFormula("Sheet1", indexCell, indexFormula)
+		if err != nil {
+			log.Error("Failed to set index formula", zap.Error(err), zap.Int("row", dataRow))
 			return nil, err
 		}
 
@@ -155,8 +164,10 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 
 			// Determine style based on column - all use consistent font12 with borders
 			var styleName StyleName
-			if col == 6 { // Thành tiền column (right aligned)
-				styleName = RevenueTableDataRightStyle
+			if col == 0 { // STT column (center aligned)
+				styleName = TestIndexStyle
+			} else if col == 6 { // Thành tiền column (right aligned with number formatting)
+				styleName = TestPriceStyle
 			} else {
 				styleName = RevenueTableDataStyle
 			}
@@ -165,7 +176,6 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 		}
 
 		f.SetRowHeight("Sheet1", dataRow, 18.0)
-		totalRevenue += record.TotalPrice
 		currentRow++
 	}
 
@@ -177,13 +187,29 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	f.SetCellValue("Sheet1", fmt.Sprintf("D%d", totalRow), "")
 	f.SetCellValue("Sheet1", fmt.Sprintf("E%d", totalRow), "")
 	f.SetCellValue("Sheet1", fmt.Sprintf("F%d", totalRow), "Tổng cộng")
-	f.SetCellValue("Sheet1", fmt.Sprintf("G%d", totalRow), FormatPrice(totalRevenue))
 
-	// Apply total row styling
+	// Use SUM formula to calculate total revenue from column G (Thành tiền)
+	totalRevenueCell := fmt.Sprintf("G%d", totalRow)
+	sumFormula := CreateSumFormula("G", dataStartRow, totalRow-1)
+	err = f.SetCellFormula("Sheet1", totalRevenueCell, sumFormula)
+	if err != nil {
+		log.Error("Failed to set total revenue formula", zap.Error(err))
+		return nil, err
+	}
+
+	// Apply total row styling with number formatting for the revenue cell
 	for col := 0; col < 7; col++ {
 		colLetter := string(rune('A' + col))
 		cellRef := fmt.Sprintf("%s%d", colLetter, totalRow)
-		f.SetCellStyle("Sheet1", cellRef, cellRef, sm.GetStyleV2(TotalPriceStyle))
+
+		// Use bold price style for the revenue total cell
+		var styleName StyleName
+		if col == 6 { // Column G - use bold price style
+			styleName = TestPriceTotalStyle
+		} else {
+			styleName = TotalPriceStyle
+		}
+		f.SetCellStyle("Sheet1", cellRef, cellRef, sm.GetStyleV2(styleName))
 	}
 
 	f.SetRowHeight("Sheet1", totalRow, 20.0)
