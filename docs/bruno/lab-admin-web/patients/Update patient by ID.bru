@@ -1,0 +1,26 @@
+meta {
+  name: Update patient by ID
+  type: http
+  seq: 5
+}
+
+patch {
+  url: http://localhost:9000/api/v1/patients/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 33c8abf0-a065-4f6c-ac6f-a39a7ac6f131
+}
+
+body:json {
+  {
+    "name": "Nguyen Cong Dat updated"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

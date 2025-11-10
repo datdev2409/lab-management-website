@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/datdev2409/lab-admin-go/internal/db/sqlc"
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -77,9 +78,10 @@ func (r *PgPatientRepository) SearchPatientsByKeyword(ctx context.Context, keywo
 	}
 
 	pagination := &models.PaginationResponse{
-		Total:    int(total),
-		Page:     page,
-		PageSize: pageSize,
+		Total:     int(total),
+		TotalPage: int(math.Ceil(float64(total) / float64(pageSize))),
+		Page:      page,
+		PageSize:  pageSize,
 	}
 
 	var domainPatients []*models.Patient

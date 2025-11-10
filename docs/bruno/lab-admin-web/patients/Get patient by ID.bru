@@ -1,0 +1,16 @@
+meta {
+  name: Get patient by ID
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:9000/api/v1/patients/4ff6538e-7cb9-4498-b4d4-d98a0dd7d535
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
