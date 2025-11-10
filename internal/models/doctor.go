@@ -36,6 +36,12 @@ type DoctorUpdate struct {
 	Address *string `json:"address,omitempty"`
 }
 
+type CreateDoctorInput struct {
+	Name    string `json:"name" validate:"required"`
+	Phone   string `json:"phone" validate:"required"`
+	Address string `json:"address,omitempty"`
+}
+
 type CreateDoctorRequest struct {
 	Name    string `json:"name"`
 	Phone   string `json:"phone"`

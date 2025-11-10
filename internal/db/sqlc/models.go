@@ -10,6 +10,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type Doctor struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Phone     string    `json:"phone"`
+	Address   string    `json:"address"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
 type Patient struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`

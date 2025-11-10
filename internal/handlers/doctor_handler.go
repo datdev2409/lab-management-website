@@ -2,31 +2,67 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/service"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
-func (h *Handler) HandleDoctorPage(w http.ResponseWriter, r *http.Request) error {
+type DoctorHandler struct {
+	doctorService *service.DoctorService
+	validator     *validator.Validate
+}
+
+func NewDoctorHandler(doctorService *service.DoctorService, validator *validator.Validate) *DoctorHandler {
+	return &DoctorHandler{
+		doctorService: doctorService,
+		validator:     validator,
+	}
+}
+
+// HandleDoctorPage handles GET /danh-muc-bac-si
+func (h *DoctorHandler) HandleDoctorPage(w http.ResponseWriter, r *http.Request) error {
 	return Render(r.Context(), w, pages.DoctorsPage())
 }
 
-// ListDoctorsV1 handles GET /api/v1/doctors
-func (h *Handler) ListDoctorsV1(w http.ResponseWriter, r *http.Request) error {
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		pageSize = 10
+// CreateDoctor handles POST /api/v1/doctors
+func (h *DoctorHandler) CreateDoctor(w http.ResponseWriter, r *http.Request) error {
+	var input models.CreateDoctorInput
+
+	if err := BindAndValidate(r, h.validator, &input); err != nil {
+		return err
 	}
 
+	doctor, err := h.doctorService.CreateDoctor(r.Context(), &input)
+	if err != nil {
+		if errors.Is(err, service.ErrDoctorAlreadyExists) {
+			return &AppError{
+				StatusCode: http.StatusConflict,
+				Message:    DOCTOR_ALREADY_EXISTS,
+			}
+		}
+		return err
+	}
+
+	RespondJSON(w, http.StatusCreated, doctor)
+	return nil
+}
+
+// SearchDoctorsByKeyword handles GET /api/v1/doctors?q=keyword&page=1&page_size=10
+func (h *DoctorHandler) SearchDoctorsByKeyword(w http.ResponseWriter, r *http.Request) error {
+	queryOpts := ParseListParams(r, 10) // default page size 10
+
 	keyword := r.URL.Query().Get("q")
-	doctors, pagination, err := h.Store.SearchDoctorByNameOrPhone(r.Context(), models.DoctorQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	doctors, pagination, err := h.doctorService.SearchDoctorsByKeyword(
+		r.Context(),
+		keyword,
+		queryOpts.Page,
+		queryOpts.PageSize,
+	)
 	if err != nil {
 		return err
 	}
@@ -35,94 +71,11 @@ func (h *Handler) ListDoctorsV1(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// CreateDoctorV1 handles POST /api/v1/doctors
-func (h *Handler) CreateDoctorV1(w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		Name    string `json:"name"`
-		Phone   string `json:"phone"`
-		Address string `json:"address"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
-	}
-
-	existing, err := h.Store.FindDoctorByNameAndPhone(r.Context(), req.Name, req.Phone)
-	if err != nil {
-		return err
-	}
-	if existing != nil {
-		return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
-	}
-
-	doctor := models.NewDoctor(req.Name, req.Phone, req.Address)
-	newDoctor, err := h.Store.InsertDoctor(r.Context(), doctor)
-	if err != nil {
-		return err
-	}
-	RespondJSON(w, http.StatusCreated, newDoctor)
-	return nil
-}
-
-// GetDoctorV1 handles GET /api/v1/doctors/{id}
-func (h *Handler) GetDoctorV1(w http.ResponseWriter, r *http.Request) error {
+// GetDoctor handles GET /api/v1/doctors/{id}
+func (h *DoctorHandler) GetDoctor(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	doctor, err := h.Store.GetDoctorById(r.Context(), id)
-	if err != nil {
-		return err
-	}
-	RespondJSON(w, http.StatusOK, doctor)
-	return nil
-}
 
-// UpdateDoctorV1 handles PUT /api/v1/doctors/{id}
-func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
-	var req struct {
-		Name    *string `json:"name"`
-		Phone   *string `json:"phone"`
-		Address *string `json:"address"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
-	}
-
-	// Check for duplicate if name or phone is being updated
-	if req.Name != nil || req.Phone != nil {
-		// Get current doctor to check if name/phone combination is changing
-		currentDoctor, err := h.Store.GetDoctorById(r.Context(), id)
-		if err != nil {
-			return err
-		}
-
-		// Use current values if not being updated
-		newName := currentDoctor.Name
-		newPhone := currentDoctor.Phone
-		if req.Name != nil {
-			newName = *req.Name
-		}
-		if req.Phone != nil {
-			newPhone = *req.Phone
-		}
-
-		// Check if this name+phone combination exists for a different doctor
-		existing, err := h.Store.FindDoctorByNameAndPhone(r.Context(), newName, newPhone)
-		if err != nil {
-			return err
-		}
-		if existing != nil && existing.ID != id {
-			return &AppError{http.StatusBadRequest, DUPLICATE_DOCTOR_ERROR}
-		}
-	}
-
-	update := models.DoctorUpdate{
-		Name:    req.Name,
-		Phone:   req.Phone,
-		Address: req.Address,
-	}
-	if err := h.Store.UpdateDoctorById(r.Context(), id, update); err != nil {
-		return err
-	}
-	doctor, err := h.Store.GetDoctorById(r.Context(), id)
+	doctor, err := h.doctorService.GetDoctorById(r.Context(), id)
 	if err != nil {
 		return err
 	}
@@ -131,12 +84,36 @@ func (h *Handler) UpdateDoctorV1(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// DeleteDoctorV1 handles DELETE /api/v1/doctors/{id}
-func (h *Handler) DeleteDoctorV1(w http.ResponseWriter, r *http.Request) error {
+// UpdateDoctor handles PATCH /api/v1/doctors/{id}
+func (h *DoctorHandler) UpdateDoctor(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	if err := h.Store.DeleteDoctorById(r.Context(), id); err != nil {
+
+	var update models.DoctorUpdate
+	if err := json.NewDecoder(r.Body).Decode(&update); err != nil {
+		return &AppError{
+			StatusCode: http.StatusBadRequest,
+			Message:    "Invalid request body",
+		}
+	}
+
+	doctor, err := h.doctorService.UpdateDoctorById(r.Context(), id, update)
+	if err != nil {
 		return err
 	}
+
+	RespondJSON(w, http.StatusOK, doctor)
+	return nil
+}
+
+// DeleteDoctor handles DELETE /api/v1/doctors/{id}
+func (h *DoctorHandler) DeleteDoctor(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+
+	err := h.doctorService.DeleteDoctorById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+
 	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
 	return nil
 }

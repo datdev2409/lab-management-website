@@ -14,4 +14,5 @@ const (
 	DOCTOR_NOT_FOUND_ERROR  = "Không tìm thấy bác sĩ chỉ định"
 
 	PATIENT_ALREADY_EXISTS = "Bệnh nhân với tên và số điện thoại đã tồn tại"
+	DOCTOR_ALREADY_EXISTS  = "Bác sĩ với tên và số điện thoại đã tồn tại"
 )

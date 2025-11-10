@@ -2,17 +2,39 @@
 
 ## Project Overview
 
-This is a **Lab Management System** for **Anh Quan Laboratory** built with Go, HTMX, Alpine.js, and MongoDB. The system manages laboratory test records, patients, test definitions, test combos, and tracking/comparison features.
+This is a **Lab Management System** for **Anh Quan Laboratory** built with Go, HTMX, Alpine.js, and PostgreSQL. The system manages laboratory test records, patients, test definitions, test combos, and tracking/comparison features.
 
 ## Technology Stack
 
 - **Backend**: Go 1.24.7 with Chi router
 - **Frontend**: HTMX + Alpine.js + Bootstrap (server-side rendered with Templ). Please note that we are migrating the HTMX parts to Alpine.js gradually, so prefer using Alpine.js over HTMX.
-- **Database**: MongoDB v2
+- **Database**: PostgreSQL with sqlc, pgx/v5, goose migrations
 - **Authentication**: JWT with HTTP-only cookies
 - **Report Generation**: Excel files using excelize, PDF conversion with Gotenberg
 - **Deployment**: Docker, Docker Compose, systemd service
 - **Monitoring**: Traefik reverse proxy, structured logging with Zap
+
+## PostgreSQL Migration
+
+⚠️ **Active Migration**: The system is being migrated from MongoDB to PostgreSQL using the **handler → service → repository → sqlc** architecture pattern.
+
+📖 **Complete Migration Guide**: See [instructions/postgres-migration.md](instructions/postgres-migration.md) for detailed step-by-step instructions on migrating each entity.
+
+**Migration Status**:
+
+- ✅ **Patients**: Fully migrated (reference implementation)
+- ✅ **Doctors**: Fully migrated
+- ⏳ **Tests**: Pending
+- ⏳ **Combos**: Pending
+- ⏳ **Records**: Pending
+- ⏳ **Trackings**: Pending
+- ⏳ **Users**: Pending
+
+**New Architecture Pattern**:
+
+```
+HTTP Request → Handler → Service → Repository → sqlc.Queries → PostgreSQL
+```
 
 ## Architecture Overview
 
@@ -223,31 +245,33 @@ func (m *MongoStorage) CreateEntity(ctx context.Context, entity *Model) (string,
 Based on query pattern analysis, create these indexes for optimal performance:
 
 **Essential Indexes (High Priority):**
+
 ```javascript
 // Records collection - date filtering & embedded patient search
-db.records.createIndex({ "created_at": -1 })                                // Date filtering & sorting
-db.records.createIndex({ "patient.name": 1, "patient.phone": 1 })          // Patient search in records
-db.records.createIndex({ "patient._id": 1 })                               // Patient lookup
-db.records.createIndex({ "status": 1 })                                    // Status filtering
+db.records.createIndex({ created_at: -1 }); // Date filtering & sorting
+db.records.createIndex({ "patient.name": 1, "patient.phone": 1 }); // Patient search in records
+db.records.createIndex({ "patient._id": 1 }); // Patient lookup
+db.records.createIndex({ status: 1 }); // Status filtering
 
 // Patients collection - frequent searches
-db.patients.createIndex({ "name": 1, "phone": 1 })                         // Compound search (primary use case)
-db.patients.createIndex({ "name": "text", "phone": "text", "address": "text" })  // Text search fallback
+db.patients.createIndex({ name: 1, phone: 1 }); // Compound search (primary use case)
+db.patients.createIndex({ name: "text", phone: "text", address: "text" }); // Text search fallback
 
 // Users collection - authentication
-db.users.createIndex({ "username": 1 }, { unique: true })  // Login queries + uniqueness
+db.users.createIndex({ username: 1 }, { unique: true }); // Login queries + uniqueness
 
 // Tests collection - name-based search
-db.tests.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+db.tests.createIndex({ name: 1 }); // Exact & prefix matching for autocomplete
 
-// Combos collection - name-based search  
-db.combos.createIndex({ "name": 1 })  // Exact & prefix matching for autocomplete
+// Combos collection - name-based search
+db.combos.createIndex({ name: 1 }); // Exact & prefix matching for autocomplete
 
 // Trackings collection - name-based search
-db.trackings.createIndex({ "name": 1 })  // Name search functionality
+db.trackings.createIndex({ name: 1 }); // Name search functionality
 ```
 
 **Evidence for indexes:**
+
 - **Records patient search**: `ListRecords()` uses `$or` with `$regex` on `patient.name` and `patient.phone` (lines 19-23)
 - **Records date filtering**: Date range filtering with `$gte` and `$lte` on `created_at` (lines 34, 37)
 - **Patient compound search**: `FindPatientByNameAndPhone()` queries both fields together (line 15)
@@ -295,12 +319,14 @@ db.trackings.getIndexes()
 
 ```javascript
 // Check index usage statistics
-db.records.aggregate([{ $indexStats: {} }])
+db.records.aggregate([{ $indexStats: {} }]);
 
 // Analyze query performance
-db.records.find({
-  "patient.name": /john/i
-}).explain("executionStats")
+db.records
+  .find({
+    "patient.name": /john/i,
+  })
+  .explain("executionStats");
 
 // Drop index if needed (be careful!)
 // db.collection.dropIndex("indexName")
@@ -357,13 +383,13 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 
 - **Unit tests**: Storage layer functions
 - **Integration tests**: HTTP handlers
-- **E2E tests**: Cypress in `tests/` directory  
+- **E2E tests**: Cypress in `tests/` directory
 - **Pre-commit workflow**: `./scripts/pre-commit.sh` runs:
   - `templ generate` for templates
   - `go fmt` and `go vet` for code formatting
   - `golangci-lint run` for linting
   - Unit tests with Go test runner
-- **Test commands**: 
+- **Test commands**:
   - `go test ./...` for all tests
   - `npm test` in `tests/` for Cypress
 
@@ -407,7 +433,7 @@ func (h *Handler) APIEndpoint(w http.ResponseWriter, r *http.Request) error {
 ### Frontend Patterns
 
 - **HTMX → Alpine.js Migration**: Gradually migrating from HTMX to Alpine.js - prefer Alpine.js for new features
-- **Alpine.js**: For client-side state and interactions  
+- **Alpine.js**: For client-side state and interactions
 - **Bootstrap**: For styling and layout
 - **Templ**: For type-safe HTML generation
 

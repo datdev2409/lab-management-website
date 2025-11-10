@@ -11,13 +11,20 @@ import (
 )
 
 type Querier interface {
+	CountDoctorsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
 	CountPatientsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
+	CreateDoctor(ctx context.Context, arg CreateDoctorParams) (Doctor, error)
 	CreatePatient(ctx context.Context, arg CreatePatientParams) (Patient, error)
+	DeleteDoctorByID(ctx context.Context, id uuid.UUID) error
 	DeletePatientByID(ctx context.Context, id uuid.UUID) error
+	GetDoctorByID(ctx context.Context, id uuid.UUID) (Doctor, error)
 	GetPatientByID(ctx context.Context, id uuid.UUID) (Patient, error)
+	IsDoctorNameAndPhoneExists(ctx context.Context, arg IsDoctorNameAndPhoneExistsParams) (bool, error)
 	IsPatientNameAndPhoneExists(ctx context.Context, arg IsPatientNameAndPhoneExistsParams) (bool, error)
 	ListPatients(ctx context.Context) ([]Patient, error)
+	SearchDoctorsByNameOrPhone(ctx context.Context, arg SearchDoctorsByNameOrPhoneParams) ([]Doctor, error)
 	SearchPatientsByNameOrPhone(ctx context.Context, arg SearchPatientsByNameOrPhoneParams) ([]Patient, error)
+	UpdateDoctorByID(ctx context.Context, arg UpdateDoctorByIDParams) error
 	UpdatePatientByID(ctx context.Context, arg UpdatePatientByIDParams) error
 }
 

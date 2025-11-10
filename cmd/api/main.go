@@ -43,12 +43,20 @@ func main() {
 
 	v := validator.New()
 	queries := sqlc.New(pgPool)
+
+	// Initialize Patient
 	patientRepository := repository.NewPgPatientRepository(queries)
 	patientService := service.NewPatientService(patientRepository)
 	patientHandler := handlers.NewPatientHandler(patientService, v)
 
+	// Initialize Doctor
+	doctorRepository := repository.NewPgDoctorRepository(queries)
+	doctorService := service.NewDoctorService(doctorRepository)
+	doctorHandler := handlers.NewDoctorHandler(doctorService, v)
+
 	r := chi.NewRouter()
 
+	// Patient routes
 	r.Route("/api/v1/patients", func(r chi.Router) {
 		r.Get("/", handlers.Make(patientHandler.SearchPatientsByKeyword))
 		r.Post("/", handlers.Make(patientHandler.CreatePatient))
@@ -57,11 +65,23 @@ func main() {
 		r.Delete("/{id}", handlers.Make(patientHandler.DeletePatient))
 	})
 
-	// Legacy routes for compatibility with old API paths
+	// Legacy patient routes for compatibility
 	r.Route("/api/patients", func(r chi.Router) {
 		r.Get("/{id}", handlers.Make(patientHandler.GetPatient))
 		r.Delete("/{id}", handlers.Make(patientHandler.DeletePatient))
 	})
+
+	// Doctor routes
+	r.Route("/api/v1/doctors", func(r chi.Router) {
+		r.Get("/", handlers.Make(doctorHandler.SearchDoctorsByKeyword))
+		r.Post("/", handlers.Make(doctorHandler.CreateDoctor))
+		r.Get("/{id}", handlers.Make(doctorHandler.GetDoctor))
+		r.Patch("/{id}", handlers.Make(doctorHandler.UpdateDoctor))
+		r.Delete("/{id}", handlers.Make(doctorHandler.DeleteDoctor))
+	})
+
+	// Doctor page route
+	r.Get("/danh-muc-bac-si", handlers.Make(doctorHandler.HandleDoctorPage))
 
 	log.Info("Server is running", zap.String("port", port))
 	err = http.ListenAndServe(":"+port, r)
