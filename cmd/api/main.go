@@ -1,44 +1,21 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/datdev2409/lab-admin-go/internal/db"
+	"github.com/datdev2409/lab-admin-go/internal/db/sqlc"
 	"github.com/datdev2409/lab-admin-go/internal/handlers"
 	"github.com/datdev2409/lab-admin-go/internal/logger"
-	"github.com/datdev2409/lab-admin-go/internal/storage"
+	"github.com/datdev2409/lab-admin-go/internal/repository"
+	"github.com/datdev2409/lab-admin-go/internal/service"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
-
-type DBConfig struct {
-	Addr string
-	Port int
-}
-
-type Config struct {
-	Env  string
-	Port string
-	DB   *DBConfig
-}
-
-type Application struct {
-	Config  *Config
-	Handler http.Handler
-}
-
-func (app *Application) Init(config *Config, handler http.Handler) {
-	app.Config = config
-	app.Handler = handler
-}
-
-func (app *Application) Start() error {
-	err := http.ListenAndServe(":"+app.Config.Port, app.Handler)
-	return err
-}
 
 func GetEnv(key, defaultValue string) string {
 	if value, found := os.LookupEnv(key); found {
@@ -56,33 +33,38 @@ func main() {
 	log := logger.Init()
 	defer log.Sync()
 
-	app := &Application{}
+	port := GetEnv("SERVER_PORT", "8080")
 
-	// Init config
-	config := &Config{
-		Env:  os.Getenv("ENV"),
-		Port: os.Getenv("SERVER_PORT"),
-		DB: &DBConfig{
-			Addr: os.Getenv("MONGODB_URI"),
-		},
+	pgPool, err := db.NewPostgresPool(os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal("Failed to connect to Postgres", zap.Error(err))
 	}
+	defer pgPool.Close()
 
-	// Init storage
-	log.Info("DB Addr: " + config.DB.Addr)
-	mongoClient := db.NewMongoClient(config.DB.Addr)
-	defer func() {
-		if err := mongoClient.Disconnect(context.TODO()); err != nil {
-			log.Error("Mongo disconnect error", zap.Error(err))
-		}
-	}()
+	v := validator.New()
+	queries := sqlc.New(pgPool)
+	patientRepository := repository.NewPgPatientRepository(queries)
+	patientService := service.NewPatientService(patientRepository)
+	patientHandler := handlers.NewPatientHandler(patientService, v)
 
-	store := storage.NewMongoStorage(mongoClient)
-	handler := handlers.NewHandler(store, log)
+	r := chi.NewRouter()
 
-	app.Init(config, handler.Router)
+	r.Route("/api/v1/patients", func(r chi.Router) {
+		r.Get("/", handlers.Make(patientHandler.SearchPatientsByKeyword))
+		r.Post("/", handlers.Make(patientHandler.CreatePatient))
+		r.Get("/{id}", handlers.Make(patientHandler.GetPatient))
+		r.Patch("/{id}", handlers.Make(patientHandler.UpdatePatient))
+		r.Delete("/{id}", handlers.Make(patientHandler.DeletePatient))
+	})
 
-	log.Info("Server is running", zap.String("port", app.Config.Port))
-	err = app.Start()
+	// Legacy routes for compatibility with old API paths
+	r.Route("/api/patients", func(r chi.Router) {
+		r.Get("/{id}", handlers.Make(patientHandler.GetPatient))
+		r.Delete("/{id}", handlers.Make(patientHandler.DeletePatient))
+	})
+
+	log.Info("Server is running", zap.String("port", port))
+	err = http.ListenAndServe(":"+port, r)
 	if err != nil {
 		log.Error("Server error", zap.Error(err))
 	}

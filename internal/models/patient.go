@@ -16,6 +16,14 @@ type Patient struct {
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
+type CreatePatientInput struct {
+	Name    string `json:"name"`
+	Phone   string `json:"phone"`
+	YOB     string `json:"yob"`
+	Gender  string `json:"gender"`
+	Address string `json:"address"`
+}
+
 func NewPatient(name string, yob string, gender string, address string, phone string) *Patient {
 	patientId := GenerateRandomID("patient_")
 	now := time.Now()

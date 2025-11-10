@@ -7,20 +7,24 @@ import (
 	"github.com/datdev2409/lab-admin-go/internal/storage"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
 type Handler struct {
-	Router http.Handler
-	Store  storage.Storage
+	Router         http.Handler
+	Validator      *validator.Validate
+	Store          storage.Storage
+	patientHandler *PatientHandler
 }
 
-func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
+func NewHandler(store storage.Storage, log *zap.Logger, patientHandler *PatientHandler) *Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	h := &Handler{Router: r, Store: store}
+	v := validator.New()
+	h := &Handler{Router: r, Store: store, Validator: v, patientHandler: patientHandler}
 
 	r.Use(middleware.RequestID)
 	// r.Use(requestLogger)
@@ -39,7 +43,7 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 
 	// Handle pages
 	r.Route("/", func(r chi.Router) {
-		r.Use(JWTAuthWebEndpoint)
+		// r.Use(JWTAuthWebEndpoint)
 		r.Get("/", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem", Make(h.HandleRecordPage))
 		r.Get("/phieu-xet-nghiem/new", Make(h.HandleCreateNewRecord))
@@ -58,8 +62,8 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 
 	// Handle patients
 	r.Route("/api/patients", func(r chi.Router) {
-		r.Get("/{id}", Make(h.GetPatient))
-		r.Delete("/{id}", Make(h.DeletePatient))
+		r.Get("/{id}", Make(h.patientHandler.GetPatient))
+		r.Delete("/{id}", Make(h.patientHandler.DeletePatient))
 	})
 
 	r.Route("/api/v1/auth", func(r chi.Router) {
@@ -70,13 +74,13 @@ func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 
 	// API v1 routes
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(JWTAuthAPIEndpoint)
+		// r.Use(JWTAuthAPIEndpoint)
 		r.Route("/patients", func(r chi.Router) {
-			r.Get("/", Make(h.ListPatientsV1))
-			r.Post("/", Make(h.CreatePatientV1))
-			r.Get("/{id}", Make(h.GetPatientV1))
-			r.Put("/{id}", Make(h.UpdatePatientV1))
-			r.Delete("/{id}", Make(h.DeletePatientV1))
+			r.Get("/", Make(h.patientHandler.SearchPatientsByKeyword))
+			r.Post("/", Make(h.patientHandler.CreatePatient))
+			r.Get("/{id}", Make(h.patientHandler.GetPatient))
+			r.Patch("/{id}", Make(h.UpdatePatientV1))
+			r.Delete("/{id}", Make(h.patientHandler.DeletePatient))
 			r.Get("/{id}/records", Make(h.GetPatientRecordsV1))
 			r.Post("/{id}/records/compare", Make(h.ComparePatientRecordsV1))
 		})

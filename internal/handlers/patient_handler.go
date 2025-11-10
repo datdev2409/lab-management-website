@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -12,58 +13,50 @@ import (
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/datdev2409/lab-admin-go/internal/service"
 	"github.com/datdev2409/lab-admin-go/internal/sheets"
 	"github.com/datdev2409/lab-admin-go/internal/templates/pages"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
-func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
-	return Render(r.Context(), w, pages.PatientsPage())
+type PatientHandler struct {
+	patientService *service.PatientService
+	validator      *validator.Validate
 }
 
-func (h *Handler) GetPatient(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
-	patient, err := h.Store.GetPatientById(r.Context(), id)
-	if err != nil {
+func NewPatientHandler(patientService *service.PatientService, validator *validator.Validate) *PatientHandler {
+	return &PatientHandler{
+		patientService: patientService,
+		validator:      validator,
+	}
+}
+
+func (h *PatientHandler) CreatePatient(w http.ResponseWriter, r *http.Request) error {
+	var input models.CreatePatientInput
+
+	if err := BindAndValidate(r, h.validator, &input); err != nil {
 		return err
 	}
 
-	jsonResponse, err := json.Marshal(patient)
+	patient, err := h.patientService.CreatePatient(r.Context(), &input)
 	if err != nil {
+		if errors.Is(err, service.ErrPatientAlreadyExists) {
+			return &AppError{StatusCode: http.StatusConflict, Message: PATIENT_ALREADY_EXISTS}
+		}
 		return err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonResponse)
+	RespondJSON(w, http.StatusCreated, patient)
 	return nil
 }
 
-func (h *Handler) DeletePatient(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
-	err := h.Store.DeletePatientById(r.Context(), id)
-	if err != nil {
-		return err
-	}
-
-	w.WriteHeader(http.StatusOK)
-	return nil
-}
-
-// ListPatientsV1 handles GET /api/v1/patients
-func (h *Handler) ListPatientsV1(w http.ResponseWriter, r *http.Request) error {
-	page, err := strconv.Atoi(r.URL.Query().Get("page"))
-	if err != nil {
-		page = 1
-	}
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		pageSize = 10
-	}
+func (h *PatientHandler) SearchPatientsByKeyword(w http.ResponseWriter, r *http.Request) error {
+	queryOpts := ParseListParams(r, 10)
 
 	keyword := r.URL.Query().Get("q")
-	patients, pagination, err := h.Store.SearchPatientByNameOrPhone(r.Context(), models.PatientQueryOptions{Keyword: keyword}, models.GenericQueryOptions{Page: page, PageSize: pageSize})
+	patients, pagination, err := h.patientService.SearchPatientsByKeyword(r.Context(), keyword, queryOpts.Page, queryOpts.PageSize)
 	if err != nil {
 		return err
 	}
@@ -72,48 +65,56 @@ func (h *Handler) ListPatientsV1(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// CreatePatientV1 handles POST /api/v1/patients
-func (h *Handler) CreatePatientV1(w http.ResponseWriter, r *http.Request) error {
-	var req struct {
-		Name    string `json:"name"`
-		YOB     string `json:"yob"`
-		Gender  string `json:"gender"`
-		Address string `json:"address"`
-		Phone   string `json:"phone"`
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		return err
-	}
-
-	existing, err := h.Store.FindPatientByNameAndPhone(r.Context(), req.Name, req.Phone)
-	if err != nil {
-		return err
-	}
-	if existing != nil {
-		return &AppError{http.StatusBadRequest, DUPLICATE_PATIENT_ERROR}
-	}
-
-	patient := models.NewPatient(req.Name, req.YOB, req.Gender, req.Address, req.Phone)
-	newPatient, err := h.Store.InsertPatient(r.Context(), patient)
-	if err != nil {
-		return err
-	}
-	RespondJSON(w, http.StatusCreated, newPatient)
-	return nil
-}
-
-// GetPatientV1 handles GET /api/v1/patients/{id}
-func (h *Handler) GetPatientV1(w http.ResponseWriter, r *http.Request) error {
+func (h *PatientHandler) GetPatient(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
-	patient, err := h.Store.GetPatientById(r.Context(), id)
+	patient, err := h.patientService.GetPatientById(r.Context(), id)
 	if err != nil {
 		return err
 	}
+
 	RespondJSON(w, http.StatusOK, patient)
 	return nil
 }
 
+func (h *PatientHandler) UpdatePatient(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+
+	var req models.PatientUpdate
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return &AppError{StatusCode: http.StatusBadRequest, Message: "Invalid request body"}
+	}
+
+	patient, err := h.patientService.UpdatePatientById(r.Context(), id, req)
+	if err != nil {
+		return err
+	}
+
+	RespondJSON(w, http.StatusOK, patient)
+	return nil
+}
+
+func (h *PatientHandler) DeletePatient(w http.ResponseWriter, r *http.Request) error {
+	id := chi.URLParam(r, "id")
+	err := h.patientService.DeletePatientById(r.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
+	return nil
+}
+
+func (h *PatientHandler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
+	return Render(r.Context(), w, pages.PatientsPage())
+}
+
+// Keep this on Handler for now - it will be removed once all pages are migrated
+func (h *Handler) HandlePatientPage(w http.ResponseWriter, r *http.Request) error {
+	return Render(r.Context(), w, pages.PatientsPage())
+}
+
 // UpdatePatientV1 handles PUT /api/v1/patients/{id}
+// NOTE: This method stays on Handler temporarily because it updates records (cross-domain logic)
 func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error {
 	log := logger.FromCtx(r.Context())
 	id := chi.URLParam(r, "id")
@@ -162,17 +163,8 @@ func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error 
 	return nil
 }
 
-// DeletePatientV1 handles DELETE /api/v1/patients/{id}
-func (h *Handler) DeletePatientV1(w http.ResponseWriter, r *http.Request) error {
-	id := chi.URLParam(r, "id")
-	if err := h.Store.DeletePatientById(r.Context(), id); err != nil {
-		return err
-	}
-	RespondJSON(w, http.StatusOK, map[string]string{"result": "deleted"})
-	return nil
-}
-
 // GetPatientRecordsV1 handles GET /api/v1/patients/{id}/records
+// NOTE: This method stays on Handler temporarily because it accesses record storage
 func (h *Handler) GetPatientRecordsV1(w http.ResponseWriter, r *http.Request) error {
 	patientId := chi.URLParam(r, "id")
 

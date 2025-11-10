@@ -5,10 +5,13 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/datdev2409/lab-admin-go/internal/models"
+	"github.com/go-playground/validator/v10"
 )
 
 func Render(ctx context.Context, w http.ResponseWriter, comp templ.Component) error {
@@ -116,4 +119,53 @@ func ParseStartOfDayInVietnamTimezone(dateStr string) (*time.Time, error) {
 // ParseEndOfDayInVietnamTimezone parses a date string and returns the end of day (23:59:59.999999999) in UTC
 func ParseEndOfDayInVietnamTimezone(dateStr string) (*time.Time, error) {
 	return ParseDateInVietnamTimezone(dateStr, 23, 59, 59, 999999999)
+}
+
+func BindAndValidate(r *http.Request, v *validator.Validate, dst interface{}) error {
+	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
+		return &AppError{StatusCode: http.StatusBadRequest, Message: INVALID_REQUEST_PAYLOAD_ERROR}
+	}
+	if v == nil {
+		return nil
+	}
+	if err := v.Struct(dst); err != nil {
+		// map validator errors to a readable message or return AppError
+		return &AppError{StatusCode: http.StatusBadRequest, Message: err.Error()}
+	}
+	return nil
+}
+
+func ParseListParams(r *http.Request, defaultPageSize int) models.GenericQueryOptions {
+	q := r.URL.Query()
+
+	page := 1
+	if p := q.Get("page"); p != "" {
+		if v, err := strconv.Atoi(p); err == nil && v > 0 {
+			page = v
+		}
+	}
+
+	pageSize := defaultPageSize
+	if ps := q.Get("page_size"); ps != "" {
+		if v, err := strconv.Atoi(ps); err == nil && v > 0 {
+			pageSize = v
+		}
+	}
+
+	sortBy := q.Get("sort_by")
+	if sortBy == "" {
+		sortBy = "created_at"
+	}
+
+	sortOrder := q.Get("sort_order")
+	if sortOrder == "" {
+		sortOrder = "desc"
+	}
+
+	return models.GenericQueryOptions{
+		Page:      page,
+		PageSize:  pageSize,
+		SortBy:    sortBy,
+		SortOrder: sortOrder,
+	}
 }
