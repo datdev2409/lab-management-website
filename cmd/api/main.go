@@ -54,6 +54,11 @@ func main() {
 	doctorService := service.NewDoctorService(doctorRepository)
 	doctorHandler := handlers.NewDoctorHandler(doctorService, v)
 
+	// Initialize Test
+	testRepository := repository.NewPgTestRepository(queries)
+	testService := service.NewTestService(testRepository)
+	testHandler := handlers.NewTestHandler(testService, v)
+
 	r := chi.NewRouter()
 
 	// Patient routes
@@ -82,6 +87,19 @@ func main() {
 
 	// Doctor page route
 	r.Get("/danh-muc-bac-si", handlers.Make(doctorHandler.HandleDoctorPage))
+
+	// Test routes
+	r.Route("/api/v1/tests", func(r chi.Router) {
+		r.Get("/", handlers.Make(testHandler.SearchTestsByName))
+		r.Post("/", handlers.Make(testHandler.CreateTest))
+		r.Post("/bulk", handlers.Make(testHandler.BulkCreateTests))
+		r.Get("/{id}", handlers.Make(testHandler.GetTest))
+		r.Patch("/{id}", handlers.Make(testHandler.UpdateTest))
+		r.Delete("/{id}", handlers.Make(testHandler.DeleteTest))
+	})
+
+	// Test page route
+	r.Get("/danh-muc-xet-nghiem", handlers.Make(testHandler.HandleTestPage))
 
 	log.Info("Server is running", zap.String("port", port))
 	err = http.ListenAndServe(":"+port, r)

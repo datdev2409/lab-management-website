@@ -243,6 +243,7 @@ const (
 **Location**: `docs/bruno/lab-admin-web/entity_name/`
 
 Create a folder for the entity with Bruno API test files for all endpoints:
+
 - `folder.bru` - Folder metadata
 - `Create Entity.bru` - POST endpoint
 - `Search entities.bru` - GET list with pagination

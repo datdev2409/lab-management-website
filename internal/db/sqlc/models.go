@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Doctor struct {
@@ -28,4 +29,17 @@ type Patient struct {
 	Phone     string    `json:"phone"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Test struct {
+	ID            uuid.UUID     `json:"id"`
+	Name          string        `json:"name"`
+	Price         int32         `json:"price"`
+	ImportedPrice int32         `json:"imported_price"`
+	NormalValue   string        `json:"normal_value"`
+	Unit          string        `json:"unit"`
+	LowerBound    pgtype.Float8 `json:"lower_bound"`
+	UpperBound    pgtype.Float8 `json:"upper_bound"`
+	CreatedAt     time.Time     `json:"created_at"`
+	UpdatedAt     time.Time     `json:"updated_at"`
 }

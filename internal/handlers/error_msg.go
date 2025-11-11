@@ -15,4 +15,7 @@ const (
 
 	PATIENT_ALREADY_EXISTS = "Bệnh nhân với tên và số điện thoại đã tồn tại"
 	DOCTOR_ALREADY_EXISTS  = "Bác sĩ với tên và số điện thoại đã tồn tại"
+	TEST_ALREADY_EXISTS    = "Xét nghiệm với tên này đã tồn tại"
+	TEST_NOT_FOUND         = "Không tìm thấy xét nghiệm"
+	INVALID_TEST_BOUNDS    = "Giới hạn dưới phải nhỏ hơn hoặc bằng giới hạn trên"
 )

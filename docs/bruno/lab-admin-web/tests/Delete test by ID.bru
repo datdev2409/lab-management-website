@@ -1,0 +1,24 @@
+meta {
+  name: Delete test by ID
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:9000/api/v1/tests/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 898036fe-7c9a-4c61-9a63-ecd4a898cc91
+}
+
+vars:pre-request {
+  test_id: 550e8400-e29b-41d4-a716-446655440000
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

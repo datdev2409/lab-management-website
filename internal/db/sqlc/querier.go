@@ -13,19 +13,27 @@ import (
 type Querier interface {
 	CountDoctorsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
 	CountPatientsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
+	CountTestsByName(ctx context.Context, keyword interface{}) (int64, error)
 	CreateDoctor(ctx context.Context, arg CreateDoctorParams) (Doctor, error)
 	CreatePatient(ctx context.Context, arg CreatePatientParams) (Patient, error)
+	CreateTest(ctx context.Context, arg CreateTestParams) (Test, error)
 	DeleteDoctorByID(ctx context.Context, id uuid.UUID) error
 	DeletePatientByID(ctx context.Context, id uuid.UUID) error
+	DeleteTestByID(ctx context.Context, id uuid.UUID) error
 	GetDoctorByID(ctx context.Context, id uuid.UUID) (Doctor, error)
 	GetPatientByID(ctx context.Context, id uuid.UUID) (Patient, error)
+	GetTestByID(ctx context.Context, id uuid.UUID) (Test, error)
 	IsDoctorNameAndPhoneExists(ctx context.Context, arg IsDoctorNameAndPhoneExistsParams) (bool, error)
 	IsPatientNameAndPhoneExists(ctx context.Context, arg IsPatientNameAndPhoneExistsParams) (bool, error)
+	IsTestNameExists(ctx context.Context, name string) (bool, error)
+	ListAllTests(ctx context.Context) ([]Test, error)
 	ListPatients(ctx context.Context) ([]Patient, error)
 	SearchDoctorsByNameOrPhone(ctx context.Context, arg SearchDoctorsByNameOrPhoneParams) ([]Doctor, error)
 	SearchPatientsByNameOrPhone(ctx context.Context, arg SearchPatientsByNameOrPhoneParams) ([]Patient, error)
+	SearchTestsByName(ctx context.Context, arg SearchTestsByNameParams) ([]Test, error)
 	UpdateDoctorByID(ctx context.Context, arg UpdateDoctorByIDParams) error
 	UpdatePatientByID(ctx context.Context, arg UpdatePatientByIDParams) error
+	UpdateTestByID(ctx context.Context, arg UpdateTestByIDParams) (Test, error)
 }
 
 var _ Querier = (*Queries)(nil)

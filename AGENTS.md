@@ -4,6 +4,17 @@ This document provides guidelines for AI agents working on this project, includi
 
 ## Dev Environments
 
+### Work with database migration
+
+The migration code will be put in the ./internal/db/migrations folder
+
+1. Run command `goose create file_name_with_clear_meaning sql` to create the new migration file in the correct folder
+2. Update the SQL code for migration in the migration file
+3. Run the command `goose up` to apply the changes to actual DB
+4. To revert the change, run the command `goose down`
+
+### Work with SQLC
+
 ## Production Deployment Workflows
 
 ### Overview
