@@ -85,7 +85,8 @@ func (h *ComboHandler) SearchCombosByName(w http.ResponseWriter, r *http.Request
 func (h *ComboHandler) GetCombo(w http.ResponseWriter, r *http.Request) error {
 	id := chi.URLParam(r, "id")
 
-	combo, err := h.comboService.GetComboById(r.Context(), id)
+	// Delegate fetching both combo and its tests to the service for simpler handler logic
+	details, err := h.comboService.GetComboDetails(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, service.ErrComboNotFound) {
 			return &AppError{StatusCode: http.StatusNotFound, Message: COMBO_NOT_FOUND}
@@ -93,23 +94,7 @@ func (h *ComboHandler) GetCombo(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Get tests for this combo
-	tests, err := h.comboService.GetComboTests(r.Context(), id)
-	if err != nil {
-		if errors.Is(err, service.ErrComboNotFound) {
-			return &AppError{StatusCode: http.StatusNotFound, Message: COMBO_NOT_FOUND}
-		}
-		return err
-	}
-
-	// Return combo details with tests
-	response := &models.ComboDetailsResponse{
-		ID:    combo.ID,
-		Name:  combo.Name,
-		Tests: tests,
-	}
-
-	RespondJSON(w, http.StatusOK, response)
+	RespondJSON(w, http.StatusOK, details)
 	return nil
 }
 

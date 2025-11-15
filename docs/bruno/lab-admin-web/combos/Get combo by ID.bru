@@ -5,7 +5,13 @@ meta {
 }
 
 get {
-  url: {{BASE_URL}}/api/v1/combos/550e8400-e29b-41d4-a716-446655440000
+  url: {{BASE_URL}}/api/v1/combos/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 43d42a37-e1fe-4d53-bb60-aa3cfea4d093
 }
 
 headers {
@@ -16,17 +22,17 @@ tests {
   test("Response status is 200", function() {
     expect(res.getStatus()).to.equal(200);
   });
-
+  
   test("Response contains id, name, and tests", function() {
     expect(res.body).to.have.property('id');
     expect(res.body).to.have.property('name');
     expect(res.body).to.have.property('tests');
   });
-
+  
   test("Tests array contains test objects", function() {
     expect(res.body.tests).to.be.an('array');
   });
-
+  
   test("Each test has required fields", function() {
     if (res.body.tests.length > 0) {
       expect(res.body.tests[0]).to.have.property('id');

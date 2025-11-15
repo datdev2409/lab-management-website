@@ -1,0 +1,540 @@
+[{
+  "_id": "combo_fd12bc1c-b8c4-41fe-b8d1-cbd039f77c2c",
+  "name": "BỘ GAN ",
+  "test_ids": [
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T12:51:13.528Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T12:51:13.528Z"
+  }
+},
+{
+  "_id": "combo_9087bda9-d138-4322-abac-530e6140d801",
+  "name": "BỘ THẬN",
+  "test_ids": [
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T12:52:21.578Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T12:52:21.578Z"
+  }
+},
+{
+  "_id": "combo_0059b8b3-9dda-4539-ad26-6ca115382276",
+  "name": "BỘ TIỂU ĐƯỜNG",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T12:53:38.690Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T12:53:38.690Z"
+  }
+},
+{
+  "_id": "combo_6357554e-1cc2-4556-b77b-652365e599fb",
+  "name": "BỘ MỠ",
+  "test_ids": [
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T12:55:25.915Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T12:55:25.915Z"
+  }
+},
+{
+  "_id": "combo_48ddb492-c19a-44cc-b22c-7ae91e0c971f",
+  "name": "CTM",
+  "test_ids": [
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T13:00:13.965Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-19T09:57:57.000Z"
+  }
+},
+{
+  "_id": "combo_8625f3a6-70bf-4f85-83dd-4931e33102c4",
+  "name": "TỔNG QUÁT SH",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+    "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T13:03:06.160Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T13:03:06.160Z"
+  }
+},
+{
+  "_id": "combo_244f12cc-def4-48ce-b971-96c790ab57ff",
+  "name": "TỔNG QUÁT SH+CTM",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+    "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c"
+  ],
+  "created_at": {
+    "$date": "2025-09-03T13:09:51.926Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-03T13:09:51.926Z"
+  }
+},
+{
+  "_id": "combo_157b5caf-454f-495e-bdef-00dc82676831",
+  "name": "Ký sinh trùng 4 con",
+  "test_ids": [
+    "test_0ace380e-53ed-4a90-b470-e3703d3bff49",
+    "test_6da9e5ba-1a7b-411f-9b1f-0fb874cc2b5e",
+    "test_29f8111d-789d-4753-88dd-e56c45c3d258",
+    "test_71a871ea-10bb-4ad2-8598-799854f1fd95"
+  ],
+  "created_at": {
+    "$date": "2025-09-11T11:07:05.008Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-11T11:07:27.255Z"
+  }
+},
+{
+  "_id": "combo_8b1ac407-76f1-449b-8b52-4e569fe12ea3",
+  "name": "Bộ tuyến giáp",
+  "test_ids": [
+    "test_2f7f3a30-446d-43e9-ae35-a5cbd17a2b9e",
+    "test_8678a85f-8fc6-48f4-9db2-d58cae0b013b",
+    "test_8a595485-6be4-466f-85ab-e6c4affac7b3"
+  ],
+  "created_at": {
+    "$date": "2025-09-11T11:08:18.511Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-11T11:08:18.511Z"
+  }
+},
+{
+  "_id": "combo_03a0fd64-7629-4d45-86b1-bbc0816e0750",
+  "name": "Gói TQ full nữ",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+    "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c",
+    "test_8078c736-e1c4-4d47-a4fb-263ea299ebdf",
+    "test_b5afdf45-abf2-498a-ba07-e8916a93866d",
+    "test_a5c341cf-2870-43e4-b17a-ea467e67ae71",
+    "test_f1e01140-d57f-423d-aaef-d5fe8b76b170",
+    "test_d033f339-aa4d-4db9-8b2b-4371a24d2f61",
+    "test_1eb9f4db-c287-4f32-89b1-66d6169a5e94",
+    "test_371196a6-a6e1-49f7-93d0-3411a17fc82a",
+    "test_e00b117a-16ea-4e50-9c5d-ff42a38894ce",
+    "test_f4b70927-165c-49a5-ab81-c83e8008dad9",
+    "test_5a63d0a4-aab3-48ba-a94d-0e5f0a033153",
+    "test_c09ff3a3-2a4c-4d06-95fb-3cc0d5584b2d",
+    "test_4a38ec06-9af2-42cc-b336-82d6c2a7c518",
+    "test_965d8a06-7f09-476e-989e-aff381faa33e",
+    "test_2f7f3a30-446d-43e9-ae35-a5cbd17a2b9e",
+    "test_8678a85f-8fc6-48f4-9db2-d58cae0b013b",
+    "test_8a595485-6be4-466f-85ab-e6c4affac7b3",
+    "test_c8576790-e5c0-4fef-bb9c-db7195eb3337",
+    "test_4f6f4cbd-aa5f-477d-a66e-0b5e23027209",
+    "test_1b6782c2-0d7e-4161-86aa-3319a1307a9a",
+    "test_7d617df6-144f-4739-ae86-096e67bc5e32",
+    "test_383f3bba-f6cf-4dd5-9883-78e4540c690f",
+    "test_22275f9e-1b3a-4821-8461-8490dd2a66bc",
+    "test_994b4830-5e9d-4f3b-b2fd-cc080809d993",
+    "test_8e0b2801-7aad-4faf-8d85-3443e7c88a4d",
+    "test_95d21a93-6176-4ed2-9fed-db9a0f5801c6",
+    "test_6322eb2a-d63d-473c-a249-3a5e4bab0585",
+    "test_b94fa0b4-b858-4100-8890-914802f1741a",
+    "test_743b1b4b-8c42-44e0-9515-2058cf576826",
+    "test_deff1ef1-f473-41e1-8601-6a2c90148914",
+    "test_f44ed0fe-b6e3-4057-8dd6-d637f6cb1567",
+    "test_828283bd-8ca4-4b10-af36-e9300e970320",
+    "test_cffcdeaa-496b-4b45-bd85-b7da641a188c"
+  ],
+  "created_at": {
+    "$date": "2025-09-11T11:16:20.592Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-11T11:16:20.592Z"
+  }
+},
+{
+  "_id": "combo_8acb99b0-eeef-4337-bf0f-325179362603",
+  "name": "Gói TQ full nam",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+    "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c",
+    "test_8078c736-e1c4-4d47-a4fb-263ea299ebdf",
+    "test_b5afdf45-abf2-498a-ba07-e8916a93866d",
+    "test_a5c341cf-2870-43e4-b17a-ea467e67ae71",
+    "test_f1e01140-d57f-423d-aaef-d5fe8b76b170",
+    "test_d033f339-aa4d-4db9-8b2b-4371a24d2f61",
+    "test_1eb9f4db-c287-4f32-89b1-66d6169a5e94",
+    "test_371196a6-a6e1-49f7-93d0-3411a17fc82a",
+    "test_e00b117a-16ea-4e50-9c5d-ff42a38894ce",
+    "test_f4b70927-165c-49a5-ab81-c83e8008dad9",
+    "test_5a63d0a4-aab3-48ba-a94d-0e5f0a033153",
+    "test_c09ff3a3-2a4c-4d06-95fb-3cc0d5584b2d",
+    "test_4a38ec06-9af2-42cc-b336-82d6c2a7c518",
+    "test_965d8a06-7f09-476e-989e-aff381faa33e",
+    "test_2f7f3a30-446d-43e9-ae35-a5cbd17a2b9e",
+    "test_8678a85f-8fc6-48f4-9db2-d58cae0b013b",
+    "test_8a595485-6be4-466f-85ab-e6c4affac7b3",
+    "test_51b3bb25-50eb-438e-8b6c-ad270d210725",
+    "test_7ba5693b-db34-49c7-bcb9-d044fb2edc0e",
+    "test_e592130c-301c-4bdd-bb28-641023b4bc8b",
+    "test_383f3bba-f6cf-4dd5-9883-78e4540c690f",
+    "test_22275f9e-1b3a-4821-8461-8490dd2a66bc",
+    "test_994b4830-5e9d-4f3b-b2fd-cc080809d993",
+    "test_95d21a93-6176-4ed2-9fed-db9a0f5801c6",
+    "test_6322eb2a-d63d-473c-a249-3a5e4bab0585",
+    "test_b94fa0b4-b858-4100-8890-914802f1741a",
+    "test_743b1b4b-8c42-44e0-9515-2058cf576826",
+    "test_deff1ef1-f473-41e1-8601-6a2c90148914",
+    "test_f44ed0fe-b6e3-4057-8dd6-d637f6cb1567",
+    "test_828283bd-8ca4-4b10-af36-e9300e970320",
+    "test_cffcdeaa-496b-4b45-bd85-b7da641a188c"
+  ],
+  "created_at": {
+    "$date": "2025-09-11T11:23:04.845Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-11T11:23:04.845Z"
+  }
+},
+{
+  "_id": "combo_7a828cf8-fcdc-4d92-bfb9-8ad7c5c8a660",
+  "name": "BỘ NGỨA CẤP 1",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c",
+    "test_5a63d0a4-aab3-48ba-a94d-0e5f0a033153",
+    "test_2f7f3a30-446d-43e9-ae35-a5cbd17a2b9e",
+    "test_8678a85f-8fc6-48f4-9db2-d58cae0b013b",
+    "test_8a595485-6be4-466f-85ab-e6c4affac7b3",
+    "test_0ace380e-53ed-4a90-b470-e3703d3bff49",
+    "test_6da9e5ba-1a7b-411f-9b1f-0fb874cc2b5e",
+    "test_29f8111d-789d-4753-88dd-e56c45c3d258",
+    "test_71a871ea-10bb-4ad2-8598-799854f1fd95",
+    "test_743b1b4b-8c42-44e0-9515-2058cf576826",
+    "test_deff1ef1-f473-41e1-8601-6a2c90148914",
+    "test_b5afdf45-abf2-498a-ba07-e8916a93866d",
+    "test_a5c341cf-2870-43e4-b17a-ea467e67ae71",
+    "test_f1e01140-d57f-423d-aaef-d5fe8b76b170"
+  ],
+  "created_at": {
+    "$date": "2025-09-18T10:31:15.290Z"
+  },
+  "updated_at": {
+    "$date": "2025-09-18T10:34:28.958Z"
+  }
+},
+{
+  "_id": "combo_841c6144-8fe7-42ac-a0c4-f3869aa61b18",
+  "name": "Tổng phân tích nước tiểu",
+  "test_ids": [
+    "test_8078c736-e1c4-4d47-a4fb-263ea299ebdf",
+    "test_032eec5b-4800-4667-bbe0-2231c104760b",
+    "test_362fc604-0f14-432a-8fbc-dd2e3247c4cd",
+    "test_a0c23909-96e6-4182-9cd6-39a9d39e58cf",
+    "test_519be6c5-b84b-46a4-81d9-a5c813780bb0",
+    "test_6adfad28-8ae3-486a-8a0a-e45e20301221",
+    "test_ed72e1b3-3707-48f6-a646-cc6758886549",
+    "test_82945a8d-c27b-42d3-9447-0f710067a743",
+    "test_2515adea-2cbc-4f99-8cf0-a8dbae4d83c1",
+    "test_a695e72a-cafb-4b81-b19b-70eed0777fe8",
+    "test_4e3a54f0-d885-47e2-b950-fe99693ba33a"
+  ],
+  "created_at": {
+    "$date": "2025-10-01T00:49:48.531Z"
+  },
+  "updated_at": {
+    "$date": "2025-10-01T01:18:36.248Z"
+  }
+},
+{
+  "_id": "combo_61356607-290a-427c-9ed6-b3c2b0c35961",
+  "name": "Dung nạp ",
+  "test_ids": [
+    "test_2c2b5b59-0ff6-4632-ab11-adc52888dad4",
+    "test_403f08f4-0e2b-48c8-b083-336ae0701b20",
+    "test_13eb8a71-dd84-41a3-adf4-eb20d6eb84d3"
+  ],
+  "created_at": {
+    "$date": "2025-10-01T00:55:48.829Z"
+  },
+  "updated_at": {
+    "$date": "2025-10-01T00:55:48.829Z"
+  }
+},
+{
+  "_id": "combo_35d8b588-3615-4d62-893b-057cdf3c8229",
+  "name": "sốt xuất huyết",
+  "test_ids": [
+    "test_1d689862-4562-4c1c-af65-f692da1f3be7",
+    "test_07555417-ea04-425b-bbf0-d551b48220ce",
+    "test_36300dfe-5feb-46c8-bc49-f2c6b6b77d1f",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c"
+  ],
+  "created_at": {
+    "$date": "2025-10-01T12:22:29.892Z"
+  },
+  "updated_at": {
+    "$date": "2025-10-01T12:22:29.892Z"
+  }
+},
+{
+  "_id": "combo_75e2721e-9a61-4145-8c9f-7b10377973e7",
+  "name": "SH+CTM+NT",
+  "test_ids": [
+    "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+    "test_24594f7e-901f-42af-8afb-4f33ae531065",
+    "test_26425382-7f01-4716-ab6e-effa709fc066",
+    "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+    "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+    "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+    "test_ca70662d-a05b-43d8-b812-86db54645865",
+    "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+    "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+    "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+    "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+    "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+    "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+    "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e",
+    "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+    "test_cb310ee8-7083-42ba-b361-7733eb338704",
+    "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+    "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+    "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+    "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+    "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+    "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+    "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+    "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+    "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+    "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+    "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+    "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+    "test_31e4be04-328c-4479-a474-385db0cc3766",
+    "test_3c854865-f615-4671-bb32-5955087e8d37",
+    "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+    "test_06d20ee8-6642-403e-9c23-bde698217daa",
+    "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+    "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+    "test_9e204720-2794-4f21-8144-4fb7e32df71c",
+    "test_8078c736-e1c4-4d47-a4fb-263ea299ebdf",
+    "test_032eec5b-4800-4667-bbe0-2231c104760b",
+    "test_362fc604-0f14-432a-8fbc-dd2e3247c4cd",
+    "test_a0c23909-96e6-4182-9cd6-39a9d39e58cf",
+    "test_519be6c5-b84b-46a4-81d9-a5c813780bb0",
+    "test_6adfad28-8ae3-486a-8a0a-e45e20301221",
+    "test_ed72e1b3-3707-48f6-a646-cc6758886549",
+    "test_82945a8d-c27b-42d3-9447-0f710067a743",
+    "test_2515adea-2cbc-4f99-8cf0-a8dbae4d83c1",
+    "test_a695e72a-cafb-4b81-b19b-70eed0777fe8",
+    "test_4e3a54f0-d885-47e2-b950-fe99693ba33a"
+  ],
+  "created_at": {
+    "$date": "2025-10-05T04:10:59.634Z"
+  },
+  "updated_at": {
+    "$date": "2025-10-05T04:10:59.634Z"
+  }
+}]

@@ -22,9 +22,22 @@ type ComboUpdate struct {
 }
 
 type ComboDetailsResponse struct {
-	ID    string  `json:"id"`
-	Name  string  `json:"name"`
-	Tests []*Test `json:"tests"`
+	ID    string         `json:"id"`
+	Name  string         `json:"name"`
+	Tests []*TestInCombo `json:"tests"`
+}
+
+// TestInCombo represents a test as returned inside a combo details response.
+// It intentionally excludes timestamp fields to keep the payload small.
+type TestInCombo struct {
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Price         int      `json:"price"`
+	ImportedPrice int      `json:"imported_price"`
+	NormalValue   string   `json:"normal_value"`
+	Unit          string   `json:"unit"`
+	LowerBound    *float64 `json:"lower_bound"`
+	UpperBound    *float64 `json:"upper_bound"`
 }
 
 type ComboQueryOptions struct {

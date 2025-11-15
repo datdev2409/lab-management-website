@@ -104,6 +104,53 @@ func (s *ComboService) GetComboTests(ctx context.Context, comboId string) ([]*mo
 	return s.comboRepository.GetComboTests(ctx, comboId)
 }
 
+// testToTestInCombo converts a full Test model into a TestInCombo (excludes timestamps)
+func (s *ComboService) testToTestInCombo(t *models.Test) *models.TestInCombo {
+	if t == nil {
+		return nil
+	}
+	return &models.TestInCombo{
+		ID:            t.ID,
+		Name:          t.Name,
+		Price:         t.Price,
+		ImportedPrice: t.ImportedPrice,
+		NormalValue:   t.NormalValue,
+		Unit:          t.Unit,
+		LowerBound:    t.LowerBound,
+		UpperBound:    t.UpperBound,
+	}
+}
+
+// GetComboDetails returns combo information together with its tests (tests without timestamps)
+func (s *ComboService) GetComboDetails(ctx context.Context, comboId string) (*models.ComboDetailsResponse, error) {
+	// Fetch combo and handle not-found translation
+	combo, err := s.getComboByIdWithErrorHandling(ctx, comboId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch tests for combo
+	tests, err := s.comboRepository.GetComboTests(ctx, comboId)
+	if err != nil {
+		if err.Error() == comboNotFoundMsg {
+			return nil, ErrComboNotFound
+		}
+		return nil, err
+	}
+
+	// Convert tests to TestInCombo
+	resultTests := make([]*models.TestInCombo, 0, len(tests))
+	for _, t := range tests {
+		resultTests = append(resultTests, s.testToTestInCombo(t))
+	}
+
+	return &models.ComboDetailsResponse{
+		ID:    combo.ID,
+		Name:  combo.Name,
+		Tests: resultTests,
+	}, nil
+}
+
 // getComboByIdWithErrorHandling retrieves a combo by ID and converts errors to ErrComboNotFound
 func (s *ComboService) getComboByIdWithErrorHandling(ctx context.Context, id string) (*models.Combo, error) {
 	combo, err := s.comboRepository.GetComboById(ctx, id)
