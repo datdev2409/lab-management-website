@@ -28,13 +28,8 @@ templ ComboFormScript() {
 					if (!comboResponse.ok) throw new Error('Failed to fetch combo');
 					const { data: combo } = await comboResponse.json();
 					
-					// Fetch combo tests
-					const testsResponse = await fetch(`/api/v1/combos/${id}/tests`);
-					if (!testsResponse.ok) throw new Error('Failed to fetch tests');
-					const { data: tests } = await testsResponse.json();
-					
 					this.combo_name = combo.name;
-					this.chosenTests = tests;
+					this.chosenTests = combo.tests || [];
 					console.log('Loaded combo with tests:', this.chosenTests.map((t, idx) => `${idx + 1}. ${t.name}`));
 					
 				} catch (error) {

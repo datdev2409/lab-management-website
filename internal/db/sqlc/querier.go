@@ -11,26 +11,40 @@ import (
 )
 
 type Querier interface {
+	AddTestToCombo(ctx context.Context, arg AddTestToComboParams) error
+	CountCombosByName(ctx context.Context, keyword interface{}) (int64, error)
 	CountDoctorsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
 	CountPatientsByNameOrPhone(ctx context.Context, keyword interface{}) (int64, error)
 	CountTestsByName(ctx context.Context, keyword interface{}) (int64, error)
+	CreateCombo(ctx context.Context, name string) (Combo, error)
 	CreateDoctor(ctx context.Context, arg CreateDoctorParams) (Doctor, error)
 	CreatePatient(ctx context.Context, arg CreatePatientParams) (Patient, error)
 	CreateTest(ctx context.Context, arg CreateTestParams) (Test, error)
+	DeleteComboByID(ctx context.Context, id uuid.UUID) error
 	DeleteDoctorByID(ctx context.Context, id uuid.UUID) error
 	DeletePatientByID(ctx context.Context, id uuid.UUID) error
 	DeleteTestByID(ctx context.Context, id uuid.UUID) error
+	GetComboByID(ctx context.Context, id uuid.UUID) (Combo, error)
+	GetComboByIDWithTests(ctx context.Context, id uuid.UUID) (Combo, error)
+	GetComboTestCount(ctx context.Context, comboID uuid.UUID) (int64, error)
+	GetComboTests(ctx context.Context, comboID uuid.UUID) ([]Test, error)
 	GetDoctorByID(ctx context.Context, id uuid.UUID) (Doctor, error)
 	GetPatientByID(ctx context.Context, id uuid.UUID) (Patient, error)
 	GetTestByID(ctx context.Context, id uuid.UUID) (Test, error)
+	IsComboNameExists(ctx context.Context, name string) (bool, error)
 	IsDoctorNameAndPhoneExists(ctx context.Context, arg IsDoctorNameAndPhoneExistsParams) (bool, error)
 	IsPatientNameAndPhoneExists(ctx context.Context, arg IsPatientNameAndPhoneExistsParams) (bool, error)
 	IsTestNameExists(ctx context.Context, name string) (bool, error)
+	ListAllCombos(ctx context.Context) ([]Combo, error)
 	ListAllTests(ctx context.Context) ([]Test, error)
 	ListPatients(ctx context.Context) ([]Patient, error)
+	RemoveAllTestsFromCombo(ctx context.Context, comboID uuid.UUID) error
+	RemoveTestFromCombo(ctx context.Context, arg RemoveTestFromComboParams) error
+	SearchCombosByName(ctx context.Context, arg SearchCombosByNameParams) ([]Combo, error)
 	SearchDoctorsByNameOrPhone(ctx context.Context, arg SearchDoctorsByNameOrPhoneParams) ([]Doctor, error)
 	SearchPatientsByNameOrPhone(ctx context.Context, arg SearchPatientsByNameOrPhoneParams) ([]Patient, error)
 	SearchTestsByName(ctx context.Context, arg SearchTestsByNameParams) ([]Test, error)
+	UpdateComboByID(ctx context.Context, arg UpdateComboByIDParams) (Combo, error)
 	UpdateDoctorByID(ctx context.Context, arg UpdateDoctorByIDParams) error
 	UpdatePatientByID(ctx context.Context, arg UpdatePatientByIDParams) error
 	UpdateTestByID(ctx context.Context, arg UpdateTestByIDParams) (Test, error)

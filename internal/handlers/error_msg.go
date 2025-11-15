@@ -18,4 +18,8 @@ const (
 	TEST_ALREADY_EXISTS    = "Xét nghiệm với tên này đã tồn tại"
 	TEST_NOT_FOUND         = "Không tìm thấy xét nghiệm"
 	INVALID_TEST_BOUNDS    = "Giới hạn dưới phải nhỏ hơn hoặc bằng giới hạn trên"
+
+	COMBO_ALREADY_EXISTS = "Gói xét nghiệm với tên này đã tồn tại"
+	COMBO_NOT_FOUND      = "Không tìm thấy gói xét nghiệm"
+	INVALID_COMBO_TESTS  = "Gói xét nghiệm phải chứa ít nhất một xét nghiệm"
 )

@@ -51,28 +51,18 @@ func (m *MongoStorage) DeleteComboById(ctx context.Context, id string) error {
 }
 
 func (m *MongoStorage) GetTestsInCombo(ctx context.Context, comboId string) (*models.Combo, []*models.Test, error) {
+	// NOTE: This is a legacy MongoDB function. The PostgreSQL-based repository should be used instead.
+	// With the new schema, tests are stored in a separate combo_tests join table.
 	combo, err := m.GetComboById(ctx, comboId)
 	if err != nil {
 		return nil, nil, err
 	}
-	col := m.getCollection("tests")
-	tests, err := MongoGetByIds[models.Test](ctx, col, combo.TestIDs)
-	if err != nil {
-		return combo, nil, err
-	}
-	return combo, tests, nil
+	// Return empty tests slice since TestIDs no longer exists in the Combo model
+	return combo, []*models.Test{}, nil
 }
 
 func (m *MongoStorage) GetTestsByComboId(ctx context.Context, comboId string) ([]*models.Test, error) {
-	combo, err := m.GetComboById(ctx, comboId)
-	if err != nil {
-		return nil, err
-	}
-	col := m.getCollection("tests")
-	tests, err := MongoGetByIdsOrdered[models.Test](ctx, col, combo.TestIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	return tests, nil
+	// NOTE: This is a legacy MongoDB function. The PostgreSQL-based repository should be used instead.
+	// With the new schema, tests are stored in a separate combo_tests join table.
+	return []*models.Test{}, nil
 }

@@ -59,6 +59,11 @@ func main() {
 	testService := service.NewTestService(testRepository)
 	testHandler := handlers.NewTestHandler(testService, v)
 
+	// Initialize Combo
+	comboRepository := repository.NewPgComboRepository(queries, pgPool)
+	comboService := service.NewComboService(comboRepository)
+	comboHandler := handlers.NewComboHandler(comboService, v)
+
 	r := chi.NewRouter()
 
 	// Patient routes
@@ -100,6 +105,23 @@ func main() {
 
 	// Test page route
 	r.Get("/danh-muc-xet-nghiem", handlers.Make(testHandler.HandleTestPage))
+
+	// Combo routes
+	r.Route("/api/v1/combos", func(r chi.Router) {
+		r.Get("/", handlers.Make(comboHandler.SearchCombosByName))
+		r.Get("/all", handlers.Make(comboHandler.ListAllCombos))
+		r.Post("/", handlers.Make(comboHandler.CreateCombo))
+		r.Get("/{id}", handlers.Make(comboHandler.GetCombo))
+		r.Put("/{id}", handlers.Make(comboHandler.UpdateCombo))
+		r.Delete("/{id}", handlers.Make(comboHandler.DeleteCombo))
+		r.Get("/{id}/tests", handlers.Make(comboHandler.GetComboTests))
+	})
+
+	r.Route("/danh-muc-goi-xet-nghiem", func(r chi.Router) {
+		r.Get("/new", handlers.Make(comboHandler.HandleComboCreatePage))
+		r.Get("/{id}/edit", handlers.Make(comboHandler.HandleComboEditPage))
+		r.Get("/", handlers.Make(comboHandler.HandleComboPage))
+	})
 
 	log.Info("Server is running", zap.String("port", port))
 	err = http.ListenAndServe(":"+port, r)

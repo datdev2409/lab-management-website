@@ -6,25 +6,7 @@ import (
 
 	"github.com/datdev2409/lab-admin-go/internal/db/sqlc"
 	"github.com/datdev2409/lab-admin-go/internal/models"
-	"github.com/jackc/pgx/v5/pgtype"
 )
-
-// Helper to convert *float64 to pgtype.Float8
-func toFloat8Optional(f *float64) pgtype.Float8 {
-	if f == nil {
-		return pgtype.Float8{Valid: false}
-	}
-	return pgtype.Float8{Float64: *f, Valid: true}
-}
-
-// Helper to convert pgtype.Float8 to *float64
-func fromFloat8Optional(f pgtype.Float8) *float64 {
-	if !f.Valid {
-		return nil
-	}
-	val := f.Float64
-	return &val
-}
 
 type TestRepository interface {
 	InsertTest(ctx context.Context, test *models.CreateTestInput) (*models.Test, error)

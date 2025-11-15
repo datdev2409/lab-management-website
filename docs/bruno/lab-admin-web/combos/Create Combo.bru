@@ -1,0 +1,32 @@
+meta {
+  name: Create Combo
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/combos
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:json {
+  {
+    "name": "Gói xét nghiệm toàn diện",
+    "test_ids": ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002", "550e8400-e29b-41d4-a716-446655440003"]
+  }
+}
+
+tests {
+  test("Response status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Response contains combo id", function() {
+    expect(res.body).to.have.property('id');
+  });
+}

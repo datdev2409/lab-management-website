@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Combo struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ComboTest struct {
+	ComboID   uuid.UUID `json:"combo_id"`
+	TestID    uuid.UUID `json:"test_id"`
+	TestOrder int32     `json:"test_order"`
+}
+
 type Doctor struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`

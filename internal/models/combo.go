@@ -7,13 +7,23 @@ import (
 type Combo struct {
 	ID        string    `json:"id" bson:"_id,omitempty"`
 	Name      string    `json:"name" bson:"name"`
-	TestIDs   []string  `json:"test_ids" bson:"test_ids"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
+type CreateComboInput struct {
+	Name    string   `json:"name" validate:"required"`
+	TestIDs []string `json:"test_ids" validate:"required,min=1"`
+}
+
+type ComboUpdate struct {
+	Name    *string  `json:"name,omitempty"`
+	TestIDs []string `json:"test_ids,omitempty"`
+}
+
 type ComboDetailsResponse struct {
-	Combo *Combo  `json:"combo"`
+	ID    string  `json:"id"`
+	Name  string  `json:"name"`
 	Tests []*Test `json:"tests"`
 }
 
@@ -27,7 +37,6 @@ func NewCombo(name string, testIDs []string) *Combo {
 	return &Combo{
 		ID:        comboId,
 		Name:      name,
-		TestIDs:   testIDs,
 		CreatedAt: now,
 		UpdatedAt: now,
 	}
