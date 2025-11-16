@@ -1,0 +1,27 @@
+meta {
+  name: Update doctor by ID
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:9000/api/v1/doctors/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: f94a7beb-ad24-4a83-b942-582d592a93a0
+}
+
+body:json {
+  {
+    "name": "Bác sĩ Nguyễn Văn A (updated)",
+    "address": "Bệnh viện Chợ Rẫy, TP HCM"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

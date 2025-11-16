@@ -1,0 +1,1727 @@
+meta {
+  name: Bulk create tests
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:9000/api/v1/tests/bulk
+  body: json
+  auth: none
+}
+
+body:json {
+  [
+    {
+      "_id": "test_928fa76c-346d-4319-891f-d29d40a4c82d",
+      "name": "GLUCOSE",
+      "price": 20000,
+      "normal_value": "3.9 - 7.0",
+      "unit": "mmol/L",
+      "lower_bound": 3.9,
+      "upper_bound": 7
+    },
+    {
+      "_id": "test_24594f7e-901f-42af-8afb-4f33ae531065",
+      "name": "HbA1c (NGSP)",
+      "price": 130000,
+      "normal_value": "N<5.7;Pre 5.7-6.4;Dia≥6.5",
+      "unit": "%A1C",
+      "lower_bound": 0,
+      "upper_bound": 5.7
+    },
+    {
+      "_id": "test_26425382-7f01-4716-ab6e-effa709fc066",
+      "name": "HbA1c (IFCC)",
+      "price": 0,
+      "normal_value": "21.3 - 47.5",
+      "unit": "mmol/mol",
+      "lower_bound": 21.3,
+      "upper_bound": 47.5
+    },
+    {
+      "_id": "test_d811e2b3-6c09-4637-9df9-f5935de06b43",
+      "name": "SGOT",
+      "price": 20000,
+      "normal_value": "< 35",
+      "unit": "U/L",
+      "lower_bound": 0,
+      "upper_bound": 35
+    },
+    {
+      "_id": "test_f1143f02-7bd5-40dd-99c2-38e6a0d0e6d9",
+      "name": "SGPT",
+      "price": 20000,
+      "normal_value": "3.0 - 30.0",
+      "unit": "U/L",
+      "lower_bound": 3,
+      "upper_bound": 30
+    },
+    {
+      "_id": "test_5403cd10-42c4-4662-bb2e-27ddf4941907",
+      "name": "GGT",
+      "price": 20000,
+      "normal_value": "M < 55 ; F < 36",
+      "unit": "U/L",
+      "lower_bound": 0,
+      "upper_bound": 55
+    },
+    {
+      "_id": "test_ca70662d-a05b-43d8-b812-86db54645865",
+      "name": "UREA",
+      "price": 20000,
+      "normal_value": "2.5 - 8.3",
+      "unit": "mmol/L",
+      "lower_bound": 2.5,
+      "upper_bound": 8.3
+    },
+    {
+      "_id": "test_2dfbc074-f6a5-4b23-ac2f-a222afda8c62",
+      "name": "CREATININE",
+      "price": 20000,
+      "normal_value": "M: 53-115 ; F: 44-97",
+      "unit": "µmol/L",
+      "lower_bound": 44,
+      "upper_bound": 115
+    },
+    {
+      "_id": "test_dd5d4739-393e-43c6-9b68-efe1ae88456f",
+      "name": "eGFR ",
+      "price": 20000,
+      "normal_value": "90+",
+      "unit": "ml/min/1.73m2",
+      "lower_bound": 90,
+      "upper_bound": 900
+    },
+    {
+      "_id": "test_070a0fea-4f29-4d05-bb26-b55de82af77e",
+      "name": "CHOLESTEROL",
+      "price": 20000,
+      "normal_value": "2.6 - 5.2",
+      "unit": "mmol/L",
+      "lower_bound": 2.6,
+      "upper_bound": 5.2
+    },
+    {
+      "_id": "test_91a7f1e0-dd29-4c3b-9eba-afa4429ff8b4",
+      "name": "TRIGLYCERID",
+      "price": 20000,
+      "normal_value": "0.5 - 2.3",
+      "unit": "mmol/L",
+      "lower_bound": 0.5,
+      "upper_bound": 2.3
+    },
+    {
+      "_id": "test_a600c806-f95c-4e29-9d57-6e136f5476ec",
+      "name": "HDL - C",
+      "price": 20000,
+      "normal_value": "> 0.9",
+      "unit": "mmol/L",
+      "lower_bound": 0.9,
+      "upper_bound": 10
+    },
+    {
+      "_id": "test_f7ab9844-822f-479b-9c63-05e9d3805c07",
+      "name": "LDL - C",
+      "price": 20000,
+      "normal_value": "< 3.4",
+      "unit": "mmol/L",
+      "lower_bound": 0,
+      "upper_bound": 3.4
+    },
+    {
+      "_id": "test_9bf5aea1-32c9-4e03-86f5-133baac1f53e",
+      "name": "ACID URIC",
+      "price": 20000,
+      "normal_value": "M: 3.4-7.0 ; F: 2.4-5.7",
+      "unit": "mg/dL",
+      "lower_bound": 3.4,
+      "upper_bound": 7
+    },
+    {
+      "_id": "test_c09ff3a3-2a4c-4d06-95fb-3cc0d5584b2d",
+      "name": "HBsAg Elisa",
+      "price": 120000,
+      "normal_value": "Index<1; S/Co <1",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_e3aea157-bcca-4178-9a15-ff807798fa3b",
+      "name": "Tổng phân tích tế bào máu ngoại vi",
+      "price": 60000,
+  
+      "lower_bound": 1,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_cb310ee8-7083-42ba-b361-7733eb338704",
+      "name": "WBC",
+      "price": 0,
+      "normal_value": "3.5 - 10.0",
+      "unit": "10^9/L",
+      "lower_bound": 3.5,
+      "upper_bound": 10
+    },
+    {
+      "_id": "test_1e6868a2-f54c-4b0c-8ad1-31ee0d7299ae",
+      "name": "LYM",
+      "price": 0,
+      "normal_value": "0.5 - 5.0",
+      "unit": "10^9/L",
+      "lower_bound": 0.5,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_02bee734-36fb-4f35-b69b-bf0fe02ec998",
+      "name": "MID ",
+      "price": 0,
+      "normal_value": "0.1 - 1.5",
+      "unit": "10^9/L",
+      "lower_bound": 0.1,
+      "upper_bound": 1.5
+    },
+    {
+      "_id": "test_96a3e356-3c8f-40ad-9273-cfa1cc815412",
+      "name": "GRAN",
+      "price": 0,
+      "normal_value": "1.2 - 8.0",
+      "unit": "10^9/L",
+      "lower_bound": 1.2,
+      "upper_bound": 8
+    },
+    {
+      "_id": "test_97b2a96c-66d8-49f3-a4a2-d1c816322dcf",
+      "name": "LYM%",
+      "price": 0,
+      "normal_value": "15.0 - 50.0",
+      "unit": "%",
+      "lower_bound": 15,
+      "upper_bound": 50
+    },
+    {
+      "_id": "test_6f87921f-391c-4a81-b4d7-2545da2e04b3",
+      "name": "MID%",
+      "price": 0,
+      "normal_value": "2.0 - 15.0",
+      "unit": "%",
+      "lower_bound": 2,
+      "upper_bound": 15
+    },
+    {
+      "_id": "test_36b1feab-295d-4da8-b1db-2b0edf746892",
+      "name": "GRAN%",
+      "price": 0,
+      "normal_value": "35.0 - 80.0",
+      "unit": "%",
+      "lower_bound": 35,
+      "upper_bound": 80
+    },
+    {
+      "_id": "test_89e74b0f-79ce-4f6d-b155-9e8548053f9e",
+      "name": "RBC",
+      "price": 0,
+      "normal_value": "3.50 - 5.50",
+      "unit": "10^12/L",
+      "lower_bound": 3.5,
+      "upper_bound": 5.5
+    },
+    {
+      "_id": "test_319768b0-5bc5-4ac2-aae7-5d7d2e75974c",
+      "name": "HGB",
+      "price": 0,
+      "normal_value": "11.5 - 16.5",
+      "unit": "g/dL",
+      "lower_bound": 11.5,
+      "upper_bound": 16.5
+    },
+    {
+      "_id": "test_21e71ab4-3838-4085-a064-6d7230a2bcab",
+      "name": "HCT",
+      "price": 0,
+      "normal_value": "35.0 - 55.0",
+      "unit": "%",
+      "lower_bound": 35,
+      "upper_bound": 55
+    },
+    {
+      "_id": "test_cfada795-fe18-4780-aa0e-b877b9a22e75",
+      "name": "MCV",
+      "price": 0,
+      "normal_value": "75.0 - 100.0",
+      "unit": "fL",
+      "lower_bound": 75,
+      "upper_bound": 100
+    },
+    {
+      "_id": "test_7d7f2002-8df4-4c20-924f-b9624e6d1092",
+      "name": "MCH",
+      "price": 0,
+      "normal_value": "25.0 - 35.0",
+      "unit": "pg",
+      "lower_bound": 25,
+      "upper_bound": 35
+    },
+    {
+      "_id": "test_60ee6cd8-fb76-40d5-a045-031fa3e902ca",
+      "name": "MCHC",
+      "price": 0,
+      "normal_value": "31.0 - 38.0",
+      "unit": "g/dL",
+      "lower_bound": 31,
+      "upper_bound": 38
+    },
+    {
+      "_id": "test_31e4be04-328c-4479-a474-385db0cc3766",
+      "name": "RDW%",
+      "price": 0,
+      "normal_value": "11.0 - 16.0",
+      "unit": "%",
+      "lower_bound": 11,
+      "upper_bound": 16
+    },
+    {
+      "_id": "test_3c854865-f615-4671-bb32-5955087e8d37",
+      "name": "RDWa",
+      "price": 0,
+      "normal_value": "30.0 - 150.0",
+      "unit": "fL",
+      "lower_bound": 30,
+      "upper_bound": 150
+    },
+    {
+      "_id": "test_485b712f-d8b6-4466-ae78-a97e8c85daad",
+      "name": "PLT",
+      "price": 0,
+      "normal_value": "100 - 400",
+      "unit": "10^9/L",
+      "lower_bound": 100,
+      "upper_bound": 400
+    },
+    {
+      "_id": "test_06d20ee8-6642-403e-9c23-bde698217daa",
+      "name": "MPV",
+      "price": 0,
+      "normal_value": "8.0 - 11.0",
+      "unit": "fL",
+      "lower_bound": 8,
+      "upper_bound": 11
+    },
+    {
+      "_id": "test_ff562439-eefb-4e18-9bc1-7d24bf3063af",
+      "name": "PDW",
+      "price": 0,
+      "normal_value": "0.1 - 99.9",
+      "unit": "fL",
+      "lower_bound": 0.1,
+      "upper_bound": 99.9
+    },
+    {
+      "_id": "test_432bf3b3-2383-4987-8cc9-b00aa5d1c6f8",
+      "name": "PCT",
+      "price": 0,
+      "normal_value": "0.01 - 9.99",
+      "unit": "%",
+      "lower_bound": 0.01,
+      "upper_bound": 9.99
+    },
+    {
+      "_id": "test_9e204720-2794-4f21-8144-4fb7e32df71c",
+      "name": "LPCR",
+      "price": 0,
+      "normal_value": "0.1 - 99.9",
+      "unit": "%",
+      "lower_bound": 0.1,
+      "upper_bound": 99.9
+    },
+    {
+      "_id": "test_4a38ec06-9af2-42cc-b336-82d6c2a7c518",
+      "name": "Anti HBs Elisa",
+      "price": 150000,
+      "normal_value": "≥10 ",
+      "unit": "mUI/mL",
+      "lower_bound": 10,
+      "upper_bound": 1000
+    },
+    {
+      "_id": "test_965d8a06-7f09-476e-989e-aff381faa33e",
+      "name": "Anti HCV Elisa",
+      "price": 160000,
+      "normal_value": "S/CO <1; Index <1",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_2f7f3a30-446d-43e9-ae35-a5cbd17a2b9e",
+      "name": "TSH",
+      "price": 120000,
+      "normal_value": "0.32 - 5",
+      "unit": "µIU/mL",
+      "lower_bound": 0.32,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_8678a85f-8fc6-48f4-9db2-d58cae0b013b",
+      "name": "Free T3",
+      "price": 120000,
+      "normal_value": "2.0 - 4.4",
+      "unit": "pg/ml",
+      "lower_bound": 2,
+      "upper_bound": 4.4
+    },
+    {
+      "_id": "test_8a595485-6be4-466f-85ab-e6c4affac7b3",
+      "name": "Free T4",
+      "price": 120000,
+      "normal_value": "0.92 - 1.68",
+      "unit": "ng/dL",
+      "lower_bound": 0.92,
+      "upper_bound": 1.68
+    },
+    {
+      "_id": "test_743b1b4b-8c42-44e0-9515-2058cf576826",
+      "name": "H.P IgM (Elisa)",
+      "price": 140000,
+      "normal_value": "<30 U/mL; GRAYZONE: 30-40",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 30
+    },
+    {
+      "_id": "test_deff1ef1-f473-41e1-8601-6a2c90148914",
+      "name": "H.P IgG ( Elisa)",
+      "price": 140000,
+      "normal_value": "<20 U/mL; GRAYZONE: 20-30",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 20
+    },
+    {
+      "_id": "test_0ace380e-53ed-4a90-b470-e3703d3bff49",
+      "name": "Strongyloides stercoralis IgG ( Giun lươn)",
+      "price": 140000,
+      "normal_value": "< 0.2 OD; GRAYZONE: 0.2-0.3",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.2
+    },
+    {
+      "_id": "test_6da9e5ba-1a7b-411f-9b1f-0fb874cc2b5e",
+      "name": "Cysticercose IgG (Elisa) ( Sán heo )",
+      "price": 140000,
+      "normal_value": "<0.3 OD",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.3
+    },
+    {
+      "_id": "test_29f8111d-789d-4753-88dd-e56c45c3d258",
+      "name": "Gnathostoma IgG (Elisa) ( Giun đầu gai)",
+      "price": 140000,
+      "normal_value": "<0.3 OD",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.3
+    },
+    {
+      "_id": "test_71a871ea-10bb-4ad2-8598-799854f1fd95",
+      "name": "Toxocara IgG (Elisa) ( Sán chó)",
+      "price": 140000,
+      "normal_value": "<0.25 OD; GRAYZONE: 0.25-0.35",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.25
+    },
+    {
+      "_id": "test_b5afdf45-abf2-498a-ba07-e8916a93866d",
+      "name": "Bilirubin T",
+      "price": 40000,
+      "normal_value": "0.10 - 1.10",
+      "unit": "mg/dL",
+      "lower_bound": 0.1,
+      "upper_bound": 1.1
+    },
+    {
+      "_id": "test_a5c341cf-2870-43e4-b17a-ea467e67ae71",
+      "name": "Bilirubin D",
+      "price": 40000,
+      "normal_value": "0.10 - 0.40",
+      "unit": "mg/dL",
+      "lower_bound": 0.1,
+      "upper_bound": 0.4
+    },
+    {
+      "_id": "test_f1e01140-d57f-423d-aaef-d5fe8b76b170",
+      "name": "Bilirubin I",
+      "price": 40000,
+      "normal_value": "0.20 - 0.70",
+      "unit": "mg/dL",
+      "lower_bound": 0.2,
+      "upper_bound": 0.7
+    },
+    {
+      "_id": "test_5a63d0a4-aab3-48ba-a94d-0e5f0a033153",
+      "name": "CRP",
+      "price": 80000,
+      "normal_value": "< 5",
+      "unit": "mg/L",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_1b6782c2-0d7e-4161-86aa-3319a1307a9a",
+      "name": "CORTISOL ( Sáng)",
+      "price": 150000,
+      "normal_value": "6.02 - 18.4",
+      "unit": "µg/dL",
+      "lower_bound": 6.02,
+      "upper_bound": 18.4
+    },
+    {
+      "_id": "test_faec4bcc-7b34-4bd9-842d-c2c983f3d8ab",
+      "name": "HBV DNA Taqman",
+      "price": 400000,
+      "normal_value": "< 339 ",
+      "unit": "copies/mL",
+      "lower_bound": 0,
+      "upper_bound": 339
+    },
+    {
+      "_id": "test_d033f339-aa4d-4db9-8b2b-4371a24d2f61",
+      "name": "Ion đồ/ Ionogramme ( Na, K, Ca, Cl)",
+      "price": 160000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_1eb9f4db-c287-4f32-89b1-66d6169a5e94",
+      "name": "Na",
+      "price": 0,
+      "normal_value": "130- 145",
+      "unit": "mmol/L",
+      "lower_bound": 130,
+      "upper_bound": 145
+    },
+    {
+      "_id": "test_371196a6-a6e1-49f7-93d0-3411a17fc82a",
+      "name": "K",
+      "price": 0,
+      "normal_value": "3.40 - 5.1 ",
+      "unit": "mmol/L",
+      "lower_bound": 3.4,
+      "upper_bound": 5.1
+    },
+    {
+      "_id": "test_e00b117a-16ea-4e50-9c5d-ff42a38894ce",
+      "name": "Ca",
+      "price": 0,
+      "normal_value": "2.1 - 2.80",
+      "unit": "mmol/L",
+      "lower_bound": 2.1,
+      "upper_bound": 2.8
+    },
+    {
+      "_id": "test_f4b70927-165c-49a5-ab81-c83e8008dad9",
+      "name": "Cl",
+      "price": 0,
+      "normal_value": "96 - 108",
+      "unit": "mmol/L",
+      "lower_bound": 96,
+      "upper_bound": 108
+    },
+    {
+      "_id": "test_cffcdeaa-496b-4b45-bd85-b7da641a188c",
+      "name": "Ca++",
+      "price": 40000,
+      "normal_value": "0.80 - 1.32",
+      "unit": "mmol/L",
+      "lower_bound": 0.8,
+      "upper_bound": 1.32
+    },
+    {
+      "_id": "test_22275f9e-1b3a-4821-8461-8490dd2a66bc",
+      "name": "CEA",
+      "price": 190000,
+      "normal_value": "< 5",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_b94fa0b4-b858-4100-8890-914802f1741a",
+      "name": "CYFRA 21-1",
+      "price": 170000,
+      "normal_value": "< 3.3",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 3.3
+    },
+    {
+      "_id": "test_95d21a93-6176-4ed2-9fed-db9a0f5801c6",
+      "name": "CA 19-9",
+      "price": 190000,
+      "normal_value": "< 31",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 31
+    },
+    {
+      "_id": "test_8e0b2801-7aad-4faf-8d85-3443e7c88a4d",
+      "name": "CA 15-3",
+      "price": 190000,
+      "normal_value": "< 28",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 28
+    },
+    {
+      "_id": "test_6322eb2a-d63d-473c-a249-3a5e4bab0585",
+      "name": "CA 72-4",
+      "price": 190000,
+      "normal_value": "< 8.2",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 8.2
+    },
+    {
+      "_id": "test_4312c26e-e1ee-42d3-b32c-ef73801d378c",
+      "name": "CA 125",
+      "price": 190000,
+      "normal_value": "< 35",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 35
+    },
+    {
+      "_id": "test_994b4830-5e9d-4f3b-b2fd-cc080809d993",
+      "name": "SCC",
+      "price": 250000,
+      "normal_value": "0-3",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 3
+    },
+    {
+      "_id": "test_7d617df6-144f-4739-ae86-096e67bc5e32",
+      "name": "ROMATEST",
+      "price": 450000,
+      "normal_value": "Pre:Low<7.4% ; High≥7.4%",
+      "unit": "%",
+      "lower_bound": 0,
+      "upper_bound": 7.4
+    },
+    {
+      "_id": "test_51b3bb25-50eb-438e-8b6c-ad270d210725",
+      "name": "Testosterone",
+      "price": 110000,
+      "normal_value": "M: 264-916 ; F: 14-76",
+      "unit": "ng/dL",
+      "lower_bound": 264,
+      "upper_bound": 916
+    },
+    {
+      "_id": "test_c8576790-e5c0-4fef-bb9c-db7195eb3337",
+      "name": "Progesteron",
+      "price": 110000,
+      "normal_value": "F: 4-25 ; M: <1",
+      "unit": "ng/mL",
+      "lower_bound": 4,
+      "upper_bound": 25
+    },
+    {
+      "_id": "test_4f6f4cbd-aa5f-477d-a66e-0b5e23027209",
+      "name": "Estradiol (E2)",
+      "price": 110000,
+      "normal_value": "M<44 ; F: 12.5-650",
+      "unit": "pg/mL",
+      "lower_bound": 12.5,
+      "upper_bound": 650
+    },
+    {
+      "_id": "test_48d87e51-7696-45fc-b997-8cfabe6a29d2",
+      "name": "Prolactine",
+      "price": 110000,
+      "normal_value": "M: 4-22 ; F: 6-30",
+      "unit": "ng/mL",
+      "lower_bound": 4,
+      "upper_bound": 22
+    },
+    {
+      "_id": "test_7ba5693b-db34-49c7-bcb9-d044fb2edc0e",
+      "name": "PSA",
+      "price": 180000,
+      "normal_value": "<4",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 4
+    },
+    {
+      "_id": "test_383f3bba-f6cf-4dd5-9883-78e4540c690f",
+      "name": "AFP",
+      "price": 150000,
+      "normal_value": "<20",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 20
+    },
+    {
+      "_id": "test_dbb050af-eae8-48ee-a994-a729a41db558",
+      "name": "Ferritin",
+      "price": 150000,
+      "normal_value": "M: 22-400 ; F: 10-291",
+      "unit": "ng/mL",
+      "lower_bound": 22,
+      "upper_bound": 400
+    },
+    {
+      "_id": "test_4244232f-b241-4682-90ec-79474e1834c9",
+      "name": "ASO",
+      "price": 80000,
+      "normal_value": "<200",
+      "unit": "UI/mL",
+      "lower_bound": 0,
+      "upper_bound": 200
+    },
+    {
+      "_id": "test_009d8440-7df7-45e3-b5f0-d6aa769896f6",
+      "name": "RF",
+      "price": 80000,
+      "normal_value": "≤15",
+      "unit": "UI/mL",
+      "lower_bound": 0,
+      "upper_bound": 15
+    },
+    {
+      "_id": "test_58d2e860-f7ad-4f3f-8450-9407a01f2d5b",
+      "name": "HBeAg",
+      "price": 150000,
+      "normal_value": "Index <0.8 ; S/CO<1",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_79eb1705-e838-48fb-9183-34c93dd25ccc",
+      "name": "Anti HBe",
+      "price": 150000,
+      "normal_value": "S/CO<1 ; Index <0.8; 0.8 ≤ S/CO",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_1bd209d4-e2db-4c09-ae2d-7ab3dd1cea62",
+      "name": "HCV - RNA Taqman",
+      "price": 600000,
+      "normal_value": "≤250",
+      "unit": "copies/mL",
+      "lower_bound": 0,
+      "upper_bound": 250
+    },
+    {
+      "_id": "test_7a26b2d8-6561-4ce3-9e3d-0ed392a98077",
+      "name": "APTT/TCK",
+      "price": 80000,
+      "normal_value": "25.1-36.5",
+      "unit": "sec",
+      "lower_bound": 25.1,
+      "upper_bound": 36.5
+    },
+    {
+      "_id": "test_7b395ecc-46fd-4060-9fc1-1007689193cd",
+      "name": "TQ/PT",
+      "price": 80000,
+      "normal_value": "9.4-14.0",
+      "unit": "sec",
+      "lower_bound": 9.4,
+      "upper_bound": 14
+    },
+    {
+      "_id": "test_0d63eeba-77a1-4392-8134-2abffef11642",
+      "name": "INR",
+      "price": 90000,
+      "normal_value": "0.9-1.19",
+      "unit": ".",
+      "lower_bound": 0.9,
+      "upper_bound": 1.19
+    },
+    {
+      "_id": "test_39d46d45-4e67-4a35-b752-8be7ff205730",
+      "name": "BETA HCG/ Blood",
+      "price": 200000,
+      "normal_value": "≤5",
+      "unit": "mIU/mL",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_bdd4db23-c4ca-4b43-b115-ad8252da356b",
+      "name": "Zinc (Kẽm)",
+      "price": 200000,
+      "normal_value": "60-120",
+      "unit": "µg/dL",
+      "lower_bound": 60,
+      "upper_bound": 120
+    },
+    {
+      "_id": "test_d4d06080-4303-44a5-ad53-0d360bb800a6",
+      "name": "Vitamin D Total (25-OH Vit D)",
+      "price": 350000,
+      "normal_value": "20-50",
+      "unit": "ng/mL",
+      "lower_bound": 20,
+      "upper_bound": 50
+    },
+    {
+      "_id": "test_2c2b5b59-0ff6-4632-ab11-adc52888dad4",
+      "name": "GLUCOSE 0H",
+      "price": 40000,
+      "normal_value": "<5.1",
+      "unit": "mm",
+      "lower_bound": 0,
+      "upper_bound": 5.1
+    },
+    {
+      "_id": "test_403f08f4-0e2b-48c8-b083-336ae0701b20",
+      "name": "GLUCOSE 1H",
+      "price": 40000,
+      "normal_value": "<10.0",
+      "unit": "mmol/L",
+      "lower_bound": 0,
+      "upper_bound": 10
+    },
+    {
+      "_id": "test_13eb8a71-dd84-41a3-adf4-eb20d6eb84d3",
+      "name": "GLUCOSE 2H",
+      "price": 40000,
+      "normal_value": "<8.5",
+      "unit": "mmol/L",
+      "lower_bound": 0,
+      "upper_bound": 8.5
+    },
+    {
+      "_id": "test_fbdf30ee-1966-47aa-b4a6-17908fa189b3",
+      "name": "Iron (Sắt/HT)",
+      "price": 80000,
+      "normal_value": "50-168",
+      "unit": "µg/dL",
+      "lower_bound": 50,
+      "upper_bound": 168
+    },
+    {
+      "_id": "test_49eecca0-1e9e-4101-98ed-c5cd4da0b17b",
+      "name": "H.Pylori C13 hơi thở",
+      "price": 750000,
+      "normal_value": "<4/1000",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 4
+    },
+    {
+      "_id": "test_9b42ed69-abc6-4a63-a981-3dcf4d97abe7",
+      "name": "Vitamin B12 (Cyanocobalamin)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_a68c7eb8-2372-410f-8d9b-d10e0fe4efa4",
+      "name": "Phosphorus (P04)",
+      "price": 30000,
+      "normal_value": "0.80-1.60",
+      "unit": "mmol/L",
+      "lower_bound": 0.8,
+      "upper_bound": 1.6
+    },
+    {
+      "_id": "test_fe751731-2340-4f40-8382-9bd3fb7ab46f",
+      "name": "Magnesium (Mg)",
+      "price": 40000,
+      "normal_value": "0.53-1.11",
+      "unit": "mmol/L",
+      "lower_bound": 0.53,
+      "upper_bound": 1.11
+    },
+    {
+      "_id": "test_f44ed0fe-b6e3-4057-8dd6-d637f6cb1567",
+      "name": "Thyroglobulin",
+      "price": 180000,
+      "normal_value": "3.5-77",
+      "unit": "ng/mL",
+      "lower_bound": 3.5,
+      "upper_bound": 77
+    },
+    {
+      "_id": "test_828283bd-8ca4-4b10-af36-e9300e970320",
+      "name": "Calcitonin",
+      "price": 180000,
+      "normal_value": "M: <9.52; F: <6.40",
+      "unit": "pg/mL",
+      "lower_bound": 0,
+      "upper_bound": 9.52
+    },
+    {
+      "_id": "test_babc127b-7870-4af3-bd7b-e4aefb485496",
+      "name": "Cấy định danh + kháng sinh đồ",
+      "price": 250000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_f15bde4b-09da-4a0a-8b53-bdf6c19c8ca4",
+      "name": "Micro Albumine/CRE",
+      "price": 50000,
+      "normal_value": "<30",
+      "unit": "mg/g",
+      "lower_bound": 0,
+      "upper_bound": 30
+    },
+    {
+      "_id": "test_24b4b19f-fc5c-4c37-a586-0221cd07986f",
+      "name": "Micro Albumine/Urine (Quantitative)",
+      "price": 50000,
+      "normal_value": "<20",
+      "unit": "mg/L",
+      "lower_bound": 0,
+      "upper_bound": 20
+    },
+    {
+      "_id": "test_3aec6848-19ac-4c7b-9c15-286621704d78",
+      "name": "Creatinin/Urine",
+      "price": 40000,
+      "normal_value": "0.4-1.2",
+      "unit": "g/L",
+      "lower_bound": 0.4,
+      "upper_bound": 1.2
+    },
+    {
+      "_id": "test_17a6c8c2-f76e-4e69-b1d6-d397172a1581",
+      "name": "Anti- CCP",
+      "price": 250000,
+      "normal_value": "<5.0",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_5bd19189-f0d6-4737-87f6-35d25e588b6f",
+      "name": "NT - ProBNP II",
+      "price": 450000,
+      "normal_value": "≤450",
+      "unit": "pg/mL",
+      "lower_bound": 0,
+      "upper_bound": 450
+    },
+    {
+      "_id": "test_a44819e1-a463-4260-a2d0-97250e237cbb",
+      "name": "NHÓM MÁU ABO",
+      "price": 30000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_55de913d-e715-4673-8795-40987c8bcfca",
+      "name": "NHÓM MÁU Rh",
+      "price": 30000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_30203a59-d584-41b1-aefa-d297f92cfea4",
+      "name": "CORTISOL (Sáng)",
+      "price": 130000,
+      "normal_value": "166.07 - 507.58",
+      "unit": "nmol/L",
+      "lower_bound": 166.07,
+      "upper_bound": 507.58
+    },
+    {
+      "_id": "test_cde996e5-ed0e-441b-a10b-7714a70ecf9f",
+      "name": "CORTISOL (Chiều)",
+      "price": 130000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_96abdd2a-5f96-4197-93dc-ced345a0daef",
+      "name": "Albumin",
+      "price": 50000,
+      "normal_value": "3.6-5.0",
+      "unit": "g",
+      "lower_bound": 3.6,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_91d51287-8f83-4df1-8351-bce87c67ce15",
+      "name": "Amylase/Blood",
+      "price": 80000,
+      "normal_value": "35-115",
+      "unit": "U/L",
+      "lower_bound": 35,
+      "upper_bound": 115
+    },
+    {
+      "_id": "test_20a6270b-fc68-4bf3-959b-42902af51daa",
+      "name": "CK-MB",
+      "price": 130000,
+      "normal_value": "<7",
+      "unit": "ng",
+      "lower_bound": 0,
+      "upper_bound": 7
+    },
+    {
+      "_id": "test_bb7d17e9-5034-43b1-a1c7-87787e21f569",
+      "name": "Troponin T hs",
+      "price": 140000,
+      "normal_value": "<14",
+      "unit": "ng/L",
+      "lower_bound": 0,
+      "upper_bound": 14
+    },
+    {
+      "_id": "test_b3eb7a2d-eaa1-4437-b7ce-bb79756c8d1c",
+      "name": "Troponin - I hs",
+      "price": 170000,
+      "normal_value": "M: <34.2; F: <15.6",
+      "unit": "ng",
+      "lower_bound": 0,
+      "upper_bound": 34.2
+    },
+    {
+      "_id": "test_50bfb995-9ae1-4f9f-a3a5-85fda2031318",
+      "name": "Điện di Hemoglobin",
+      "price": 350000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_f22c6a8a-c3d0-41a9-9d27-e7dd5d0b4506",
+      "name": "Phết máu ngoại biên",
+      "price": 150000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_95920a22-b870-45cf-92f4-53c1d2f9808a",
+      "name": "TS",
+      "price": 50000,
+      "normal_value": "3.0-8.0",
+      "unit": "min",
+      "lower_bound": 3,
+      "upper_bound": 8
+    },
+    {
+      "_id": "test_18a597c2-c60a-4245-83e1-fbbb63d54fbe",
+      "name": "TC",
+      "price": 0,
+      "normal_value": "3.0-8.0",
+      "unit": "min",
+      "lower_bound": 3,
+      "upper_bound": 8
+    },
+    {
+      "_id": "test_f1c17a79-e53d-450e-b9ed-15e55d5781b8",
+      "name": "Fibrinogen",
+      "price": 70000,
+      "normal_value": "1.8-4.5",
+      "unit": "g",
+      "lower_bound": 1.8,
+      "upper_bound": 4.5
+    },
+    {
+      "_id": "test_c6806a1e-7fce-48bf-903c-fa74cc45ac6c",
+      "name": "Factor V Leiden (APC Resistance V)",
+      "price": 250000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_7bee7b5d-f66b-42d8-9a92-ee74712db43e",
+      "name": "Anti HAV Total",
+      "price": 200000,
+      "normal_value": ">1",
+      "unit": "COI",
+      "lower_bound": 1,
+      "upper_bound": 1000
+    },
+    {
+      "_id": "test_b721b46a-8b99-47c4-a5be-bebb57350ff3",
+      "name": "ANTI HAV IgM",
+      "price": 200000,
+      "normal_value": "S/CO <1",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_ab0d26a0-88d4-4a32-bfff-057874729b95",
+      "name": "PIVKA - II",
+      "price": 650000,
+      "normal_value": "<40",
+      "unit": "mAU/mL",
+      "lower_bound": 0,
+      "upper_bound": 40
+    },
+    {
+      "_id": "test_59cc3478-4eb8-420f-94b8-e0afa116ad32",
+      "name": "HE4",
+      "price": 260000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_bb0e7425-5c50-4122-8dc9-2f113bf0050c",
+      "name": "Toxoplasma IgG (KST trên mèo)",
+      "price": 190000,
+      "normal_value": "<1.6; GZ: 1.6-<3.0",
+      "unit": "IU/mL",
+      "lower_bound": 0,
+      "upper_bound": 1.6
+    },
+    {
+      "_id": "test_0c1836a1-47fa-45a1-a61a-6ca81106550e",
+      "name": "Toxoplasma IgM (KST trên mèo)",
+      "price": 190000,
+      "normal_value": "<0.5; GZ: 0.5-<0.6",
+      "unit": "Index",
+      "lower_bound": 0,
+      "upper_bound": 0.5
+    },
+    {
+      "_id": "test_baa53c8a-5b08-4ade-af37-38a553b0015e",
+      "name": "Fasciola Sp IgG (Sán lá gan)",
+      "price": 140000,
+      "normal_value": "<0.1; GZ: 0.1-0.15",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.1
+    },
+    {
+      "_id": "test_74436687-2396-4ee3-b3e9-4971894572d0",
+      "name": "Sero Fasciola sp IgG ( Sán Lá Gan)",
+      "price": 140000,
+      "normal_value": "<0.1; GZ: 0.1-0.15",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.1
+    },
+    {
+      "_id": "test_688b58a1-58f4-4591-83bf-1a12413bbd1b",
+      "name": "Schistosoma IgG (Sán máng)",
+      "price": 140000,
+      "normal_value": "<0.2",
+      "unit": "OD",
+      "lower_bound": 0,
+      "upper_bound": 0.2
+    },
+    {
+      "_id": "test_5b7e7e88-46d0-4226-8216-80d007aa7d94",
+      "name": "FSH",
+      "price": 120000,
+      "normal_value": "M: 1-12 ; F: 3-153",
+      "unit": "mUI/mL",
+      "lower_bound": 1,
+      "upper_bound": 12
+    },
+    {
+      "_id": "test_8fe93d07-2f8c-4516-8a2b-b5ac0d19601a",
+      "name": "LH",
+      "price": 120000,
+      "normal_value": "M: 2-12 ; F: 2-64",
+      "unit": "mU",
+      "lower_bound": 2,
+      "upper_bound": 12
+    },
+    {
+      "_id": "test_e592130c-301c-4bdd-bb28-641023b4bc8b",
+      "name": "Free PSA",
+      "price": 180000,
+      "normal_value": ".",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_a7013049-ab58-4f4d-bc88-d3d1e6da014c",
+      "name": "HIV",
+      "price": 150000,
+      "normal_value": "Chưa phát hiện kháng thể",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_0187749b-8d05-4aba-86fc-ca8b76b61709",
+      "name": "Dị ứng Rida Allergy Screen ( Panel 1 việt )/ Dị ứng hô hấp và thực phẩm thường gặp",
+      "price": 850000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_1ec6c365-3bda-4679-9111-be80dfbe4bb3",
+      "name": "Dị ứng Rida Allergy Screen ( Panel 4 )/ Dị ứng trẻ em",
+      "price": 850000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_7ed68c52-e973-4e69-b490-8ca68ca38c59",
+      "name": "RIDA 53 (Dị ứng 53 dị nguyên)",
+      "price": 1800000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_1f4f99c3-4859-4be0-82b4-28bc52944b8d",
+      "name": "Bicarbonat (HCO3-) (Reserve Alkaline)",
+      "price": 40000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_01ef0139-f9a8-46d1-97c0-705c090e7015",
+      "name": "ANA Profile 23 IgG (IFT)",
+      "price": 1850000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_9a3acde5-6980-4f86-8313-c7842a7f5095",
+      "name": "FNA",
+      "price": 250000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_f535f7e9-febb-4525-b75b-7a15abe3b651",
+      "name": "D.Dimer",
+      "price": 300000,
+      "normal_value": "<500",
+      "unit": "ng/mL",
+      "lower_bound": 0,
+      "upper_bound": 500
+    },
+    {
+      "_id": "test_9ed61e07-7b25-4591-b41a-ccd31c766fd0",
+      "name": "Rubella IgG",
+      "price": 200000,
+      "normal_value": "<5 ; GZ: 5.0-9.9",
+      "unit": "IU/M",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_2559099d-e01f-465c-adc8-35c2f7b17673",
+      "name": "Rubella IgM",
+      "price": 200000,
+      "normal_value": "<1.2 ; GZ: 1.2-1.6",
+      "unit": "Index",
+      "lower_bound": 0,
+      "upper_bound": 1.2
+    },
+    {
+      "_id": "test_9299bcbd-1b19-4460-a1af-bfa3e89d30f2",
+      "name": "Syphilis ( Elisa )",
+      "price": 120000,
+      "normal_value": "<1 ",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_eb9f272e-9cb0-4ea9-abcf-210ac92b221d",
+      "name": "Protein Blood",
+      "price": 70000,
+      "normal_value": "6.0-8.0",
+      "unit": "g/dL",
+      "lower_bound": 6,
+      "upper_bound": 8
+    },
+    {
+      "_id": "test_e853ac73-b47a-41ce-b1fe-50eaf92d62c9",
+      "name": "Anti HEV IgM",
+      "price": 200000,
+      "normal_value": "S/CO <1; GZ: 1-1.2",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_d3213a6b-f3af-4d6c-8aae-8b6add51ece1",
+      "name": "Anti HEV IgG",
+      "price": 200000,
+      "normal_value": "S/CO <0.9; GZ: 0.9-1.1",
+      "unit": "S/CO",
+      "lower_bound": 0,
+      "upper_bound": 0.9
+    },
+    {
+      "_id": "test_acbb1bac-fed4-4bd1-8bda-b2f55582c5ca",
+      "name": "Chlamydia Trachomatis/Dịch",
+      "price": 300000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_2bf8f649-67f6-4ff8-a682-8a7fe63cea32",
+      "name": "Chlamydia trachomatis-Neisseria gonorrhoeae DNA",
+      "price": 300000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_f67814a5-b8c4-4bda-9b3e-a6bf9225744f",
+      "name": "TRAb (TSH Receptor)",
+      "price": 450000,
+      "normal_value": "≤1.22",
+      "unit": "IU/L",
+      "lower_bound": 0,
+      "upper_bound": 1.22
+    },
+    {
+      "_id": "test_c5dba397-e461-4411-82b3-6d96ffdddb60",
+      "name": "Echinococcus IgG (Sán dải chó)(Elisa)",
+      "price": 140000,
+      "normal_value": "<10 ; GZ: 10-15",
+      "unit": "U/mL",
+      "lower_bound": 0,
+      "upper_bound": 10
+    },
+    {
+      "_id": "test_a6281b8b-349d-484b-9aa6-0d3a62406855",
+      "name": "Echinococcus IgM (Hydatid) (Sán dải chó)(Elisa)",
+      "price": 140000,
+      "normal_value": "<1.0 ; GZ: 1.0-1.5",
+      "unit": "Index",
+      "lower_bound": 0,
+      "upper_bound": 1
+    },
+    {
+      "_id": "test_afa338e5-516f-465e-80de-423622f53c83",
+      "name": "Clonorchis sinensis IgG (Sán lá gan nhỏ)(Elisa)",
+      "price": 150000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_dd9f384d-30f5-4137-bcf4-c3c31bb0f789",
+      "name": "Vitamin B6",
+      "price": 1500000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_8078c736-e1c4-4d47-a4fb-263ea299ebdf",
+      "name": "Tổng phân tích sinh hóa nước tiểu",
+      "price": 50000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_032eec5b-4800-4667-bbe0-2231c104760b",
+      "name": "Leucocytes",
+      "price": 0,
+      "normal_value": "Negative (<10)",
+      "unit": "Leu/µL",
+      "lower_bound": 0,
+      "upper_bound": 10
+    },
+    {
+      "_id": "test_362fc604-0f14-432a-8fbc-dd2e3247c4cd",
+      "name": "Nitrite",
+      "price": 0,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_a0c23909-96e6-4182-9cd6-39a9d39e58cf",
+      "name": "Urobilinogen",
+      "price": 0,
+      "normal_value": "Negative (<17)",
+      "unit": "µmol/L",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_519be6c5-b84b-46a4-81d9-a5c813780bb0",
+      "name": "Protein",
+      "price": 0,
+      "normal_value": "Negative (<0.1)",
+      "unit": "g/L",
+      "lower_bound": 0,
+      "upper_bound": 0.1
+    },
+    {
+      "_id": "test_ed72e1b3-3707-48f6-a646-cc6758886549",
+      "name": "Blood",
+      "price": 0,
+      "normal_value": "Negative (<5)",
+      "unit": "Ery/µL",
+      "lower_bound": 0,
+      "upper_bound": 5
+    },
+    {
+      "_id": "test_82945a8d-c27b-42d3-9447-0f710067a743",
+      "name": "Specific Gravity",
+      "price": 0,
+      "normal_value": "1.005 - 1.030",
+      "unit": ".",
+      "lower_bound": 1.005,
+      "upper_bound": 1.03
+    },
+    {
+      "_id": "test_2515adea-2cbc-4f99-8cf0-a8dbae4d83c1",
+      "name": "Ketone",
+      "price": 0,
+      "normal_value": "Negative (<0.5)",
+      "unit": "mmol/L",
+      "lower_bound": 0,
+      "upper_bound": 0.5
+    },
+    {
+      "_id": "test_a695e72a-cafb-4b81-b19b-70eed0777fe8",
+      "name": "Bilirubin",
+      "price": 0,
+      "normal_value": "Negative (<17)",
+      "unit": "µmol/L",
+      "lower_bound": 0,
+      "upper_bound": 17
+    },
+    {
+      "_id": "test_4e3a54f0-d885-47e2-b950-fe99693ba33a",
+      "name": "Glucose",
+      "price": 0,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_db212afc-3fd0-4657-9a90-80c19d8b7bec",
+      "name": "HBsAg siêu nhạy",
+      "price": 300000,
+      "normal_value": "<0.005",
+      "unit": "Iu",
+      "lower_bound": 0,
+      "upper_bound": 0.005
+    },
+    {
+      "_id": "test_6adfad28-8ae3-486a-8a0a-e45e20301221",
+      "name": "pH",
+      "price": 0,
+      "normal_value": "4.6 - 8.0",
+      "unit": ".",
+      "lower_bound": 4.6,
+      "upper_bound": 8
+    },
+    {
+      "_id": "test_1d689862-4562-4c1c-af65-f692da1f3be7",
+      "name": "DENGUE NS1 Ag (Sốt xuất huyết)",
+      "price": 120000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_07555417-ea04-425b-bbf0-d551b48220ce",
+      "name": "DENGUE IgG (Sốt xuất huyết)",
+      "price": 50000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_36300dfe-5feb-46c8-bc49-f2c6b6b77d1f",
+      "name": "DENGUE IgM (Sốt xuất huyết)",
+      "price": 50000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_0d4a1195-1246-4cc4-93d2-5fdafd352882",
+      "name": "HBsAg",
+      "price": 80000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_0479ec59-56b7-4d9e-a6a1-045ac9c53930",
+      "name": "Anti HCV",
+      "price": 80000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_4318ddbd-77d1-422d-a12c-3c58df2a1448",
+      "name": "Anti Thyroglobulin",
+      "price": 180000,
+      "normal_value": "<115",
+      "unit": "UI/mL",
+      "lower_bound": 0,
+      "upper_bound": 115
+    },
+    {
+      "_id": "test_55969ec7-d88f-4766-b527-e13b0a160898",
+      "name": "TSI (Thyroid Stimulating Immunoglobulins)",
+      "price": 480000,
+      "normal_value": "< 0.1 ; GZ: 0.1-0.55",
+      "unit": "IU/L",
+      "lower_bound": 0,
+      "upper_bound": 0.1
+    },
+    {
+      "_id": "test_0c29cfa5-53db-48c8-93b4-b91ae8b8efa7",
+      "name": "H.Pylori IgG",
+      "price": 80000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_2ff1de91-10b5-4933-acf0-bb08d3b82044",
+      "name": "Free Testosterol",
+      "price": 280000,
+      "normal_value": "M: 23.3-103 ; F: 0.3-9.6",
+      "unit": "Index",
+      "lower_bound": 23.3,
+      "upper_bound": 103
+    },
+    {
+      "_id": "test_066beeb4-8d58-4c3a-932c-a06875410b01",
+      "name": "BK/Đàm Lần 1",
+      "price": 70000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_c3d1fbd5-8a89-4155-bade-142cc8a99b62",
+      "name": "BK/Đàm Lần 2",
+      "price": 70000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_9ffaf5fd-a7ab-4005-85b1-ca0becc0b130",
+      "name": "Alkaline Phosphatase (ALP) (Phosphatase Kiềm)",
+      "price": 90000,
+      "normal_value": "20-105",
+      "unit": "U/L",
+      "lower_bound": 20,
+      "upper_bound": 105
+    },
+    {
+      "_id": "test_228727f6-7108-4d6d-8209-ceab732a77d6",
+      "name": "SYPHILIS TEST",
+      "price": 100000,
+      "normal_value": "Negative",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_d54a6cd4-1111-4293-9289-b11d5ade21ef",
+      "name": "BK(AFB)/Urine",
+      "price": 80000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_4fd0d3c9-14bf-431b-af61-deeb4bb59ea9",
+      "name": "CẶN ADDIS",
+      "price": 80000,
+      "normal_value": "180",
+      "unit": "mL/min",
+      "lower_bound": 0,
+      "upper_bound": 180
+    },
+    {
+      "_id": "test_b25d85e7-3205-457f-9c35-3642373ea1c0",
+      "name": "F.PSA/T.PSA",
+      "price": 0,
+      "normal_value": "F.PSA/T.PSA >20%",
+      "unit": "%",
+      "lower_bound": 20,
+      "upper_bound": 1000
+    },
+    {
+      "_id": "test_8cb53ef3-b539-4411-8a96-9ae62810f1a7",
+      "name": "AMH",
+      "price": 600000,
+      "normal_value": "0",
+      "unit": ".",
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_359b6bd8-2da0-4700-9d73-cb6c0296fde8",
+      "name": "IgE total",
+      "price": 150000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_d4c97e05-670a-40e4-b0f6-557c7b537967",
+      "name": "Pb/blood (Chì/máu)",
+      "price": 400000,
+      "normal_value": "Người lớn <40 ; Trẻ con < 10 ; Làm việc trong MT công nghiệp < 60",
+      "unit": "µg/dL",
+      "lower_bound": 0,
+      "upper_bound": 40
+    },
+    {
+      "_id": "test_b687f1f5-9c94-4e0f-9299-0815eae81c6b",
+      "name": "Clonorchis sinensis IgM (Sán lá gan nhỏ)(Elisa)",
+      "price": 150000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_d09c7049-8087-4b61-abe3-597c2967fcab",
+      "name": "Ascaris IgG",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_947860fe-9f23-48be-8935-88d051f09ddc",
+      "name": "Ascaris IgM",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_365addb8-75d5-4351-8f99-c6679ebb8dc7",
+      "name": "Amibe /serum (sero Amibe) (Entamoeba histolytica)(Elisa)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_1662b5b9-40d5-401d-a206-edcc54c96eed",
+      "name": "Ancylostoma IgM (Giun móc)(Elisa)",
+      "price": 170000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_8f419fb7-67f4-4952-a001-197b57ae4de7",
+      "name": "Ancylostoma IgG (Giun móc)(Elisa)",
+      "price": 170000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_46258f95-d6c6-4315-aef9-ea2287c4ee37",
+      "name": "Angiostrongylus cantonensis IgG (Giun tròn)(Elisa)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_42b73859-7c5d-4180-8863-069c8a61e114",
+      "name": "Angiostrongylus cantonensis IgM (Giun tròn)(Elisa)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_f08c9f4c-d3ba-4a80-9fb1-adaff8c1ed3e",
+      "name": "Filariasis /serum (giun chỉ) (sero Filariasis)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_a32f5dea-a645-4812-80ca-dab03b6b4d72",
+      "name": "Định lượng IgA+IgG+IgM",
+      "price": 250000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_7da2c3ae-66ad-4fac-973f-bb1463742e5f",
+      "name": "Paragonimus IgG (Sán lá phổi)(Elisa)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_6c74b9a0-edab-4a23-b082-48bc31dd57e2",
+      "name": "Paragonimus IgM (Sán lá phổi)(Elisa)",
+      "price": 140000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    },
+    {
+      "_id": "test_1e6fbde1-0faa-42db-b957-d1b853ccf22b",
+      "name": "Folate",
+      "price": 170000,
+  
+      "lower_bound": 0,
+      "upper_bound": 0
+    }
+  ]
+  
+}
+
+tests {
+  test("Bulk create response structure", function() {
+    expect(res.status).to.equal(201);
+    expect(res.body).to.have.property("success");
+    expect(res.body).to.have.property("failure");
+    expect(res.body.success).to.be.a("number");
+    expect(res.body.failure).to.be.a("number");
+  });
+}

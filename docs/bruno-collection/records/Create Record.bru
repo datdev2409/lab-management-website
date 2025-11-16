@@ -1,0 +1,46 @@
+meta {
+  name: Create Record
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BASE_URL}}/api/v1/records
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:json {
+  {
+    "patient_id": "550e8400-e29b-41d4-a716-446655440000",
+    "combo_name": "Gói xét nghiệm cơ bản",
+    "test_ids": ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"]
+  }
+}
+
+tests {
+  test("Response status is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+
+  test("Response contains record id", function() {
+    expect(res.body).to.have.property('id');
+  });
+
+  test("Response contains patient_id", function() {
+    expect(res.body).to.have.property('patient_id');
+  });
+
+  test("Response contains test_results array", function() {
+    expect(res.body).to.have.property('test_results');
+    expect(res.body.test_results).to.be.an('array');
+  });
+
+  test("Record status is pending", function() {
+    expect(res.body.status).to.equal('pending');
+  });
+}

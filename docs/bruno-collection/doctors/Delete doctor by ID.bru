@@ -1,0 +1,20 @@
+meta {
+  name: Delete doctor by ID
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:9000/api/v1/doctors/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: f94a7beb-ad24-4a83-b942-582d592a93a0
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Search combos
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/combos?q=toàn diện&page=1&page_size=10
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response has data and pagination", function() {
+    expect(res.body).to.have.property('data');
+    expect(res.body).to.have.property('pagination');
+  });
+
+  test("Pagination has required fields", function() {
+    expect(res.body.pagination).to.have.property('total');
+    expect(res.body.pagination).to.have.property('page');
+    expect(res.body.pagination).to.have.property('page_size');
+  });
+}
