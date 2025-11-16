@@ -19,7 +19,7 @@ async function goToCombos(page) {
  */
 async function createCombo(page, comboData) {
   await page.goto('/danh-muc-goi-xet-nghiem/new');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(500);
 
   // Fill combo name
   await page.getByRole('textbox', { name: 'Tên gói xét nghiệm' }).fill(comboData.name);

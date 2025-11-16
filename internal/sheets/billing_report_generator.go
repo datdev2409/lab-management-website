@@ -125,17 +125,26 @@ func (r *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 
 	// Test results rows
 	startTestRow := 10
-	totalPrice := 0
 	for i, testResult := range record.TestResults {
 		row := startTestRow + i
-		rowData := []interface{}{i + 1, testResult.Name, 1, FormatPrice(testResult.Price), FormatPrice(testResult.Price)}
+		// Use formula to calculate index: ROW() - startTestRow + 1
+		// This ensures auto-increment even if rows are deleted or updated
+		// Use numeric values for prices so Excel SUM formula works correctly
+		rowData := []interface{}{nil, testResult.Name, 1, testResult.Price, testResult.Price}
 		rowStartCell := fmt.Sprintf("A%d", row)
 		err := f.SetSheetRow("Sheet1", rowStartCell, &rowData)
 		if err != nil {
 			return nil, err
 		}
 
-		f.SetCellStyle("Sheet1", rowStartCell, rowStartCell, sm.GetStyleV2(TestIndexStyle))
+		// Set the auto-increment formula for the index cell
+		indexCell := fmt.Sprintf("A%d", row)
+		indexFormula := SetAutoIncrementIndexFormula(startTestRow)
+		err = f.SetCellFormula("Sheet1", indexCell, indexFormula)
+		if err != nil {
+			return nil, err
+		}
+		f.SetCellStyle("Sheet1", indexCell, indexCell, sm.GetStyleV2(TestIndexStyle))
 
 		testNameCell := fmt.Sprintf("B%d", row)
 		f.SetCellStyle("Sheet1", testNameCell, testNameCell, sm.GetStyleV2(TestNameStyle))
@@ -145,25 +154,33 @@ func (r *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 
 		testPriceCell := fmt.Sprintf("D%d", row)
 		testPriceTotalCell := fmt.Sprintf("E%d", row)
-		f.SetCellStyle("Sheet1", testPriceCell, testPriceTotalCell, sm.GetStyleV2(TestPriceStyle))
+
+		// Apply price style with number formatting for thousand separators
+		f.SetCellStyle("Sheet1", testPriceCell, testPriceCell, sm.GetStyleV2(TestPriceStyle))
+		f.SetCellStyle("Sheet1", testPriceTotalCell, testPriceTotalCell, sm.GetStyleV2(TestPriceStyle))
 
 		err = f.SetRowHeight("Sheet1", row, 19.0)
 		if err != nil {
 			return nil, err
 		}
-
-		totalPrice += testResult.Price * 1
 	}
 
-	// Total row
+	// Total row - calculate sum of E column using Excel formula
 	totalRow := startTestRow + len(record.TestResults)
 	startTotalCell := fmt.Sprintf("A%d", totalRow)
 	endTotalCell := fmt.Sprintf("D%d", totalRow)
 	_ = r.MergeCellsWithStyle("Sheet1", startTotalCell, endTotalCell, "Tổng thành tiền", sm.GetStyleV2(TotalPriceLabelStyle))
 	f.SetRowHeight("Sheet1", totalRow, 19.0)
 
+	// Use SUM formula to calculate total price from all test rows
 	totalPriceCell := fmt.Sprintf("E%d", totalRow)
-	_ = r.SetCellWithStyle("Sheet1", totalPriceCell, FormatPrice(totalPrice), sm.GetStyleV2(TotalPriceStyle))
+	sumFormula := CreateSumFormula("E", startTestRow, totalRow-1)
+	err = f.SetCellFormula("Sheet1", totalPriceCell, sumFormula)
+	if err != nil {
+		return nil, err
+	}
+	// Apply bold price style with number formatting for the total
+	_ = f.SetCellStyle("Sheet1", totalPriceCell, totalPriceCell, sm.GetStyleV2(TestPriceTotalStyle))
 
 	// Calculate print area based on content (A1 to E + last row with data)
 	lastRow := startTestRow + len(record.TestResults) + 2 // Add buffer rows

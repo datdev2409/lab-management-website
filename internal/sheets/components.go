@@ -64,12 +64,20 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 			testFieldValue += testResult.ResultText
 		}
 
-		// Prepare the data row: [Index, TestName, Result, Unit, NormalValue]
-		dataRow := []interface{}{i + 1, testResult.Name, testFieldValue, testResult.Unit, testResult.NormalValue}
+		// Prepare the data row: [nil for formula, TestName, Result, Unit, NormalValue]
+		// We'll set the formula separately using SetCellFormula
+		dataRow := []interface{}{nil, testResult.Name, testFieldValue, testResult.Unit, testResult.NormalValue}
 
 		// Write the data row starting from startCol (typically "B")
 		startCell := fmt.Sprintf("%s%d", t.startCol, row)
 		t.file.SetSheetRow("Sheet1", startCell, &dataRow)
+
+		// Set the auto-increment formula for the index cell
+		indexCell := fmt.Sprintf("B%d", row)
+		indexFormula := SetAutoIncrementIndexFormula(t.startRow)
+		if err := t.file.SetCellFormula("Sheet1", indexCell, indexFormula); err != nil {
+			return err
+		}
 
 		// Apply styles to each cell
 		// STT (Serial number) - Column B

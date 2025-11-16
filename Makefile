@@ -32,7 +32,7 @@ build:
 e2e:
 	npm run test:ui
 
-e2e:ci
+e2e-ci:
 	npm run test:ci
 
 start:
@@ -52,3 +52,13 @@ start-app: fetch-secrets
 
 stop-app: fetch-secrets
 	ENV=${ENV} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_TAG=${DOCKER_TAG} docker-compose -p app --env-file .env -f deploy/docker-compose.app.yaml down
+
+download-db-backup:
+	mkdir -p ./tmp
+	rm -rf ./tmp/*
+	chmod +x ./scripts/download-db-backup.sh
+	./scripts/download-db-backup.sh ./tmp
+
+restore-db-backup:
+	chmod +x ./scripts/restore-db-from-backup.sh
+	./scripts/restore-db-from-backup.sh
