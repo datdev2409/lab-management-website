@@ -1,0 +1,37 @@
+meta {
+  name: Get Record by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/records/550e8400-e29b-41d4-a716-446655440100
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response contains record with test_results", function() {
+    expect(res.body).to.have.property('id');
+    expect(res.body).to.have.property('test_results');
+  });
+
+  test("Patient info is denormalized in response", function() {
+    expect(res.body).to.have.property('patient_name');
+    expect(res.body).to.have.property('patient_phone');
+  });
+
+  test("Test results contain denormalized test info", function() {
+    expect(res.body.test_results.length).to.be.greaterThan(0);
+    const testResult = res.body.test_results[0];
+    expect(testResult).to.have.property('test_name');
+    expect(testResult).to.have.property('test_price');
+    expect(testResult).to.have.property('test_unit');
+  });
+}

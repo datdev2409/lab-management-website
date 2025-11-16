@@ -1,0 +1,33 @@
+meta {
+  name: Update Test Result
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/records/550e8400-e29b-41d4-a716-446655440100/test-results/550e8400-e29b-41d4-a716-446655440200
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:json {
+  {
+    "value": "120",
+    "is_abnormal": true,
+    "manual_abnormal_override": false
+  }
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response indicates successful update", function() {
+    expect(res.body.result).to.equal('updated');
+  });
+}

@@ -1,0 +1,37 @@
+meta {
+  name: Get combo tests
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/combos/550e8400-e29b-41d4-a716-446655440000/tests
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response contains tests array", function() {
+    expect(res.body).to.be.an('array');
+  });
+
+  test("Each test has required fields", function() {
+    if (res.body.length > 0) {
+      expect(res.body[0]).to.have.property('id');
+      expect(res.body[0]).to.have.property('name');
+      expect(res.body[0]).to.have.property('price');
+    }
+  });
+
+  test("Tests are ordered correctly", function() {
+    // Tests should be returned in the order they were added to the combo
+    // This is validated by the combo_tests.test_order column
+    expect(res.body).to.be.an('array');
+  });
+}

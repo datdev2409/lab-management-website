@@ -1,0 +1,39 @@
+meta {
+  name: Update Record Status
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{BASE_URL}}/api/v1/records/550e8400-e29b-41d4-a716-446655440100
+  body: json
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{TOKEN}}
+}
+
+body:json {
+  {
+    "status": "completed"
+  }
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Record status is updated", function() {
+    expect(res.body.status).to.equal('completed');
+  });
+
+  test("Response contains updated_at timestamp", function() {
+    expect(res.body).to.have.property('updated_at');
+  });
+
+  test("Record id remains the same", function() {
+    expect(res.body.id).to.equal('550e8400-e29b-41d4-a716-446655440100');
+  });
+}

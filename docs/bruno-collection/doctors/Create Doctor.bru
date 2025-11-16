@@ -1,0 +1,24 @@
+meta {
+  name: Create Doctor
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:9000/api/v1/doctors
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Bác sĩ Nguyễn Văn A",
+    "phone": "0901234567",
+    "address": "Bệnh viện Thống Nhất, TP HCM"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

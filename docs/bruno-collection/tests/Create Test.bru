@@ -1,0 +1,24 @@
+meta {
+  name: Create Test
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:9000/api/v1/tests
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Xét nghiệm đường huyết 2",
+    "price": 50000,
+    "upper_bound": 2.52
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

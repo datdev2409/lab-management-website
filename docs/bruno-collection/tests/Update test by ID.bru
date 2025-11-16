@@ -1,0 +1,28 @@
+meta {
+  name: Update test by ID
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:9000/api/v1/tests/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 898036fe-7c9a-4c61-9a63-ecd4a898cc91
+}
+
+body:json {
+  {
+    "price": 55000,
+    "lower_bound": 12.5,
+    "upper_bound": 17.5
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

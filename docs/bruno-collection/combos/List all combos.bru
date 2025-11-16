@@ -1,0 +1,32 @@
+meta {
+  name: List all combos
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/combos/all
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response contains combos array", function() {
+    expect(res.body).to.be.an('array');
+  });
+
+  test("Each combo has required fields", function() {
+    if (res.body.length > 0) {
+      expect(res.body[0]).to.have.property('id');
+      expect(res.body[0]).to.have.property('name');
+      expect(res.body[0]).to.have.property('created_at');
+      expect(res.body[0]).to.have.property('updated_at');
+    }
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: List Patient Records
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{BASE_URL}}/api/v1/patients/550e8400-e29b-41d4-a716-446655440000/records?page=1&pageSize=10
+}
+
+headers {
+  Authorization: Bearer {{TOKEN}}
+}
+
+tests {
+  test("Response status is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+
+  test("Response is an array of records", function() {
+    expect(res.body).to.be.an('array');
+  });
+
+  test("All records belong to the same patient", function() {
+    if (res.body.length > 0) {
+      const firstRecord = res.body[0];
+      const patientId = firstRecord.patient_id;
+      res.body.forEach(record => {
+        expect(record.patient_id).to.equal(patientId);
+      });
+    }
+  });
+
+  test("Records are sorted by created_at descending", function() {
+    if (res.body.length > 1) {
+      const first = new Date(res.body[0].created_at);
+      const second = new Date(res.body[1].created_at);
+      expect(first.getTime()).to.be.greaterThanOrEqual(second.getTime());
+    }
+  });
+}
