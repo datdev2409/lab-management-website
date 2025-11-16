@@ -107,7 +107,7 @@ test.describe('Record Management Flow', () => {
     const rowCount = await row.count();
     
     if (rowCount > 0) {
-      await row.locator('a:has-text("Chi tiết")').first().click();
+      await row.getByRole('link', { name: 'Xem' }).first().click();
       await page.waitForLoadState('networkidle');
       
       // Verify we're on the details page
