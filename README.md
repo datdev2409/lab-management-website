@@ -8,23 +8,26 @@ A comprehensive web-based laboratory information management system for **Anh Qua
 
 ## 📋 Table of Contents
 
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Development](#development)
-- [Testing](#testing)
-- [Building](#building)
-- [Deployment](#deployment)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
+- [Features](#✨-features)
+  - [Core Functionality](#core-functionality)
+  - [Advanced Features](#advanced-features)
+- [Technology Stack](#🛠-technology-stack)
+  - [Backend](#backend)
+  - [Frontend](#frontend)
+  - [DevOps & Tools](#devops--tools)
+- [Architecture](#🏗-architecture)
+- [Local development (quickstart)](#🚀-local-development-quickstart)
+- [Deployment](#🚢-deployment-github-actions-cd---recommended)
+- [Project Structure](#📁-project-structure)
+- [Contributing](#🤝-contributing)
+- [License](#📄-license)
+- [Contact & Support](#📞-contact--support)
 
 ## ✨ Features
 
 ### Core Functionality
+
+- **Authentication**: JWT-based with HTTP-only cookies authentication.
 - **Patient Management**: Create, update, and search patient records with auto-complete functionality
 - **Test Management**: Define test types with normal ranges, pricing, and units
 - **Combo Management**: Create reusable test packages for common test combinations
@@ -34,14 +37,15 @@ A comprehensive web-based laboratory information management system for **Anh Qua
 - **Report Generation**: Generate multiple report types (billing, results, signed results, PDF reports, tracking reports)
 
 ### Advanced Features
+
 - **Abnormal Test Detection**: Automatic detection of abnormal test results based on defined ranges
 - **Tracking & Comparison**: Create tracking configurations to compare test results over time
 - **Unsaved Changes Warning**: Alerts users before leaving pages with unsaved modifications
-- **Revenue Reporting**: Generate comprehensive revenue reports for laboratory operations
 
 ## 🛠 Technology Stack
 
 ### Backend
+
 - **Go 1.24.7**: High-performance backend API
 - **Chi Router**: Lightweight HTTP router
 - **MongoDB v2**: NoSQL database for flexible data storage
@@ -49,318 +53,154 @@ A comprehensive web-based laboratory information management system for **Anh Qua
 - **Zap**: Structured logging
 
 ### Frontend
+
 - **HTMX**: Modern dynamic web interactions (being migrated to Alpine.js)
 - **Alpine.js**: Lightweight JavaScript framework for interactivity
 - **Templ**: Type-safe Go templating engine
-- **Bootstrap**: Responsive UI framework
+- **Bootstrap**: ResponsiveUI framework
 - **ESBuild**: Fast JavaScript bundler
 
 ### DevOps & Tools
+
 - **Docker & Docker Compose**: Containerization
 - **Air**: Live reload for Go development
 - **Gotenberg**: PDF generation service
-- **Excelize**: Excel file generation
 - **Traefik**: Reverse proxy (production)
-- **systemd**: Service management (production)
 
 ## 🏗 Architecture
 
 The system follows **Domain-Driven Design** principles with clear separation of concerns:
 
 ```
-┌─────────────────┐
-│  Web Browser    │
-│  (HTMX/Alpine)  │
-└────────┬────────┘
-         │
-    ┌────▼────────────────┐
-    │   HTTP Handlers     │
-    │  (Controllers)      │
-    └────┬────────────────┘
-         │
-    ┌────▼────────────────┐
-    │   Business Logic    │
-    │   (Models/DTOs)     │
-    └────┬────────────────┘
-         │
-    ┌────▼────────────────┐
-    │   Storage Layer     │
-    │   (Data Access)     │
-    └────┬────────────────┘
-         │
-    ┌────▼────────────────┐
-    │   MongoDB           │
-    └─────────────────────┘
+      ┌─────────────────┐
+      │  Web Browser    │
+      │  (HTMX/Alpine)  │
+      └────┬────────────┘
+             │
+      ┌────▼────────────────┐
+      │   HTTP Handlers     │
+      │  (Controllers)      │
+      └────┬────────────────┘
+             │
+      ┌────▼────────────────┐
+      │   Business Logic    │
+      │   (Models/DTOs)     │
+      └────┬────────────────┘
+             │
+      ┌────▼────────────────┐
+      │   Storage Layer     │
+      │   (Data Access)     │
+      └────┬────────────────┘
+             │
+      ┌────▼────────────────┐
+      │   MongoDB           │
+      └─────────────────────┘
 ```
 
-### Key Components
-- **Authentication**: JWT-based with HTTP-only cookies
-- **Templating**: Server-side rendering with Templ
-- **Report Generation**: Excel files with Excelize, PDF conversion via Gotenberg
-- **Logging**: Structured logging with Zap
-- **Database**: MongoDB with custom ID generation (`type_randomstring` pattern)
+## 🚀 Local development (quickstart)
 
-## 📦 Prerequisites
+A minimal, fast path to get the app running locally.
 
-Before you begin, ensure you have the following installed:
+1. Prerequisites
 
-- **Go**: Version 1.24.7 or higher ([Download](https://golang.org/dl/))
-- **MongoDB**: Version 4.0 or higher ([Download](https://www.mongodb.com/try/download/community))
-- **Node.js**: For Cypress testing and ESBuild ([Download](https://nodejs.org/))
-- **Docker & Docker Compose**: For containerized deployment (optional) ([Download](https://www.docker.com/))
-- **Templ**: Go templating engine
-  ```bash
-  go install github.com/a-h/templ/cmd/templ@latest
-  ```
-- **Air**: Live reload tool for development
-  ```bash
-  go install github.com/air-verse/air@latest
-  ```
-- **golangci-lint**: For code linting
-  ```bash
-  go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
-  ```
-- **ESBuild**: JavaScript bundler
-  ```bash
-  npm install -g esbuild
-  ```
+   - Go 1.24.7+, Node.js (optional for tests/ESBuild), Docker (optional)
 
-## 🚀 Installation
+2. Clone & dependencies
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/datdev2409/lab-management-website.git
-cd lab-management-website
-```
-
-### 2. Install Go Dependencies
-```bash
-go mod download
-go mod verify
-```
-
-### 3. Install Testing Dependencies (Optional)
-```bash
-cd tests
-npm install
-cd ..
-```
-
-### 4. Start MongoDB
-Using Docker Compose (recommended):
-```bash
-docker-compose up -d
-```
-
-This starts:
-- MongoDB on port 27017 (credentials: root/password123)
-- Gotenberg PDF service on port 3000
-
-Or start MongoDB manually:
-```bash
-mongod --dbpath /your/data/path
-```
-
-### 5. Generate Templ Files
-```bash
-templ generate
-```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# Server Configuration
-SERVER_PORT=9000
-ENV=local
-
-# MongoDB Configuration
-MONGODB_URI=mongodb://root:password123@localhost:27017/labadmin?authSource=admin
-
-# JWT Configuration
-JWT_SECRET=your-secret-key-here
-
-# Gotenberg Service (PDF Generation)
-GOTENBERG_URL=http://localhost:3000
-```
-
-### Environment Files by Stage
-- **Local Development**: `.env` or `.env.local`
-- **Production**: `.env.production`
-
-## 💻 Development
-
-### Live Development Mode
-
-The project supports **3-way hot reload** for rapid development:
-
-```bash
-make live
-```
-
-This command runs three concurrent processes:
-1. **Air**: Go hot reload - restarts server on `.go` file changes
-2. **Templ**: Template generation with live reload on `.templ` file changes
-3. **ESBuild**: JavaScript bundling and minification on script changes
-
-Access the application at: `http://localhost:7331` (Templ proxy) or `http://localhost:9000` (direct)
-
-### Individual Development Commands
-
-Run specific development processes separately:
-
-```bash
-# Go server with hot reload
-make live/server
-
-# Templ generation with watch mode
-make live/templ
-
-# JavaScript bundling with watch mode
-make live/esbuild
-
-# Start only MongoDB and Gotenberg
-make env
-```
-
-### Code Quality
-
-Run pre-commit checks before pushing:
-
-```bash
-./scripts/pre-commit.sh
-```
-
-This script runs:
-- Templ file generation
-- Code formatting (`go fmt`)
-- Dependency verification
-- Linting (`golangci-lint`)
-- Static analysis (`go vet`)
-- Format checking
-- Unit tests
-- Build verification
-
-## 🧪 Testing
-
-### Unit Tests
-
-Run Go unit tests:
-
-```bash
-go test -v ./...
-```
-
-Run tests with race detection:
-
-```bash
-go test -v -race ./...
-```
-
-### End-to-End Tests
-
-Run Cypress E2E tests:
-
-```bash
-cd tests
-npm test        # Run headless
-npm run cy:open # Open Cypress UI
-```
-
-## 🔨 Building
-
-### Development Build
-
-```bash
-go build -o bin/main cmd/api/main.go
-```
-
-### Production Build
-
-Build for Linux (x86_64):
-
-```bash
-make build
-```
-
-This creates an optimized binary at `bin/main`.
-
-### Docker Build
-
-Build Docker image:
-
-```bash
-docker build -t lab-management:latest .
-```
-
-The Dockerfile uses a multi-stage build:
-1. **Builder stage**: Compiles Go application with Templ generation
-2. **ESBuild stage**: Bundles JavaScript files
-3. **Runtime stage**: Minimal Alpine image with compiled binary
-
-## 🚢 Deployment
-
-### Local Docker Deployment
-
-```bash
-docker-compose -f docker-compose.local.yaml up
-```
-
-### Production Deployment
-
-The system uses **systemd** for service management in production. See [deploy/deploy.md](deploy/deploy.md) for detailed instructions.
-
-#### Quick Deployment Steps:
-
-1. **Build the application**:
    ```bash
-   make build
+   git clone https://github.com/datdev2409/lab-management-website.git
+   cd lab-management-website
+   go mod download
+   npm install         # optional: needed for Playwright / ESBuild
    ```
 
-2. **Copy binary to server**:
+3. Create configuration
+
    ```bash
-   scp bin/main user@server:/home/user/
+   cp .env.example .env
+   # Edit .env and update values: MONGODB_URI, JWT_SECRET, GOTENBERG_URL, etc.
    ```
 
-3. **Set up environment**:
+4. Start local services (recommended)
+
    ```bash
-   # On server
-   cp .env.example .env.production
-   # Edit .env.production with production values
+   docker-compose up -d
+   # starts MongoDB and Gotenberg; skip if you have services already
    ```
 
-4. **Install and start systemd service**:
+5. Install small dev tools (one-time)
+
    ```bash
-   sudo cp deploy/goweb.service /lib/systemd/system/
-   sudo systemctl daemon-reload
-   sudo systemctl enable goweb
-   sudo systemctl start goweb
+   go install github.com/a-h/templ/cmd/templ@latest
+   go install github.com/air-verse/air@latest   # optional: hot reload
+   npm install -g esbuild                       # optional: JS bundling
    ```
 
-5. **Check service status**:
+6. Generate templates and build assets
+
    ```bash
-   sudo systemctl status goweb
-   journalctl -u goweb -f
+   templ generate
+   # if you changed frontend assets:
+   npm run build   # or run make live/esbuild during development
    ```
 
-### Docker Compose Deployment
+7. Start the app (recommended: 3-way hot-reload)
 
-For containerized deployment with base infrastructure:
+   ```bash
+   make live          # runs server, templ watcher, and esbuild concurrently
+   # OR start only the server:
+   make live/server
+   # OR run directly:
+   go run ./cmd/api
+   ```
 
-```bash
-# Start base services (MongoDB, Traefik, etc.)
-make start-base ENV=production
+8. Access the app
 
-# Start application
-make start-app ENV=production DOCKER_USERNAME=your-username DOCKER_TAG=latest
+   - Templ proxy (auto reload when templ file changes; recommended during development): http://localhost:7331
+   - Direct server: http://localhost:9000
 
-# Stop services
-make stop-app ENV=production
-make stop-base ENV=production
-```
+9. Testing & quick commands
+   - Run E2E (UI): make e2e
+   - Run E2E (CI/headless): make e2e-ci
+   - Build dev binary: go build -o bin/main cmd/api/main.go
+   - Production build (Linux): make build
+   - Docker image: docker build -t lab-management:latest .
+
+Tips
+
+- Use docker-compose to simplify local dependencies; stop services with docker-compose down.
+- Use make live for the fastest feedback loop (templ + server + esbuild).
+- Keep .env out of git; use .env.production for staging/prod configs.
+
+## 🚢 Deployment (GitHub Actions CD - recommended)
+
+This project uses the GitHub Actions CD pipeline (.github/workflows/cd.yml) for manual deployments. The workflow is triggered with workflow_dispatch and accepts two inputs:
+
+- image_tag (optional): commit SHA or tag. If omitted, the workflow uses the branch's latest commit SHA.
+- environment (required): either `stg` or `prod`.
+
+Recommended deployment steps
+
+1. Verify the CI pipeline is green with the target commit / branch
+2. Ensure repository variables & secrets are set:
+
+   - Repository variables: SSH_HOST, SSH_USER, DOCKER_USERNAME
+   - Repository secret: SSH_PRIVATE_KEY
+   - These are referenced by the workflow and used by the SSH action.
+
+3. Trigger the CD workflow (via GitHub webiste or gh CLI):
+
+   ```bash
+   # use commit SHA or a tag for image_tag; omit image_tag to deploy workflow's github.sha
+   gh workflow run cd.yml -f image_tag=962bb4e471b827a2eb9f9706912e3aa69dbb1a36 -f environment=stg
+   ```
+
+4. Optional: Create release/tag after a successful deployment
+   ```bash
+   git tag -a v1.0.1 <commit-sha> -m "Release v1.0.1"
+   git push origin v1.0.1
+   gh release create v1.0.1 --title "Release v1.0.1" --notes "Deployed to stg"
+   ```
 
 ## 📁 Project Structure
 
@@ -394,24 +234,15 @@ lab-management-website/
 │   └── logger/                     # Structured logging
 ├── templates/                      # Excel templates
 ├── reports/                        # Generated reports (gitignored)
-├── tests/                          # Cypress E2E tests
+├── tests/                          # Playwright E2E tests
 ├── deploy/                         # Deployment configurations
-├── docs/                           # Additional documentation
+├── docs/                           # Documentation & Bruno Collection
 ├── scripts/                        # Utility scripts
 ├── Makefile                        # Build and development commands
 ├── docker-compose.yaml             # Local development services
 ├── Dockerfile                      # Multi-stage production build
 └── README.md                       # This file
 ```
-
-### Domain Models
-
-- **Patient**: Patient information (`patient_*` ID)
-- **Test**: Test definitions with ranges and pricing (`test_*` ID)
-- **Combo**: Test packages (`combo_*` ID)
-- **Record**: Lab test records with results (`record_*` ID)
-- **Tracking**: Comparison configurations (`tracking_*` ID)
-- **User**: Authentication and authorization (`user_*` ID)
 
 ## 🤝 Contributing
 
@@ -429,7 +260,7 @@ Contributions are welcome! Please follow these guidelines:
 
 - Follow Go standard formatting (`gofmt`, `go vet`)
 - Use meaningful variable and function names
-- Write unit tests for new functionality
+- Update e2e tests if there is any changes in UI
 - Document exported functions and types
 - Use structured logging with Zap
 - Follow the existing project structure
@@ -437,6 +268,7 @@ Contributions are welcome! Please follow these guidelines:
 ### Pre-commit Checklist
 
 Before committing, ensure:
+
 - [ ] Code is formatted (`go fmt ./...`)
 - [ ] No linting errors (`golangci-lint run`)
 - [ ] All tests pass (`go test ./...`)
@@ -452,11 +284,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Project Owner**: [datdev2409](https://github.com/datdev2409)
 - **Repository**: [lab-management-website](https://github.com/datdev2409/lab-management-website)
 - **Issues**: [GitHub Issues](https://github.com/datdev2409/lab-management-website/issues)
-
-For detailed implementation documentation, see the [docs](docs/) directory:
-- [CD Pipeline Documentation](docs/CD_PIPELINE.md)
-- [Unsaved Changes Feature](docs/README-unsaved-changes.md)
-- [Deployment Guide](deploy/deploy.md)
 
 ---
 
