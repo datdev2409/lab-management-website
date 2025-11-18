@@ -98,7 +98,7 @@ func (r ResultOnlineReport) Generate(ctx context.Context, data interface{}) (io.
 	startSignatureRow := testTable.GetEndRow() + 2
 	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", startSignatureRow, 'C', 'E', SignatureConfig{
 		IncludeDate:         true, // Result report doesn't include date in signature
-		SignatureSpace:      6,    // 5 rows between lab dept and signature name
+		SignatureSpace:      7,    // 5 rows between lab dept and signature name
 		WriteSignatureName:  true, // Override the signature name in template
 		WriteSignatureImage: true,
 		SignatureImagePath:  "./assets/signature.jpg",
@@ -108,7 +108,7 @@ func (r ResultOnlineReport) Generate(ctx context.Context, data interface{}) (io.
 	}
 
 	// Calculate print area based on content (A1 to F + last row with data)
-	lastRow := signature.GetEndRow() + 2 // Add buffer rows
+	lastRow := signature.GetEndRow() + 3 // Add buffer rows
 	printArea := fmt.Sprintf("$A$1:$E$%d", lastRow)
 
 	err = r.ApplyPrintArea(ctx, f, printArea)
