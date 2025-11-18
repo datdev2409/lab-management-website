@@ -3,7 +3,6 @@ package sheets
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/models"
 	"github.com/xuri/excelize/v2"
@@ -54,16 +53,35 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 		}
 	}
 
+	col1 := t.startCol
+	col2 := GetNextColumn(col1)
+	col3 := GetNextColumn(col2)
+	col4 := GetNextColumn(col3)
+	col5 := GetNextColumn(col4)
+
+	// Write the header row
+	headerRow := []interface{}{"STT\n(No)", "Tên Xét Nghiệm\n(Test)", "Kết Quả\n(Results)", "Đơn Vị\n(Unit)", "Giá Trị Bình Thường\n(Reference)"}
+	endCol := t.startCol
+	for range len(headerRow) - 1 {
+		endCol = GetNextColumn(endCol)
+	}
+
+	startHeaderCell := fmt.Sprintf("%s%d", t.startCol, t.startRow)
+	endHeaderCell := fmt.Sprintf("%s%d", endCol, t.startRow)
+
+	t.file.SetSheetRow("Sheet1", startHeaderCell, &headerRow)
+	t.file.SetRowHeight("Sheet1", t.startRow, 32)
+	t.file.SetCellStyle("Sheet1", startHeaderCell, endHeaderCell, t.styleManager.GetStyleV2(TestResultTableHeader))
+
 	// Write each test result
 	for i, testResult := range t.testResults {
-		row := t.startRow + i
+		row := t.startRow + 1 + i
 
 		// Format the test result value
 		testFieldValue := FormatResult(testResult.Result)
 		if testResult.ResultText != "" {
 			testFieldValue += testResult.ResultText
 		}
-
 		// Prepare the data row: [nil for formula, TestName, Result, Unit, NormalValue]
 		// We'll set the formula separately using SetCellFormula
 		dataRow := []interface{}{nil, testResult.Name, testFieldValue, testResult.Unit, testResult.NormalValue}
@@ -73,21 +91,21 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 		t.file.SetSheetRow("Sheet1", startCell, &dataRow)
 
 		// Set the auto-increment formula for the index cell
-		indexCell := fmt.Sprintf("B%d", row)
-		indexFormula := SetAutoIncrementIndexFormula(t.startRow)
+		indexCell := fmt.Sprintf("%s%d", t.startCol, row)
+		indexFormula := SetAutoIncrementIndexFormula(t.startRow + 1)
 		if err := t.file.SetCellFormula("Sheet1", indexCell, indexFormula); err != nil {
 			return err
 		}
 
 		// Apply styles to each cell
 		// STT (Serial number) - Column B
-		t.file.SetCellStyle("Sheet1", fmt.Sprintf("B%d", row), fmt.Sprintf("B%d", row), t.styleManager.GetStyleV2(TestIndexStyle))
+		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col1, row), fmt.Sprintf("%s%d", col1, row), t.styleManager.GetStyleV2(TestIndexStyle))
 
 		// Test Name - Column C
-		t.file.SetCellStyle("Sheet1", fmt.Sprintf("C%d", row), fmt.Sprintf("C%d", row), t.styleManager.GetStyleV2(TestNameStyle))
+		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col2, row), fmt.Sprintf("%s%d", col2, row), t.styleManager.GetStyleV2(TestNameStyle))
 
 		// Result - Column D (apply abnormal style if needed)
-		resultCell := fmt.Sprintf("D%d", row)
+		resultCell := fmt.Sprintf("%s%d", col3, row)
 		if testResult.Abnormal {
 			t.file.SetCellStyle("Sheet1", resultCell, resultCell, t.styleManager.GetStyleV2(TestAbnormalResultStyle))
 		} else {
@@ -95,17 +113,17 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 		}
 
 		// Unit - Column E
-		t.file.SetCellStyle("Sheet1", fmt.Sprintf("E%d", row), fmt.Sprintf("E%d", row), t.styleManager.GetStyleV2(TestUnitStyle))
+		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col4, row), fmt.Sprintf("%s%d", col4, row), t.styleManager.GetStyleV2(TestUnitStyle))
 
 		// Normal Range - Column F
-		t.file.SetCellStyle("Sheet1", fmt.Sprintf("F%d", row), fmt.Sprintf("F%d", row), t.styleManager.GetStyleV2(TestNormalRangeStyle))
+		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col5, row), fmt.Sprintf("%s%d", col5, row), t.styleManager.GetStyleV2(TestNormalRangeStyle))
 
 		// Set row height for better spacing
 		t.file.SetRowHeight("Sheet1", row, 19.0)
 	}
 
 	// Update end row
-	t.endRow = t.startRow + len(t.testResults) - 1
+	t.endRow = t.startRow + len(t.testResults) // Table header + data rows
 
 	return nil
 }
@@ -145,6 +163,11 @@ func NewPatientInfoTable(
 
 // Apply renders the patient info table to the Excel sheet
 func (p *PatientInfoTable) Apply(ctx context.Context) error {
+	col1 := p.startCol
+	col2 := GetNextColumn(col1)
+	col3 := GetNextColumn(col2)
+	col4 := GetNextColumn(col3)
+
 	sm := p.styleManager
 	f := p.file
 
@@ -155,27 +178,26 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 
 	row := p.startRow
 
-	// Row 1: Name and date
-	nameCell := fmt.Sprintf("%s%d", p.startCol, row)
+	// Row 1: Name and phone
+	nameCell := fmt.Sprintf("%s%d", col1, row)
 	f.SetCellValue("Sheet1", nameCell, "Họ tên")
 	f.SetCellStyle("Sheet1", nameCell, nameCell, sm.GetStyleV2(PatientInfoStyle))
 
-	nameValueCell := fmt.Sprintf("%s%d", GetNextColumn(p.startCol), row)
+	nameValueCell := fmt.Sprintf("%s%d", col2, row)
 	f.SetCellValue("Sheet1", nameValueCell, p.patient.Name)
 	f.SetCellStyle("Sheet1", nameValueCell, nameValueCell, sm.GetStyleV2(PatientNameStyle))
 
-	dateCell := fmt.Sprintf("%s%d", "D", row)
-	f.SetCellValue("Sheet1", dateCell, "Ngày khám")
-	f.SetCellStyle("Sheet1", dateCell, dateCell, sm.GetStyleV2(PatientInfoStyle))
+	phoneCell := fmt.Sprintf("%s%d", col3, row)
+	f.SetCellValue("Sheet1", phoneCell, "Số điện thoại")
+	f.SetCellStyle("Sheet1", phoneCell, phoneCell, sm.GetStyleV2(PatientInfoStyle))
 
-	dateValueCell := fmt.Sprintf("%s%d", "E", row)
-	today := fmt.Sprintf("%02d/%02d/%04d", time.Now().Day(), time.Now().Month(), time.Now().Year())
-	f.SetCellValue("Sheet1", dateValueCell, today)
-	f.SetCellStyle("Sheet1", dateValueCell, dateValueCell, sm.GetStyleV2(PatientInfoStyle))
+	phoneValueCell := fmt.Sprintf("%s%d", col4, row)
+	f.SetCellValue("Sheet1", phoneValueCell, p.patient.Phone)
+	f.SetCellStyle("Sheet1", phoneValueCell, phoneValueCell, sm.GetStyleV2(PatientInfoStyle))
 
 	row++
 
-	// Row 2: Address and phone
+	// Row 2: Address and YOB
 	addressCell := fmt.Sprintf("%s%d", p.startCol, row)
 	f.SetCellValue("Sheet1", addressCell, "Địa chỉ")
 	f.SetCellStyle("Sheet1", addressCell, addressCell, sm.GetStyleV2(PatientInfoStyle))
@@ -184,41 +206,30 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	f.SetCellValue("Sheet1", addressValueCell, p.patient.Address)
 	f.SetCellStyle("Sheet1", addressValueCell, addressValueCell, sm.GetStyleV2(PatientInfoStyle))
 
-	phoneCell := fmt.Sprintf("%s%d", "D", row)
-	f.SetCellValue("Sheet1", phoneCell, "Số điện thoại")
-	f.SetCellStyle("Sheet1", phoneCell, phoneCell, sm.GetStyleV2(PatientInfoStyle))
-
-	phoneValueCell := fmt.Sprintf("%s%d", "E", row)
-	f.SetCellValue("Sheet1", phoneValueCell, p.patient.Phone)
-	f.SetCellStyle("Sheet1", phoneValueCell, phoneValueCell, sm.GetStyleV2(PatientInfoStyle))
-
-	row++
-
-	// Row 3: YOB and gender
-	yobLabelCell := fmt.Sprintf("%s%d", p.startCol, row)
+	yobLabelCell := fmt.Sprintf("%s%d", col3, row)
 	f.SetCellValue("Sheet1", yobLabelCell, "Năm sinh")
 	f.SetCellStyle("Sheet1", yobLabelCell, yobLabelCell, sm.GetStyleV2(PatientInfoStyle))
 
-	yobValueCell := fmt.Sprintf("%s%d", GetNextColumn(p.startCol), row)
+	yobValueCell := fmt.Sprintf("%s%d", col4, row)
 	f.SetCellValue("Sheet1", yobValueCell, p.patient.YOB)
 	f.SetCellStyle("Sheet1", yobValueCell, yobValueCell, sm.GetStyleV2(PatientInfoStyle))
 
-	genderLabelCell := fmt.Sprintf("%s%d", "D", row)
+	row++
+
+	// Row 3: Diagnosis and gender
+	diagnosisLabelCell := fmt.Sprintf("%s%d", col1, row)
+	f.SetCellValue("Sheet1", diagnosisLabelCell, "Chẩn đoán")
+	f.SetCellStyle("Sheet1", diagnosisLabelCell, diagnosisLabelCell, sm.GetStyleV2(PatientInfoStyle))
+
+	genderLabelCell := fmt.Sprintf("%s%d", col3, row)
 	f.SetCellValue("Sheet1", genderLabelCell, "Giới tính")
 	f.SetCellStyle("Sheet1", genderLabelCell, genderLabelCell, sm.GetStyleV2(PatientInfoStyle))
 
-	genderValueCell := fmt.Sprintf("%s%d", "E", row)
+	genderValueCell := fmt.Sprintf("%s%d", col4, row)
 	f.SetCellValue("Sheet1", genderValueCell, p.patient.Gender)
 	f.SetCellStyle("Sheet1", genderValueCell, genderValueCell, sm.GetStyleV2(PatientInfoStyle))
 
-	// Row 4: Diagnosis (spanning columns B to C)
-	row++
-	diagnosisLabelCell := fmt.Sprintf("%s%d", p.startCol, row)
-	f.SetCellValue("Sheet1", diagnosisLabelCell, "Chẩn đoán")
-	f.SetCellStyle("Sheet1", diagnosisLabelCell, diagnosisLabelCell, sm.GetStyleV2(PatientInfoStyle))
-	f.MergeCell("Sheet1", diagnosisLabelCell, fmt.Sprintf("%s%d", GetNextColumn(p.startCol), row))
-
-	// Update end row (patient info takes 4 rows)
+	// Update end row (patient info takes 3 rows)
 	p.endRow = row
 
 	return nil

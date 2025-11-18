@@ -30,6 +30,7 @@ const (
 	TestQuantityStyle
 	TestPriceStyle
 	TestResultStyle
+	TestResultTableHeader
 	TestAbnormalResultStyle
 	TestUnitStyle
 	TestNormalRangeStyle
@@ -47,6 +48,10 @@ const (
 	RevenueTableDataStyle
 	RevenueTableDataRightStyle
 	TestPriceTotalStyle
+	ReportHeaderLabNameStyle
+	ReportHeaderLabAddressStyle
+	ReportHeaderLabInfoStyle
+	ResultReportReportNameStyle
 )
 
 // StyleManager handles creation and caching of Excel styles
@@ -68,6 +73,16 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 	alignCenter := &excelize.Alignment{
 		Horizontal: "center",
 		Vertical:   "center",
+	}
+	alignCenterShrinkToFit := &excelize.Alignment{
+		Horizontal:  "center",
+		Vertical:    "center",
+		ShrinkToFit: true,
+	}
+	alignCenterWrap := &excelize.Alignment{
+		Horizontal: "center",
+		Vertical:   "center",
+		WrapText:   true,
 	}
 
 	alignLeft := &excelize.Alignment{
@@ -98,6 +113,54 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 	}
 
 	sm.styles = map[StyleName]*excelize.Style{
+		ReportHeaderLabNameStyle: {
+			Font: &excelize.Font{
+				Family: FontMyriadPro,
+				Color:  "000AFF",
+				Size:   16,
+				Bold:   true,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "right",
+			},
+		},
+		ReportHeaderLabAddressStyle: {
+			Font: &excelize.Font{
+				Family: FontMyriadPro,
+				Color:  "000AFF",
+				Size:   13,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "right",
+			},
+		},
+		ReportHeaderLabInfoStyle: {
+			Font: &excelize.Font{
+				Family: "Arial",
+				Color:  "000AFF",
+				Size:   9,
+				Bold:   true,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "right",
+			},
+		},
+		ResultReportReportNameStyle: {
+			Font: &excelize.Font{
+				Family: FontMyriadPro,
+				Color:  "000AFF",
+				Size:   16,
+				Bold:   true,
+			},
+			Alignment: &excelize.Alignment{
+				Horizontal: "center",
+				Vertical:   "center",
+			},
+		},
+
 		LabNameStyle: {
 			Font:      &excelize.Font{Size: 18, Family: FontMyriadPro},
 			Alignment: alignCenter,
@@ -129,7 +192,12 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 		},
 		TestTableHeaderStyle: {
 			Font:      font12,
-			Alignment: alignCenter,
+			Alignment: alignCenterWrap,
+			Border:    border,
+		},
+		TestResultTableHeader: {
+			Font:      font11Bold,
+			Alignment: alignCenterWrap,
 			Border:    border,
 		},
 		TotalPriceLabelStyle: {
@@ -181,12 +249,12 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 		},
 		TestUnitStyle: {
 			Font:      font11,
-			Alignment: alignCenter,
+			Alignment: alignCenterShrinkToFit,
 			Border:    border,
 		},
 		TestNormalRangeStyle: {
 			Font:      font11,
-			Alignment: alignCenter,
+			Alignment: alignCenterShrinkToFit,
 			Border:    border,
 		},
 		LabContactStyle: {
