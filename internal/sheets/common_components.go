@@ -238,13 +238,21 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 		return err
 	}
 
+	currentRow += 1
+	imageStartCell := fmt.Sprintf("%s%d", signatureCol, currentRow)
+	imageEndCell := fmt.Sprintf("%s%d", string(s.endCol), currentRow+s.signatureSpace-1)
+	f.MergeCell(s.sheetName, imageStartCell, imageEndCell)
+
 	if s.writeSignatureImage && s.signatureImagePath != "" {
-		scaleX := 0.25
-		scaleY := 0.25
+		scaleX := 0.8
+		scaleY := 0.8
 		f.AddPicture(s.sheetName, fmt.Sprintf("%s%d", GetNextColumn(signatureCol), currentRow+2), s.signatureImagePath, &excelize.GraphicOptions{
 			ScaleX:          scaleX,
 			ScaleY:          scaleY,
+			OffsetX:         80,
+			OffsetY:         20,
 			LockAspectRatio: true,
+			AutoFit:         true,
 		})
 	}
 
