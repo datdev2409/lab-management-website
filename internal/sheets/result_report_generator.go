@@ -20,18 +20,18 @@ func NewResultReport(ctx context.Context) (*ResultReport, error) {
 		Margins: MarginConfig{
 			Top:    1.9,
 			Bottom: float64(0),
-			Left:   0.4,
-			Right:  0.4,
+			Left:   0.65,
+			Right:  0.65,
 			Header: 0.236220472440945,
 			Footer: float64(0),
 		},
 		ColumnWidth: map[string]float64{
 			"A": 0,
-			"B": 9.0,
-			"C": 36.83,
-			"D": 15.67,
-			"E": 12.0,
-			"F": 28.0,
+			"B": 9.25,
+			"C": 37.1,
+			"D": 14.5,
+			"E": 9.0,
+			"F": 20.5,
 		},
 	}
 
@@ -40,7 +40,7 @@ func NewResultReport(ctx context.Context) (*ResultReport, error) {
 		return nil, err
 	}
 
-	if err := builder.InitializeFromTemplate(ctx, "templates/PhieuKetQua.xlsx"); err != nil {
+	if err := builder.InitializeNewFile(ctx); err != nil {
 		return nil, err
 	}
 
@@ -66,8 +66,9 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 
 	f.MergeCell("Sheet1", "B5", "C5")
 
+	testTableStartRow := patientTable.GetEndRow() + 2
 	// Create and apply the test result table component
-	testTable := NewTestResultTable(f, sm, 8, "B", record.TestResults)
+	testTable := NewTestResultTable(f, sm, testTableStartRow, "B", record.TestResults)
 	if err := testTable.Apply(ctx); err != nil {
 		return nil, err
 	}
@@ -76,9 +77,9 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 	// Result report template already has signature name, so we need to override it
 	startSignatureRow := testTable.GetEndRow() + 2
 	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", startSignatureRow, 'D', 'F', SignatureConfig{
-		IncludeDate:        false, // Result report doesn't include date in signature
-		SignatureSpace:     5,     // 5 rows between lab dept and signature name
-		WriteSignatureName: true,  // Override the signature name in template
+		IncludeDate:        true, // Result report doesn't include date in signature
+		SignatureSpace:     5,    // 5 rows between lab dept and signature name
+		WriteSignatureName: true, // Override the signature name in template
 	})
 	if err := signature.Apply(ctx); err != nil {
 		return nil, err

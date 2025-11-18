@@ -53,9 +53,16 @@ func (ps *PageSetup) ApplyPrintArea(ctx context.Context, f *excelize.File, print
 }
 
 func (ps *PageSetup) ApplyPageSetupV2(ctx context.Context, f *excelize.File) error {
+	fitToPage := true
+	f.SetSheetProps(ps.SheetName, &excelize.SheetPropsOptions{
+		FitToPage: &fitToPage,
+	})
+	one := 1
 	err := f.SetPageLayout(ps.SheetName, &excelize.PageLayoutOptions{
 		Size:        &ps.PageSize,
 		Orientation: &ps.Orientation,
+		FitToWidth:  &one,
+		FitToHeight: &one,
 	})
 	if err != nil {
 		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", ps.SheetName), zap.Error(err))

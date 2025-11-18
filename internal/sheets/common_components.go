@@ -119,23 +119,27 @@ func (h *HeaderComponent) SetDateValue(dateValue string) {
 
 // SignatureComponent represents a reusable signature section
 type SignatureComponent struct {
-	file             *excelize.File
-	styleManager     *StyleManager
-	sheetName        string
-	startRow         int
-	startCol         rune
-	endCol           rune
-	endRow           int
-	includeDate      bool
-	signatureSpace   int    // Number of rows between lab dept and signature name
-	writeSignatureName bool // Whether to write the signature name (false if template already has it)
+	file                *excelize.File
+	styleManager        *StyleManager
+	sheetName           string
+	startRow            int
+	startCol            rune
+	endCol              rune
+	endRow              int
+	includeDate         bool
+	signatureSpace      int    // Number of rows between lab dept and signature name
+	writeSignatureName  bool   // Whether to write the signature name (false if template already has it)
+	writeSignatureImage bool   // Whether to insert the signature image
+	signatureImagePath  string // Path to the signature image file
 }
 
 // SignatureConfig holds configuration options for the signature component
 type SignatureConfig struct {
-	IncludeDate        bool // Whether to include location and date row
-	SignatureSpace     int  // Number of empty rows between lab dept and signature name (default: 5)
-	WriteSignatureName bool // Whether to write the signature name (default: true, set to false if template has it)
+	IncludeDate         bool   // Whether to include location and date row
+	SignatureSpace      int    // Number of empty rows between lab dept and signature name (default: 5)
+	WriteSignatureName  bool   // Whether to write the signature name (default: true, set to false if template has it)
+	WriteSignatureImage bool   // Whether to insert the signature image (default: false)
+	SignatureImagePath  string // Path to the signature image file (e.g., "assets/signature.jpg")
 }
 
 // NewSignatureComponent creates a new signature component with default configuration
@@ -173,15 +177,17 @@ func NewSignatureComponentWithConfig(
 		signatureSpace = 5 // Default
 	}
 	return &SignatureComponent{
-		file:               file,
-		styleManager:       styleManager,
-		sheetName:          sheetName,
-		startRow:           startRow,
-		startCol:           startCol,
-		endCol:             endCol,
-		includeDate:        config.IncludeDate,
-		signatureSpace:     signatureSpace,
-		writeSignatureName: config.WriteSignatureName,
+		file:                file,
+		styleManager:        styleManager,
+		sheetName:           sheetName,
+		startRow:            startRow,
+		startCol:            startCol,
+		endCol:              endCol,
+		includeDate:         config.IncludeDate,
+		signatureSpace:      signatureSpace,
+		writeSignatureName:  config.WriteSignatureName,
+		writeSignatureImage: config.WriteSignatureImage,
+		signatureImagePath:  config.SignatureImagePath,
 	}
 }
 
@@ -197,7 +203,7 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 	if s.includeDate {
 		locationDateCell := fmt.Sprintf("%s%d", signatureCol, currentRow)
 		now := time.Now()
-		dateText := fmt.Sprintf("Cao Lãnh. Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
+		dateText := fmt.Sprintf("Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
 		if err := f.SetCellValue(s.sheetName, locationDateCell, dateText); err != nil {
 			return err
 		}
@@ -232,10 +238,20 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 		return err
 	}
 
+	if s.writeSignatureImage && s.signatureImagePath != "" {
+		scaleX := 0.25
+		scaleY := 0.25
+		f.AddPicture(s.sheetName, fmt.Sprintf("%s%d", GetNextColumn(signatureCol), currentRow+2), s.signatureImagePath, &excelize.GraphicOptions{
+			ScaleX:          scaleX,
+			ScaleY:          scaleY,
+			LockAspectRatio: true,
+		})
+	}
+
 	// Signature name (customizable space)
 	// The signature space represents the number of rows between lab dept and signature name
 	signatureNameRow := currentRow + s.signatureSpace
-	
+
 	// Only write signature name if configured to do so
 	if s.writeSignatureName {
 		signatureNameCell := fmt.Sprintf("%s%d", signatureCol, signatureNameRow)
