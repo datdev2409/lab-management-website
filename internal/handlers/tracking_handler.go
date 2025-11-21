@@ -135,7 +135,7 @@ func (h *Handler) CreateTrackingReport(w http.ResponseWriter, r *http.Request) e
 	}
 
 	fileName := fmt.Sprintf("%s-%s-tracking.xlsx",
-		time.Now().Format("20060102"),
+		time.Now().Format("20060102-150405"),
 		strings.ReplaceAll(records[0].Patient.Name, " ", "_"))
 
 	filePath, err := storer.Store(r.Context(), reader, fileName)
