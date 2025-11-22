@@ -39,23 +39,6 @@ func (b *BaseReportBuilder) InitializeNewFile(ctx context.Context) error {
 	return nil
 }
 
-// InitializeFromTemplate opens an Excel template file and applies configuration
-func (b *BaseReportBuilder) InitializeFromTemplate(ctx context.Context, templatePath string) error {
-	if err := b.OpenTemplate(ctx, templatePath); err != nil {
-		return fmt.Errorf("failed to open template: %w", err)
-	}
-
-	if err := b.ApplyColumnWidths(ctx, b.File); err != nil {
-		return fmt.Errorf("failed to apply column widths: %w", err)
-	}
-
-	if err := b.ApplyPageSetupV2(ctx, b.File); err != nil {
-		return fmt.Errorf("failed to apply page setup: %w", err)
-	}
-
-	return nil
-}
-
 // SetCellWithStyle is a helper to set cell value and apply style in one call.
 // If styleID is -1, no style will be applied (useful when style is optional).
 func (b *BaseReportBuilder) SetCellWithStyle(sheetName, cell string, value interface{}, styleID int) error {

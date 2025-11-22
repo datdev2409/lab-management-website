@@ -96,7 +96,12 @@ func (r *TrackingReport) Generate(ctx context.Context, data interface{}) (io.Rea
 
 	// Build signature section
 	tableEndRow := 7 + len(testList) - 1 // Last row of test data
-	signature := NewSignatureComponent(f, sm, "Sheet1", tableEndRow+2, 'B', 'B')
+	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", tableEndRow+2, 'B', 'B', SignatureConfig{
+		IncludeDate:        true,
+		SignatureSpace:     5,
+		WriteSignatureName: true,
+		Date:               GetVietnamTime(),
+	})
 	if err := signature.Apply(ctx); err != nil {
 		return nil, err
 	}
@@ -150,7 +155,7 @@ func (r *TrackingReport) buildTestTable(f *excelize.File, sm *StyleManager, reco
 
 	// Add date headers for each record
 	for _, record := range records {
-		headers = append(headers, record.CreatedAt.Format("02/01/2006"))
+		headers = append(headers, ToVietnamTime(record.CreatedAt).Format("02/01/2006"))
 	}
 
 	// Set header row

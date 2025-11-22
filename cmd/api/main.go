@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	_ "time/tzdata"
 
 	"github.com/datdev2409/lab-admin-go/internal/db"
 	"github.com/datdev2409/lab-admin-go/internal/handlers"

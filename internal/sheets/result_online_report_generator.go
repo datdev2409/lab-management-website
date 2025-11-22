@@ -44,9 +44,6 @@ func NewResultOnlineReport(ctx context.Context) (*ResultOnlineReport, error) {
 		return nil, err
 	}
 
-	// if err := builder.InitializeFromTemplate(ctx, "templates/PhieuKetQuaChuKy.xlsx"); err != nil {
-	// 	return nil, err
-	// }
 	if err := builder.InitializeNewFile(ctx); err != nil {
 		return nil, err
 	}
@@ -102,6 +99,7 @@ func (r ResultOnlineReport) Generate(ctx context.Context, data interface{}) (io.
 		WriteSignatureName:  true, // Override the signature name in template
 		WriteSignatureImage: true,
 		SignatureImagePath:  "./assets/signature.jpg",
+		Date:                record.CreatedAt,
 	})
 	if err := signature.Apply(ctx); err != nil {
 		return nil, err

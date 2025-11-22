@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/logger"
 	"github.com/datdev2409/lab-admin-go/internal/models"
@@ -63,13 +62,6 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	sm := NewStyleManager(ctx, f)
 	log := logger.FromCtx(ctx)
 
-	// Load Vietnam timezone for date display
-	vietnamLocation, err := time.LoadLocation("Asia/Ho_Chi_Minh")
-	if err != nil {
-		log.Error("Failed to load Vietnam timezone", zap.Error(err))
-		vietnamLocation = time.UTC // Fallback to UTC
-	}
-
 	var currentRow = 1
 
 	// 1. Title Row
@@ -81,8 +73,14 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 
 	// 2. Date Range Row
 	dateRangeCell := fmt.Sprintf("A%d", currentRow)
-	startDateStr := reportData.Summary.StartDate.In(vietnamLocation).Format("02/01/2006")
-	endDateStr := reportData.Summary.EndDate.In(vietnamLocation).Format("02/01/2006")
+	startDateStr := ""
+	if reportData.Summary.StartDate != nil {
+		startDateStr = ToVietnamTime(*reportData.Summary.StartDate).Format("02/01/2006")
+	}
+	endDateStr := ""
+	if reportData.Summary.EndDate != nil {
+		endDateStr = ToVietnamTime(*reportData.Summary.EndDate).Format("02/01/2006")
+	}
 	dateRangeText := fmt.Sprintf("Từ %s đến %s", startDateStr, endDateStr)
 	_ = r.MergeCellsWithStyle("Sheet1", dateRangeCell, fmt.Sprintf("G%d", currentRow), dateRangeText, sm.GetStyleV2(ReportDateStyle))
 	f.SetRowHeight("Sheet1", currentRow, 18.0)
@@ -123,7 +121,7 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 		// Format date with Vietnam timezone
 		dateStr := ""
 		if !record.CreatedAt.IsZero() {
-			dateStr = record.CreatedAt.In(vietnamLocation).Format("02/01/2006")
+			dateStr = ToVietnamTime(record.CreatedAt).Format("02/01/2006")
 		}
 
 		// Handle missing doctor name - just show empty
@@ -191,7 +189,7 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	// Use SUM formula to calculate total revenue from column G (Thành tiền)
 	totalRevenueCell := fmt.Sprintf("G%d", totalRow)
 	sumFormula := CreateSumFormula("G", dataStartRow, totalRow-1)
-	err = f.SetCellFormula("Sheet1", totalRevenueCell, sumFormula)
+	err := f.SetCellFormula("Sheet1", totalRevenueCell, sumFormula)
 	if err != nil {
 		log.Error("Failed to set total revenue formula", zap.Error(err))
 		return nil, err
@@ -217,8 +215,7 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	// 6. Set print area
 	lastRow := totalRow + 1
 	printArea := fmt.Sprintf("$A$1:$G$%d", lastRow)
-	err = r.ApplyPrintArea(ctx, f, printArea)
-	if err != nil {
+	if err := r.ApplyPrintArea(ctx, f, printArea); err != nil {
 		log.Error("Failed to apply print area", zap.Error(err))
 		return nil, err
 	}
