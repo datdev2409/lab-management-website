@@ -233,5 +233,9 @@ func formatTestResultDisplay(testResult *models.TestResult) string {
 		return FormatResult(testResult.Result)
 	}
 
-	return FormatResult(testResult.ResultText)
+	if testResult.ResultText != "" {
+		return FormatResult(testResult.ResultText)
+	}
+
+	return ""
 }
