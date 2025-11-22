@@ -3,6 +3,8 @@ package sheets
 import (
 	"fmt"
 	"strconv"
+	"time"
+	_ "time/tzdata"
 )
 
 // FormatPrice formats an integer price with comma separators
@@ -73,4 +75,22 @@ func SetAutoIncrementIndexFormula(startRow int) string {
 // Example: CreateSumFormula("E", 10, 15) returns "=SUM(E10:E15)"
 func CreateSumFormula(column string, startRow, endRow int) string {
 	return fmt.Sprintf("=SUM(%s%d:%s%d)", column, startRow, column, endRow)
+}
+
+// GetVietnamTime returns the current time in Vietnam timezone
+func GetVietnamTime() time.Time {
+	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		return time.Now()
+	}
+	return time.Now().In(loc)
+}
+
+// ToVietnamTime converts a time to Vietnam timezone
+func ToVietnamTime(t time.Time) time.Time {
+	loc, err := time.LoadLocation("Asia/Ho_Chi_Minh")
+	if err != nil {
+		return t
+	}
+	return t.In(loc)
 }

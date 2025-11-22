@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"time"
+	_ "time/tzdata"
 )
 
 func GetCurrentTime() time.Time {

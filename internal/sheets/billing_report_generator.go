@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"time"
 
 	_ "image/png"
 
@@ -61,7 +60,7 @@ func (r *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 	// Create style manager
 	sm := NewStyleManager(ctx, f)
 
-	now := time.Now()
+	now := GetVietnamTime()
 
 	// Set row heights
 	rowHeight := map[int]float64{

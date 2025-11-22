@@ -26,12 +26,11 @@ func NewResultReport(ctx context.Context) (*ResultReport, error) {
 			Footer: float64(0),
 		},
 		ColumnWidth: map[string]float64{
-			"A": 0,
-			"B": 9.25,
-			"C": 37.1,
-			"D": 14.5,
-			"E": 9.0,
-			"F": 20.5,
+			"A": 9.25,
+			"B": 37.1,
+			"C": 14.5,
+			"D": 9.0,
+			"E": 20.5,
 		},
 	}
 
@@ -59,16 +58,14 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 	sm := NewStyleManager(ctx, f)
 
 	// Create and apply the patient info component
-	patientTable := NewPatientInfoTable(f, sm, &record.Patient, 2, "B")
+	patientTable := NewPatientInfoTable(f, sm, &record.Patient, 2, "A")
 	if err := patientTable.Apply(ctx); err != nil {
 		return nil, err
 	}
 
-	f.MergeCell("Sheet1", "B5", "C5")
-
 	testTableStartRow := patientTable.GetEndRow() + 2
 	// Create and apply the test result table component
-	testTable := NewTestResultTable(f, sm, testTableStartRow, "B", record.TestResults)
+	testTable := NewTestResultTable(f, sm, testTableStartRow, "A", record.TestResults)
 	if err := testTable.Apply(ctx); err != nil {
 		return nil, err
 	}
@@ -76,10 +73,11 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 	// Create and apply signature component with custom config for result report
 	// Result report template already has signature name, so we need to override it
 	startSignatureRow := testTable.GetEndRow() + 2
-	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", startSignatureRow, 'D', 'F', SignatureConfig{
+	signature := NewSignatureComponentWithConfig(f, sm, "Sheet1", startSignatureRow, 'C', 'E', SignatureConfig{
 		IncludeDate:        true, // Result report doesn't include date in signature
 		SignatureSpace:     5,    // 5 rows between lab dept and signature name
 		WriteSignatureName: true, // Override the signature name in template
+		Date:               record.CreatedAt,
 	})
 	if err := signature.Apply(ctx); err != nil {
 		return nil, err
@@ -87,7 +85,7 @@ func (r ResultReport) Generate(ctx context.Context, data interface{}) (io.Reader
 
 	// Calculate print area based on content (A1 to F + last row with data)
 	lastRow := testTable.GetEndRow() + 9 // Add buffer rows
-	printArea := fmt.Sprintf("$A$1:$F$%d", lastRow)
+	printArea := fmt.Sprintf("$A$1:$E$%d", lastRow)
 
 	err := r.ApplyPrintArea(ctx, f, printArea)
 	if err != nil {

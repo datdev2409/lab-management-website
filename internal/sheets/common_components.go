@@ -98,7 +98,7 @@ func (h *HeaderComponent) Apply(ctx context.Context) error {
 		}
 		dateText := h.dateValue
 		if dateText == "" {
-			now := time.Now()
+			now := GetVietnamTime()
 			dateText = fmt.Sprintf("Ngày: %s", now.Format("02/01/2006"))
 		}
 		if err := f.SetCellValue(h.sheetName, dateCell, dateText); err != nil {
@@ -131,36 +131,17 @@ type SignatureComponent struct {
 	writeSignatureName  bool   // Whether to write the signature name (false if template already has it)
 	writeSignatureImage bool   // Whether to insert the signature image
 	signatureImagePath  string // Path to the signature image file
+	date                time.Time
 }
 
 // SignatureConfig holds configuration options for the signature component
 type SignatureConfig struct {
-	IncludeDate         bool   // Whether to include location and date row
-	SignatureSpace      int    // Number of empty rows between lab dept and signature name (default: 5)
-	WriteSignatureName  bool   // Whether to write the signature name (default: true, set to false if template has it)
-	WriteSignatureImage bool   // Whether to insert the signature image (default: false)
-	SignatureImagePath  string // Path to the signature image file (e.g., "assets/signature.jpg")
-}
-
-// NewSignatureComponent creates a new signature component with default configuration
-func NewSignatureComponent(
-	file *excelize.File,
-	styleManager *StyleManager,
-	sheetName string,
-	startRow int,
-	startCol, endCol rune,
-) *SignatureComponent {
-	return &SignatureComponent{
-		file:               file,
-		styleManager:       styleManager,
-		sheetName:          sheetName,
-		startRow:           startRow,
-		startCol:           startCol,
-		endCol:             endCol,
-		includeDate:        true,
-		signatureSpace:     5,
-		writeSignatureName: true,
-	}
+	IncludeDate         bool      // Whether to include location and date row
+	SignatureSpace      int       // Number of empty rows between lab dept and signature name (default: 5)
+	WriteSignatureName  bool      // Whether to write the signature name (default: true, set to false if template has it)
+	WriteSignatureImage bool      // Whether to insert the signature image (default: false)
+	SignatureImagePath  string    // Path to the signature image file (e.g., "assets/signature.jpg")
+	Date                time.Time // Date to display in the signature
 }
 
 // NewSignatureComponentWithConfig creates a new signature component with custom configuration
@@ -188,6 +169,7 @@ func NewSignatureComponentWithConfig(
 		writeSignatureName:  config.WriteSignatureName,
 		writeSignatureImage: config.WriteSignatureImage,
 		signatureImagePath:  config.SignatureImagePath,
+		date:                config.Date,
 	}
 }
 
@@ -202,8 +184,13 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 	// Location and date (optional)
 	if s.includeDate {
 		locationDateCell := fmt.Sprintf("%s%d", signatureCol, currentRow)
-		now := time.Now()
-		dateText := fmt.Sprintf("Ngày %d tháng %d năm %d", now.Day(), int(now.Month()), now.Year())
+		date := s.date
+		if date.IsZero() {
+			date = GetVietnamTime()
+		} else {
+			date = ToVietnamTime(date)
+		}
+		dateText := fmt.Sprintf("Ngày %d tháng %d năm %d", date.Day(), int(date.Month()), date.Year())
 		if err := f.SetCellValue(s.sheetName, locationDateCell, dateText); err != nil {
 			return err
 		}

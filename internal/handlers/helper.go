@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/a-h/templ"
 )

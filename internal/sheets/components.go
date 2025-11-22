@@ -60,7 +60,7 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 	col5 := GetNextColumn(col4)
 
 	// Write the header row
-	headerRow := []interface{}{"STT\n(No)", "Tên Xét Nghiệm\n(Test)", "Kết Quả\n(Results)", "Đơn Vị\n(Unit)", "Giá Trị Bình Thường\n(Reference)"}
+	headerRow := []interface{}{"STT\n(No)", "Tên Xét Nghiệm\n(Test)", "Kết Quả\n(Results)", "Đơn Vị\n(Unit)", "Khoảng Tham Chiếu\n(Reference)"}
 	endCol := t.startCol
 	for range len(headerRow) - 1 {
 		endCol = GetNextColumn(endCol)
@@ -167,18 +167,20 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	col2 := GetNextColumn(col1)
 	col3 := GetNextColumn(col2)
 	col4 := GetNextColumn(col3)
+	col5 := GetNextColumn(col4)
 
 	sm := p.styleManager
 	f := p.file
 
 	// Patient info layout:
-	// Row N: [blank, "Họ tên", Patient.Name, "Ngày khám", Today's date]
-	// Row N+1: [blank, "Địa chỉ", Patient.Address, "Số điện thoại", Patient.Phone]
-	// Row N+2: [blank, "Năm sinh", Patient.YOB, "Giới tính", Patient.Gender]
+	// Row N: ["Họ tên", Patient.Name, "Năm sinh", Patient.YOB]
+	// Row N+1: ["Giới tính", Patient.Gender, "Số điện thoại", Patient.Phone]
+	// Row N+2: ["Địa chỉ", Patient.Address]
+	// Row N+3: ["Chẩn đoán", ""]
 
 	row := p.startRow
 
-	// Row 1: Name and phone
+	// Row 1: Name and YOB
 	nameCell := fmt.Sprintf("%s%d", col1, row)
 	f.SetCellValue("Sheet1", nameCell, "Họ tên")
 	f.SetCellStyle("Sheet1", nameCell, nameCell, sm.GetStyleV2(PatientInfoStyle))
@@ -187,49 +189,64 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	f.SetCellValue("Sheet1", nameValueCell, p.patient.Name)
 	f.SetCellStyle("Sheet1", nameValueCell, nameValueCell, sm.GetStyleV2(PatientNameStyle))
 
-	phoneCell := fmt.Sprintf("%s%d", col3, row)
-	f.SetCellValue("Sheet1", phoneCell, "Số điện thoại")
-	f.SetCellStyle("Sheet1", phoneCell, phoneCell, sm.GetStyleV2(PatientInfoStyle))
-
-	phoneValueCell := fmt.Sprintf("%s%d", col4, row)
-	f.SetCellValue("Sheet1", phoneValueCell, p.patient.Phone)
-	f.SetCellStyle("Sheet1", phoneValueCell, phoneValueCell, sm.GetStyleV2(PatientInfoStyle))
-
-	row++
-
-	// Row 2: Address and YOB
-	addressCell := fmt.Sprintf("%s%d", p.startCol, row)
-	f.SetCellValue("Sheet1", addressCell, "Địa chỉ")
-	f.SetCellStyle("Sheet1", addressCell, addressCell, sm.GetStyleV2(PatientInfoStyle))
-
-	addressValueCell := fmt.Sprintf("%s%d", GetNextColumn(p.startCol), row)
-	f.SetCellValue("Sheet1", addressValueCell, p.patient.Address)
-	f.SetCellStyle("Sheet1", addressValueCell, addressValueCell, sm.GetStyleV2(PatientInfoStyle))
-
 	yobLabelCell := fmt.Sprintf("%s%d", col3, row)
 	f.SetCellValue("Sheet1", yobLabelCell, "Năm sinh")
 	f.SetCellStyle("Sheet1", yobLabelCell, yobLabelCell, sm.GetStyleV2(PatientInfoStyle))
 
 	yobValueCell := fmt.Sprintf("%s%d", col4, row)
+	yobValueEndCell := fmt.Sprintf("%s%d", col5, row)
+	f.MergeCell("Sheet1", yobValueCell, yobValueEndCell)
 	f.SetCellValue("Sheet1", yobValueCell, p.patient.YOB)
-	f.SetCellStyle("Sheet1", yobValueCell, yobValueCell, sm.GetStyleV2(PatientInfoStyle))
+	f.SetCellStyle("Sheet1", yobValueCell, yobValueEndCell, sm.GetStyleV2(PatientInfoStyle))
 
 	row++
 
-	// Row 3: Diagnosis and gender
+	// Row 2: Gender and Phone
+	genderLabelCell := fmt.Sprintf("%s%d", col1, row)
+	f.SetCellValue("Sheet1", genderLabelCell, "Giới tính")
+	f.SetCellStyle("Sheet1", genderLabelCell, genderLabelCell, sm.GetStyleV2(PatientInfoStyle))
+
+	genderValueCell := fmt.Sprintf("%s%d", col2, row)
+	f.SetCellValue("Sheet1", genderValueCell, p.patient.Gender)
+	f.SetCellStyle("Sheet1", genderValueCell, genderValueCell, sm.GetStyleV2(PatientInfoStyle))
+
+	phoneCell := fmt.Sprintf("%s%d", col3, row)
+	f.SetCellValue("Sheet1", phoneCell, "Số điện thoại")
+	f.SetCellStyle("Sheet1", phoneCell, phoneCell, sm.GetStyleV2(PatientInfoStyle))
+
+	phoneValueCell := fmt.Sprintf("%s%d", col4, row)
+	phoneValueEndCell := fmt.Sprintf("%s%d", col5, row)
+	f.MergeCell("Sheet1", phoneValueCell, phoneValueEndCell)
+	f.SetCellValue("Sheet1", phoneValueCell, p.patient.Phone)
+	f.SetCellStyle("Sheet1", phoneValueCell, phoneValueEndCell, sm.GetStyleV2(PatientInfoStyle))
+
+	row++
+
+	// Row 3: Address
+	addressCell := fmt.Sprintf("%s%d", col1, row)
+	f.SetCellValue("Sheet1", addressCell, "Địa chỉ")
+	f.SetCellStyle("Sheet1", addressCell, addressCell, sm.GetStyleV2(PatientInfoStyle))
+
+	addressValueCell := fmt.Sprintf("%s%d", col2, row)
+	addressValueEndCell := fmt.Sprintf("%s%d", col5, row)
+	f.MergeCell("Sheet1", addressValueCell, addressValueEndCell)
+	f.SetCellValue("Sheet1", addressValueCell, p.patient.Address)
+	f.SetCellStyle("Sheet1", addressValueCell, addressValueEndCell, sm.GetStyleV2(PatientInfoStyle))
+
+	row++
+
+	// Row 4: Diagnosis
 	diagnosisLabelCell := fmt.Sprintf("%s%d", col1, row)
 	f.SetCellValue("Sheet1", diagnosisLabelCell, "Chẩn đoán")
 	f.SetCellStyle("Sheet1", diagnosisLabelCell, diagnosisLabelCell, sm.GetStyleV2(PatientInfoStyle))
 
-	genderLabelCell := fmt.Sprintf("%s%d", col3, row)
-	f.SetCellValue("Sheet1", genderLabelCell, "Giới tính")
-	f.SetCellStyle("Sheet1", genderLabelCell, genderLabelCell, sm.GetStyleV2(PatientInfoStyle))
+	// Merge diagnosis value cells
+	diagnosisValueStartCell := fmt.Sprintf("%s%d", col2, row)
+	diagnosisValueEndCell := fmt.Sprintf("%s%d", col5, row)
+	f.MergeCell("Sheet1", diagnosisValueStartCell, diagnosisValueEndCell)
+	f.SetCellStyle("Sheet1", diagnosisValueStartCell, diagnosisValueEndCell, sm.GetStyleV2(PatientInfoStyle))
 
-	genderValueCell := fmt.Sprintf("%s%d", col4, row)
-	f.SetCellValue("Sheet1", genderValueCell, p.patient.Gender)
-	f.SetCellStyle("Sheet1", genderValueCell, genderValueCell, sm.GetStyleV2(PatientInfoStyle))
-
-	// Update end row (patient info takes 3 rows)
+	// Update end row (patient info takes 4 rows)
 	p.endRow = row
 
 	return nil
