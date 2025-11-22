@@ -7,7 +7,7 @@ const { expect } = require('@playwright/test');
  */
 async function goToDoctors(page) {
   await page.goto('/danh-muc-bac-si');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -36,7 +36,7 @@ async function createDoctor(page, doctorData) {
   
   // Wait for modal to close and data to load
   await page.waitForTimeout(500);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -54,7 +54,7 @@ async function searchDoctor(page, searchTerm) {
   
   // Wait for Alpine.js debounce (300ms) + API response
   await page.waitForTimeout(500);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -100,7 +100,7 @@ async function editDoctor(page, doctorName, newData) {
   
   // Additional wait to ensure page is fully loaded
   await page.waitForTimeout(1000);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -120,7 +120,7 @@ async function deleteDoctor(page, doctorName) {
   // Click delete button (trash icon with "Xóa" text)
   await row.locator('button', { hasText: /Xóa/ }).click();
   await page.waitForTimeout(500);
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 module.exports = {

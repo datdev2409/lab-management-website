@@ -7,7 +7,7 @@ const { expect } = require('@playwright/test');
  */
 async function goToCombos(page) {
   await page.goto('/danh-muc-goi-xet-nghiem');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -40,7 +40,7 @@ async function createCombo(page, comboData) {
   
   // Submit the form
   await page.getByRole('button', { name: /Tạo gói xét nghiệm|Cập nhật gói xét nghiệm/ }).click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -68,7 +68,7 @@ async function deleteCombo(page, comboName) {
   });
   
   await row.locator('text=Xóa').click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 module.exports = {

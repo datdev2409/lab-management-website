@@ -376,7 +376,7 @@ test.describe('Flow 2: Admin CRUD - Entity Management', () => {
       // Click to view details
       const row = page.locator('tr', { hasText: comboData.name }).first();
       await row.locator('text=Chi tiết').click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
       
       // Verify we're on the details/edit page
       await expect(page).toHaveURL(/\/danh-muc-goi-xet-nghiem\/.*\/edit/);
@@ -424,7 +424,7 @@ test.describe('Flow 2: Admin CRUD - Entity Management', () => {
 
     test('should navigate back from combo creation form', async ({ page }) => {
       await page.goto('/danh-muc-goi-xet-nghiem/new');
-      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
       
       // Click back button
       await page.getByRole('button', { name: 'Trở lại' }).click();
@@ -444,7 +444,7 @@ test.describe('Flow 2: Admin CRUD - Entity Management', () => {
 
     for (const pageInfo of pages) {
       await page.goto(pageInfo.url);
-      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
       
       // Verify page loaded by checking for main content
       const table = page.getByRole('table');

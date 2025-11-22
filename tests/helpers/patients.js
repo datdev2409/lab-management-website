@@ -7,7 +7,7 @@ const { expect } = require('@playwright/test');
  */
 async function goToPatients(page) {
   await page.goto('/danh-muc-benh-nhan');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -54,7 +54,7 @@ async function editPatient(page, patientName, newData) {
   const row = page.locator('tr', { hasText: patientName }).first();
   await row.locator('text=Sửa').click();
 
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
   
   if (newData.name) await row.getByTestId('patient-name-input').getByRole('textbox').fill(newData.name);
   if (newData.yob) await row.getByTestId('patient-yob-input').getByRole('textbox').fill(newData.yob);
@@ -84,7 +84,7 @@ async function deletePatient(page, patientName) {
   });
   
   await row.locator('text=Xoá').click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 module.exports = {

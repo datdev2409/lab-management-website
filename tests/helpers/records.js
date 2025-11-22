@@ -7,7 +7,7 @@ const { expect } = require('@playwright/test');
  */
 async function goToRecords(page) {
   await page.goto('/phieu-xet-nghiem');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -22,7 +22,7 @@ async function goToRecords(page) {
  */
 async function createRecord(page, recordData) {
   await page.goto('/phieu-xet-nghiem/new');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
   
   // Search and select patient using autocomplete
   const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -74,7 +74,7 @@ async function viewRecordDetails(page, recordIdentifier) {
   
   const row = page.locator('tr', { hasText: recordIdentifier }).first();
   await row.locator('text=Chi tiết').click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -110,7 +110,7 @@ async function deleteRecord(page, recordIdentifier) {
   });
   
   await row.locator('text=Xoá').click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 module.exports = {

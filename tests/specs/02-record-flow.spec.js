@@ -50,7 +50,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 2: Select existing combo and validate tests are populated', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -82,7 +82,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 3: Add and remove tests to the record', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -127,7 +127,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 4: Test back button unsaved warning', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Fill in some data to make form dirty
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -166,7 +166,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 5: Input test results', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -206,7 +206,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 6: Test abnormal detection - automatic', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -251,7 +251,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 6b: Test abnormal detection - manual override', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -298,7 +298,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
 
   test('Step 7: Save record and search for it', async ({ page }) => {
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Create complete record
     const recordData = {
@@ -343,7 +343,7 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
     
     if (viewCount > 0) {
       await viewLink.click();
-      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
       
       // Verify we're on the details page
       await expect(page).toHaveURL(/\/phieu-xet-nghiem\/[^/]+/);

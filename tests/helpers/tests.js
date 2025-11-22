@@ -7,7 +7,7 @@ const { expect } = require('@playwright/test');
  */
 async function goToTests(page) {
   await page.goto('/danh-muc-xet-nghiem');
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**
@@ -60,7 +60,7 @@ async function deleteTest(page, testName) {
   });
   
   await row.locator('text=Xoá').click();
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 module.exports = {

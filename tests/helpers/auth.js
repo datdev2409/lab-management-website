@@ -31,7 +31,7 @@ async function register(page, username, password) {
   await page.click('button[type="submit"]');
   
   // Wait for successful registration (redirects to login or home)
-  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
 }
 
 /**

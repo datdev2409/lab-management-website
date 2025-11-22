@@ -41,7 +41,7 @@ test.describe('Flow 3: Report Export Feature', () => {
     
     // Create a record with test results
     await page.goto('/phieu-xet-nghiem/new');
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Select patient
     const patientInput = page.getByRole('row', { name: 'Bệnh nhân' }).getByRole('textbox');
@@ -95,7 +95,7 @@ test.describe('Flow 3: Report Export Feature', () => {
   test('should navigate to record details page', async ({ page }) => {
     // Navigate to the record
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Verify patient information is displayed
     await expect(page.locator(`text=${patientData.name}`)).toBeVisible();
@@ -105,7 +105,7 @@ test.describe('Flow 3: Report Export Feature', () => {
 
   test('should download and validate "phieu_thu" (billing report)', async ({ page }) => {
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Setup download listener
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
@@ -152,7 +152,7 @@ test.describe('Flow 3: Report Export Feature', () => {
 
   test('should download and validate "phieu_ket_qua" (results report)', async ({ page }) => {
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Setup download listener
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
@@ -205,7 +205,7 @@ test.describe('Flow 3: Report Export Feature', () => {
 
   test('should download and validate "phieu_ket_qua_chu_ky" (results with signature)', async ({ page }) => {
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Setup download listener
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
@@ -252,7 +252,7 @@ test.describe('Flow 3: Report Export Feature', () => {
 
   test('should download "phieu_ket_qua_chu_ky_pdf" (PDF report)', async ({ page }) => {
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Setup download listener
     const downloadPromise = page.waitForEvent('download', { timeout: 10000 });
@@ -296,7 +296,7 @@ test.describe('Flow 3: Report Export Feature', () => {
     // For now, we'll test if the button exists and can be clicked
     
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Look for tracking report button
     const trackingButton = page.locator('button:has-text("Theo dõi")').or(
@@ -337,7 +337,7 @@ test.describe('Flow 3: Report Export Feature', () => {
 
   test('should validate all report types are accessible', async ({ page }) => {
     await page.goto(`/phieu-xet-nghiem/${recordId}`);
-    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1000);
     
     // Check for common report export buttons/links
     const reportButtons = [
