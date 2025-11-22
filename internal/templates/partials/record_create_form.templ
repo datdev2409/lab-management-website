@@ -291,7 +291,6 @@ templ RecordCreateForm(recordId string) {
 						}
 
 						const {data} = await response.json()
-						console.log('Record submitted successfully:', data)
 						
 						// Clear unsaved changes flag after successful save
 						this.hasUnsavedChanges = false
