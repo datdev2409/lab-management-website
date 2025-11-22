@@ -79,7 +79,7 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 
 		// Format the test result value
 		testFieldValue := FormatResult(testResult.Result)
-		if testResult.ResultText != "" {
+		if testResult.Result == "" && testResult.ResultText != "" {
 			testFieldValue += testResult.ResultText
 		}
 		// Prepare the data row: [nil for formula, TestName, Result, Unit, NormalValue]

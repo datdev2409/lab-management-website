@@ -229,18 +229,9 @@ func formatTestResultDisplay(testResult *models.TestResult) string {
 		return ""
 	}
 
-	// Determine display value based on Result and ResultText
-	if testResult.Result != "" && testResult.ResultText != "" {
-		// Both exist: display "FormatResult(Result) (ResultText)"
-		return fmt.Sprintf("%s (%s)", FormatResult(testResult.Result), testResult.ResultText)
-	} else if testResult.Result != "" {
-		// Only Result exists
+	if testResult.Result != "" {
 		return FormatResult(testResult.Result)
-	} else if testResult.ResultText != "" {
-		// Only ResultText exists
-		return testResult.ResultText
-	} else {
-		// Neither exists (should not happen, but handle gracefully)
-		return ""
 	}
+
+	return FormatResult(testResult.ResultText)
 }
