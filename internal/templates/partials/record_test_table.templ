@@ -8,8 +8,7 @@ templ RecordTestTable() {
 				<th style="width: 120px" scope="col">Đơn giá</th>
 				<th style="width: 200px" scope="col">GT bình thường</th>
 				<th style="width: 140px" scope="col">Đơn vị</th>
-				<th style="width: 120px" scope="col">Kết quả</th>
-				<th style="width: 180px" scope="col">Kết quả (text)</th>
+				<th style="width: 200px" scope="col">Kết quả</th>
 				<th style="width: 30px" scope="col">Bất thường</th>
 				<th style="width: 50px" scope="col"></th>
 			</tr>
@@ -18,18 +17,19 @@ templ RecordTestTable() {
 			<template x-for="test in test_results" x-key="test.id">
 				<tr>
 					<td x-text="test.name"></td>
-					<td style="width: 120px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(test.price)"></td>
 					<td style="width: 200px">
 						<div x-text="test.normal_value"></div>
 						<small class="text-muted" x-show="test.lower_bound !== undefined && test.upper_bound !== undefined" x-text="`[${test.lower_bound} - ${test.upper_bound}]`"></small>
 					</td>
 					<td style="width: 140px" x-text="test.unit"></td>
-					<td style="width: 120px">
+					<td style="width: 200px">
 						<div class="position-relative">
 							<input
 								x-model="test.result"
 								@input="checkAbnormalWithPrompt(test); checkForChanges()"
-								:class="test.abnormal ? 'form-control border-danger' : 'form-control'"
+								@keydown.enter.prevent="$el.closest('tr').nextElementSibling?.querySelector('.result-input')?.focus()"
+								:class="(test.abnormal ? 'form-control border-danger' : 'form-control') + ' result-input'"
 								:readonly="!isEditMode"
 								@click="!isEditMode && showViewModeTooltip(test.id, 'result')"
 								@focus="!isEditMode && showViewModeTooltip(test.id, 'result')"
@@ -38,26 +38,13 @@ templ RecordTestTable() {
 							@ViewModeTooltip("result")
 						</div>
 					</td>
-					<td style="width: 180px">
-						<div class="position-relative">
-							<input
-								x-model="test.result_text"
-								class="form-control"
-								@input="checkForChanges()"
-								:readonly="!isEditMode"
-								@click="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
-								@focus="!isEditMode && showViewModeTooltip(test.id, 'result_text')"
-								@blur="hideViewModeTooltip(test.id, 'result_text')"
-							/>
-							@ViewModeTooltip("result_text")
-						</div>
-					</td>
 					<td style="width: 30px">
 						<div class="d-flex align-items-center">
 							<div class="position-relative">
 								<input
 									type="checkbox"
 									x-model="test.abnormal"
+									tabindex="-1"
 									@change="markManualOverride(test); checkForChanges()"
 									:class="test.abnormal ? 'text-danger' : ''"
 									:disabled="!isEditMode"
@@ -82,6 +69,7 @@ templ RecordTestTable() {
 							<button
 								x-show="test.manual_abnormal_override && isEditMode"
 								@click="clearManualOverride(test)"
+								tabindex="-1"
 								class="btn btn-outline-secondary btn-sm ms-1"
 								style="font-size: 0.6em; padding: 1px 4px;"
 								title="Chuyển về chế độ tự động"
@@ -94,6 +82,7 @@ templ RecordTestTable() {
 						<button
 							x-show="isEditMode"
 							@click="removeTest(test)"
+							tabindex="-1"
 							class="btn btn-outline-danger btn-sm"
 							style="font-size: 0.7em; padding: 2px 6px;"
 							title="Xóa xét nghiệm này"
@@ -108,21 +97,19 @@ templ RecordTestTable() {
 					<td>
 						@TestAutocomplete()
 					</td>
-					<td style="width: 120px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="test.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(test.price) : ''"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
-					<td style="width: 120px">
-						<input x-model="test.result" :disabled="!isEditMode"/>
-					</td>
-					<td style="width: 180px">
-						<input x-model="test.result_text" :disabled="!isEditMode"/>
+					<td style="width: 200px">
+						<input x-model="test.result" class="form-control result-input" :disabled="!isEditMode" @keydown.enter.prevent="$el.closest('tr').nextElementSibling?.querySelector('.result-input')?.focus()"/>
 					</td>
 					<td style="width: 30px">
-						<input type="checkbox" x-model="test.abnormal" :disabled="!isEditMode"/>
+						<input type="checkbox" x-model="test.abnormal" tabindex="-1" :disabled="!isEditMode"/>
 					</td>
 					<td style="width: 50px">
 						<button
 							@click="number_of_empty_tests -= 1"
+							tabindex="-1"
 							class="btn btn-outline-secondary btn-sm"
 							style="font-size: 0.7em; padding: 2px 6px;"
 							title="Xóa dòng trống này"
@@ -133,6 +120,13 @@ templ RecordTestTable() {
 				</tr>
 			</template>
 		</tbody>
+		<tfoot>
+			<tr>
+				<td class="text-end fw-bold">Tổng cộng:</td>
+				<td class="fw-bold" x-text="new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPrice)"></td>
+				<td colspan="5"></td>
+			</tr>
+		</tfoot>
 	</table>
 	<button x-show="isEditMode" type="button" @click="number_of_empty_tests += 1">+</button>
 }

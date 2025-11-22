@@ -76,6 +76,11 @@ templ RecordCreateForm(recordId string) {
 							if (test.manual_abnormal_override === undefined) {
 								test.manual_abnormal_override = false
 							}
+
+							// Migration: If result is empty but result_text has value, use result_text
+							if ((!test.result || test.result === '') && test.result_text && test.result_text !== '') {
+								test.result = test.result_text
+							}
 							
 							if (test.result) {
 								this.checkAbnormal(test)
@@ -111,7 +116,6 @@ templ RecordCreateForm(recordId string) {
 							id: test.id,
 							name: test.name,
 							result: test.result,
-							result_text: test.result_text,
 							abnormal: test.abnormal,
 							manual_abnormal_override: test.manual_abnormal_override
 						}))
@@ -286,19 +290,14 @@ templ RecordCreateForm(recordId string) {
 							throw new Error('Failed to submit record')
 						}
 
-						const data = await response.json()
+						const {data} = await response.json()
 						
 						// Clear unsaved changes flag after successful save
 						this.hasUnsavedChanges = false
 						this.captureInitialState()
 						
 						if (this.flow === 'create-record') {
-							// Show success notification and redirect
-							showCustomNotification('Tạo phiếu xét nghiệm thành công!', 'success')
-							// Wait a bit for notification to show before redirecting
-							setTimeout(() => {
-								window.location.replace(`/phieu-xet-nghiem/${data.id}`)
-							}, 1500)
+							redirectWithMessage(`/phieu-xet-nghiem/${data.id}`, 'record_create_success')
 						} else {
 							// Show success notification for update
 							showCustomNotification('Cập nhật phiếu xét nghiệm thành công!', 'success')
@@ -424,6 +423,10 @@ templ RecordCreateForm(recordId string) {
 				isTooltipVisible(testId, field) {
 					const tooltipKey = `${testId}_${field}`
 					return this.activeTooltips && this.activeTooltips[tooltipKey]
+				},
+
+				get totalPrice() {
+					return this.test_results.reduce((sum, test) => sum + (parseInt(test.price) || 0), 0)
 				},
 			}))
 
