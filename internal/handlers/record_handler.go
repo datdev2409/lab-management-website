@@ -158,7 +158,7 @@ func (h *Handler) ExportRecord(w http.ResponseWriter, r *http.Request) error {
 		BaseDir: "./reports",
 	}
 
-	fileName := fmt.Sprintf("%s-%s-%s.xlsx", time.Now().Format("20060102"), strings.ReplaceAll(record.Patient.Name, " ", "_"), req.ReportType)
+	fileName := fmt.Sprintf("%s-%s-%s.xlsx", time.Now().Format("20060102-150405"), strings.ReplaceAll(record.Patient.Name, " ", "_"), req.ReportType)
 	filePath, err := storer.Store(r.Context(), reader, fileName)
 	if err != nil {
 		return err
