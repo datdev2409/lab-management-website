@@ -58,11 +58,12 @@ func (ps *PageSetup) ApplyPageSetupV2(ctx context.Context, f *excelize.File) err
 		FitToPage: &fitToPage,
 	})
 	one := 1
+	three := 3
 	err := f.SetPageLayout(ps.SheetName, &excelize.PageLayoutOptions{
 		Size:        &ps.PageSize,
 		Orientation: &ps.Orientation,
 		FitToWidth:  &one,
-		FitToHeight: &one,
+		FitToHeight: &three, // Allow height to expand
 	})
 	if err != nil {
 		logger.FromCtx(ctx).Error("Failed to set page layout", zap.String("sheetName", ps.SheetName), zap.Error(err))
