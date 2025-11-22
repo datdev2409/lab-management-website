@@ -142,7 +142,12 @@ test.describe('Flow 1: Record CRUD - Main Business Flow', () => {
     page.once('dialog', async dialog => {
       dialogShown = true;
       expect(dialog.type()).toBe('confirm');
-      expect(dialog.message()).toContain('chưa được lưu' || 'unsaved' || 'thay đổi');
+      // Check if message contains any of the expected warning strings
+      const message = dialog.message().toLowerCase();
+      const hasWarning = message.includes('chưa được lưu') || 
+                        message.includes('unsaved') || 
+                        message.includes('thay đổi');
+      expect(hasWarning).toBeTruthy();
       await dialog.dismiss(); // Dismiss to stay on page
     });
     

@@ -8,6 +8,7 @@ const { seedBasicTestData } = require('../helpers/seed');
 const XLSX = require('xlsx');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 test.describe('Flow 3: Report Export Feature', () => {
   let testData;
@@ -121,7 +122,7 @@ test.describe('Flow 3: Report Export Feature', () => {
       
       try {
         const download = await downloadPromise;
-        const downloadPath = path.join('/tmp', `billing_report_${Date.now()}.xlsx`);
+        const downloadPath = path.join(os.tmpdir(), `billing_report_${Date.now()}.xlsx`);
         await download.saveAs(downloadPath);
         
         // Verify file exists
@@ -168,7 +169,7 @@ test.describe('Flow 3: Report Export Feature', () => {
       
       try {
         const download = await downloadPromise;
-        const downloadPath = path.join('/tmp', `results_report_${Date.now()}.xlsx`);
+        const downloadPath = path.join(os.tmpdir(), `results_report_${Date.now()}.xlsx`);
         await download.saveAs(downloadPath);
         
         // Verify file exists
@@ -221,7 +222,7 @@ test.describe('Flow 3: Report Export Feature', () => {
       
       try {
         const download = await downloadPromise;
-        const downloadPath = path.join('/tmp', `signed_report_${Date.now()}.xlsx`);
+        const downloadPath = path.join(os.tmpdir(), `signed_report_${Date.now()}.xlsx`);
         await download.saveAs(downloadPath);
         
         // Verify file exists
@@ -268,7 +269,7 @@ test.describe('Flow 3: Report Export Feature', () => {
       
       try {
         const download = await downloadPromise;
-        const downloadPath = path.join('/tmp', `pdf_report_${Date.now()}.pdf`);
+        const downloadPath = path.join(os.tmpdir(), `pdf_report_${Date.now()}.pdf`);
         await download.saveAs(downloadPath);
         
         // Verify file exists
@@ -313,7 +314,7 @@ test.describe('Flow 3: Report Export Feature', () => {
       try {
         await trackingButton.click();
         const download = await downloadPromise;
-        const downloadPath = path.join('/tmp', `tracking_report_${Date.now()}.xlsx`);
+        const downloadPath = path.join(os.tmpdir(), `tracking_report_${Date.now()}.xlsx`);
         await download.saveAs(downloadPath);
         
         // Verify file exists
