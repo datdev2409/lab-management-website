@@ -23,6 +23,7 @@
   "homepage": "https://github.com/datdev2409/lab-management-website#readme",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
-    "@types/node": "^24.10.0"
+    "@types/node": "^24.10.0",
+    "xlsx": "^0.18.5"
   }
 }
