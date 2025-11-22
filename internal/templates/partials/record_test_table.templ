@@ -17,7 +17,7 @@ templ RecordTestTable() {
 			<template x-for="test in test_results" x-key="test.id">
 				<tr>
 					<td x-text="test.name"></td>
-					<td style="width: 120px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(test.price)"></td>
 					<td style="width: 200px">
 						<div x-text="test.normal_value"></div>
 						<small class="text-muted" x-show="test.lower_bound !== undefined && test.upper_bound !== undefined" x-text="`[${test.lower_bound} - ${test.upper_bound}]`"></small>
@@ -97,7 +97,7 @@ templ RecordTestTable() {
 					<td>
 						@TestAutocomplete()
 					</td>
-					<td style="width: 120px" x-text="test.price"></td>
+					<td style="width: 120px" x-text="test.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(test.price) : ''"></td>
 					<td style="width: 200px" x-text="test.normal_value"></td>
 					<td style="width: 140px" x-text="test.unit"></td>
 					<td style="width: 200px">
@@ -120,6 +120,13 @@ templ RecordTestTable() {
 				</tr>
 			</template>
 		</tbody>
+		<tfoot>
+			<tr>
+				<td class="text-end fw-bold">Tổng cộng:</td>
+				<td class="fw-bold" x-text="new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPrice)"></td>
+				<td colspan="5"></td>
+			</tr>
+		</tfoot>
 	</table>
 	<button x-show="isEditMode" type="button" @click="number_of_empty_tests += 1">+</button>
 }

@@ -425,6 +425,10 @@ templ RecordCreateForm(recordId string) {
 					const tooltipKey = `${testId}_${field}`
 					return this.activeTooltips && this.activeTooltips[tooltipKey]
 				},
+
+				get totalPrice() {
+					return this.test_results.reduce((sum, test) => sum + (parseInt(test.price) || 0), 0)
+				},
 			}))
 
 		})
