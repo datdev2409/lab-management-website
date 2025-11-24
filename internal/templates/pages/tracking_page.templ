@@ -42,9 +42,9 @@ templ TrackingPage() {
 									<th>Tên bệnh nhân</th>
 									<th>Số điện thoại</th>
 									<th>Tên gói xét nghiệm</th>
-									<th>Trạng thái</th>
+									<th>Năm sinh</th>
+									<th>Địa chỉ</th>
 									<th>Ngày tạo</th>
-									<th>Ngày cập nhật</th>
 									<th></th>
 								</tr>
 							</thead>
@@ -63,9 +63,9 @@ templ TrackingPage() {
 										<td x-text="record.patient.name"></td>
 										<td x-text="record.patient.phone"></td>
 										<td x-text="record.combo_name"></td>
-										<td x-text="record.status"></td>
+										<td x-text="record.patient.yob"></td>
+										<td x-text="record.patient.address"></td>
 										<td x-text="formatDate(record.created_at)"></td>
-										<td x-text="formatDate(record.updated_at)"></td>
 										<td>
 											<a :href="`/phieu-xet-nghiem/${record.id}`" class="link-primary">Xem</a>
 										</td>

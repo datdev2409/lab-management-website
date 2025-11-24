@@ -149,11 +149,11 @@ templ RecordPage() {
 					<tr>
 						<th>Tên bệnh nhân</th>
 						<th>Số điện thoại</th>
+						<th>Năm sinh</th>
+						<th>Địa chỉ</th>
 						<th>Tên gói xét nghiệm</th>
 						<th>Bác sĩ chỉ định</th>
-						<th>Trạng thái</th>
 						<th>Ngày tạo</th>
-						<th>Ngày cập nhật</th>
 						<th></th>
 					</tr>
 				</thead>
@@ -162,14 +162,14 @@ templ RecordPage() {
 						<tr :id="'record-' + record.id">
 							<td x-text="record.patient.name"></td>
 							<td x-text="record.patient.phone"></td>
+							<td x-text="record.patient.yob"></td>
+							<td x-text="record.patient.address"></td>
 							<td x-text="record.combo_name"></td>
 							<td class="text-muted">
 								<span x-show="record.doctor_name" x-text="record.doctor_name"></span>
 								<em x-show="!record.doctor_name">-</em>
 							</td>
-							<td x-text="record.status"></td>
 							<td x-text="formatDate(record.created_at)"></td>
-							<td x-text="formatDate(record.updated_at)"></td>
 							<td>
 								<a :href="'/phieu-xet-nghiem/' + record.id" class="link-primary">Xem</a>
 							</td>
