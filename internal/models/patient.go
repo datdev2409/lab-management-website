@@ -36,11 +36,11 @@ type PatientQueryOptions struct {
 }
 
 type PatientUpdate struct {
-	Name    *string `json:"name,omitempty"`
-	YOB     *string `json:"yob,omitempty"`
-	Gender  *string `json:"gender,omitempty"`
-	Address *string `json:"address,omitempty"`
-	Phone   *string `json:"phone,omitempty"`
+	Name    *string `json:"name,omitempty" bson:"name,omitempty"`
+	YOB     *string `json:"yob,omitempty" bson:"yob,omitempty"`
+	Gender  *string `json:"gender,omitempty" bson:"gender,omitempty"`
+	Address *string `json:"address,omitempty" bson:"address,omitempty"`
+	Phone   *string `json:"phone,omitempty" bson:"phone,omitempty"`
 }
 
 func GetStringPtr(s string) *string {

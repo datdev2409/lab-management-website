@@ -144,11 +144,16 @@ func (h *Handler) UpdatePatientV1(w http.ResponseWriter, r *http.Request) error 
 	// When update patient info, also update all records with the new patient info
 	records, err := h.Store.GetRecordsByPatientId(r.Context(), id)
 	if err == nil {
-		patientUpdate := models.UpdateRecordRequest{
-			Patient: patient,
+		patientUpdate := models.PatientUpdate{
+			Name:    &patient.Name,
+			YOB:     &patient.YOB,
+			Gender:  &patient.Gender,
+			Address: &patient.Address,
+			Phone:   &patient.Phone,
 		}
+
 		for _, record := range records {
-			if err := h.Store.UpdateRecord(r.Context(), record.ID, patientUpdate); err != nil {
+			if err := h.Store.UpdatePatientInfoInRecords(r.Context(), record.ID, patient.ID, patientUpdate); err != nil {
 				log.Warn("failed to update patient info in the record",
 					zap.String("record_id", record.ID),
 					zap.String("patient_id", patient.ID),
