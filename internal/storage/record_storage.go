@@ -69,6 +69,21 @@ func (m *MongoStorage) GetRecordsByPatientId(ctx context.Context, patientId stri
 	return records, nil
 }
 
+func (m *MongoStorage) UpdatePatientInfoInRecords(ctx context.Context, recordId string, patientId string, updatedInfo models.PatientUpdate) error {
+	patientBSON, err := models.ToBSONDocument(updatedInfo)
+	if err != nil {
+		return err
+	}
+	patientBSON["_id"] = patientId
+	update := bson.M{
+		"patient": patientBSON,
+	}
+
+	col := m.getCollection("records")
+	return MongoUpdateById[models.Record](ctx, col, recordId, bson.M{"$set": update})
+
+}
+
 func (m *MongoStorage) UpdateRecord(ctx context.Context, recordId string, updateRequest models.UpdateRecordRequest) error {
 	update := bson.M{}
 	if updateRequest.ComboName != "" {
