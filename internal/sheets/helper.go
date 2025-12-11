@@ -62,7 +62,7 @@ func GetStyleNamePtr(styleName StyleName) *StyleName {
 // Returns: The formula string that calculates the relative index
 // Example: For startRow=10, first data row will show 1, second row 2, etc.
 func SetAutoIncrementIndexFormula(startRow int) string {
-	return "=ROW()-" + strconv.Itoa(startRow-1)
+	return "=IF(ISNONTEXT(OFFSET(INDIRECT(ADDRESS(ROW(),COLUMN())),-1,0))=FALSE,1,OFFSET(INDIRECT(ADDRESS(ROW(),COLUMN())),-1,0)+1)"
 }
 
 // CreateSumFormula creates a SUM formula for a range of cells

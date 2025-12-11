@@ -49,15 +49,59 @@ templ ReportPage() {
 								x-model="filters.end_date"
 							/>
 						</div>
-						<div class="col-md-4 d-flex align-items-end">
-							<button type="submit" class="btn btn-primary me-2" :disabled="isLoading">
+						<div class="col-md-4">
+							<label for="doctor_filter" class="form-label">Bác sĩ</label>
+							<div class="position-relative">
+								<input
+									type="text"
+									class="form-control"
+									id="doctor_filter"
+									x-model="doctorSearchInput"
+									@input="searchDoctors()"
+									@focus="doctorSearchOpen = true"
+									placeholder="Chọn bác sĩ (tùy chọn)"
+									autocomplete="off"
+								/>
+								<button
+									x-show="filters.doctor_id"
+									@click="clearDoctorFilter()"
+									type="button"
+									class="btn btn-sm btn-outline-secondary position-absolute"
+									style="right: 5px; top: 50%; transform: translateY(-50%);"
+									title="Xóa bộ lọc bác sĩ"
+								>
+									✕
+								</button>
+								<div
+									x-show="doctorSearchOpen && doctors.length > 0"
+									@click.outside="doctorSearchOpen = false"
+									class="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-sm"
+									style="z-index: 1000; top: 100%;"
+								>
+									<div class="list-group list-group-flush">
+										<template x-for="doctor in doctors" :key="doctor.id">
+											<button
+												type="button"
+												@click="selectDoctor(doctor)"
+												class="list-group-item list-group-item-action text-start"
+											>
+												<div x-text="doctor.name"></div>
+												<small class="text-muted" x-text="doctor.phone"></small>
+											</button>
+										</template>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-12 d-flex align-items-end gap-2">
+							<button type="submit" class="btn btn-primary" :disabled="isLoading">
 								<span x-show="isLoading" class="spinner-border spinner-border-sm me-1"></span>
 								Tìm kiếm
 							</button>
 							<button type="button" class="btn btn-outline-secondary" @click="clearFilters()">
 								Xóa bộ lọc
 							</button>
-							<button type="button" class="btn btn-success ms-2" @click="exportToExcel()" :disabled="!data || !data.records || data.records.length === 0 || isExporting" x-cloak>
+							<button type="button" class="btn btn-success" @click="exportToExcel()" :disabled="!data || !data.records || data.records.length === 0 || isExporting" x-cloak>
 								<span x-show="isExporting" class="spinner-border spinner-border-sm me-1"></span>
 								<i x-show="!isExporting" class="fas fa-download me-1"></i>
 								Xuất Excel
@@ -73,7 +117,7 @@ templ ReportPage() {
 						<div class="card-body">
 							<h5 class="card-title">Tổng số phiếu</h5>
 							<h3 class="mb-0" x-text="data?.summary?.total_records || 0"></h3>
-							<small x-text="formatPeriod()"></small>
+							<small x-text="formatPeriodAndDoctor()"></small>
 						</div>
 					</div>
 				</div>
@@ -82,7 +126,7 @@ templ ReportPage() {
 						<div class="card-body">
 							<h5 class="card-title">Tổng doanh thu</h5>
 							<h3 class="mb-0" x-text="formatCurrency(data?.summary?.total_revenue || 0)"></h3>
-							<small x-text="formatPeriod()"></small>
+							<small x-text="formatPeriodAndDoctor()"></small>
 						</div>
 					</div>
 				</div>
@@ -113,9 +157,9 @@ templ ReportPage() {
 										</td>
 										<td class="text-end fw-bold text-success" x-text="formatCurrency(doctor.totalRevenue)"></td>
 									</tr>
-								</template>
-								<!-- Show "No Doctor" records -->
-								<tr x-show="getNoDocterRecords().count > 0" class="table-secondary">
+							</template>
+							<!-- Show "No Doctor" records only when not filtering by specific doctor -->
+							<tr x-show="!filters.doctor_id && getNoDocterRecords().count > 0" class="table-secondary">
 									<td>
 										<em class="text-muted">Không có bác sĩ chỉ định</em>
 									</td>
@@ -208,8 +252,14 @@ templ ReportPage() {
 			isExporting: false,
 			filters: {
 				start_date: '',
-				end_date: ''
+				end_date: '',
+				doctor_id: '',
+				doctor_name: ''
 			},
+			doctors: [],
+			doctorSearchOpen: false,
+			doctorSearchInput: '',
+			doctorSearchLoading: false,
 
 			init() {
 				// Set default dates (current month) in local timezone
@@ -238,6 +288,7 @@ templ ReportPage() {
 							const params = new URLSearchParams();
 							if (this.filters.start_date) params.append('start_date', this.filters.start_date);
 							if (this.filters.end_date) params.append('end_date', this.filters.end_date);
+							if (this.filters.doctor_id) params.append('doctor_id', this.filters.doctor_id);
 							
 							const response = await fetch(`/api/v1/records/revenue?${params}`);
 							if (!response.ok) {
@@ -256,6 +307,9 @@ templ ReportPage() {
 					clearFilters() {
 						this.filters.start_date = '';
 						this.filters.end_date = '';
+						this.filters.doctor_id = '';
+						this.filters.doctor_name = '';
+						this.doctorSearchInput = '';
 						this.data = null;
 					},
 
@@ -310,11 +364,49 @@ templ ReportPage() {
 								break;
 						}
 						
-						// Automatically search after setting quick filter
-						this.searchReports();
-					},
+					// Automatically search after setting quick filter
+					this.searchReports();
+				},
 
-					formatCurrency(amount) {
+				async searchDoctors() {
+					if (!this.doctorSearchInput.trim()) {
+						this.doctors = [];
+						return;
+					}
+
+					this.doctorSearchLoading = true;
+					try {
+						const response = await fetch(`/api/v1/doctors?q=${encodeURIComponent(this.doctorSearchInput)}&page=1&page_size=10`);
+						if (!response.ok) {
+							throw new Error('Không thể tải danh sách bác sĩ');
+						}
+						const { data } = await response.json();
+						this.doctors = data || [];
+					} catch (err) {
+						console.error('Error searching doctors:', err);
+						this.doctors = [];
+					} finally {
+						this.doctorSearchLoading = false;
+					}
+				},
+
+				selectDoctor(doctor) {
+					this.filters.doctor_id = doctor.id;
+					this.filters.doctor_name = doctor.name;
+					this.doctorSearchInput = doctor.name;
+					this.doctorSearchOpen = false;
+					this.doctors = [];
+					this.searchReports();
+				},
+
+				clearDoctorFilter() {
+					this.filters.doctor_id = '';
+					this.filters.doctor_name = '';
+					this.doctorSearchInput = '';
+					this.doctors = [];
+					this.doctorSearchOpen = false;
+					this.searchReports();
+				},					formatCurrency(amount) {
 						return new Intl.NumberFormat('vi-VN', {
 							style: 'currency',
 							currency: 'VND'
@@ -332,36 +424,42 @@ templ ReportPage() {
 						});
 					},
 
-					formatPeriod() {
-						if (!this.data?.summary) return '';
-						
-						const startDate = this.data.summary.start_date;
-						const endDate = this.data.summary.end_date;
-						
-						if (!startDate && !endDate) return 'Tất cả thời gian';
-						
-						const formatDateOnly = (dateStr) => {
-							if (!dateStr) return '';
-							// Parse the date string (which includes timezone info)
-							const date = new Date(dateStr);
-							// Use local date functions to get the correct date in the user's timezone
-							const day = String(date.getDate()).padStart(2, '0');
-							const month = String(date.getMonth() + 1).padStart(2, '0');
-							const year = date.getFullYear();
-							return `${day}/${month}/${year}`;
-						};
-						
-						if (startDate && endDate) {
-							return `${formatDateOnly(startDate)} - ${formatDateOnly(endDate)}`;
-						}
-						
-						if (startDate) return `Từ ${formatDateOnly(startDate)}`;
-						if (endDate) return `Đến ${formatDateOnly(endDate)}`;
-						
-						return '';
-					},
+				formatPeriod() {
+					if (!this.data?.summary) return '';
+					
+					const startDate = this.data.summary.start_date;
+					const endDate = this.data.summary.end_date;
+					
+					if (!startDate && !endDate) return 'Tất cả thời gian';
+					
+					const formatDateOnly = (dateStr) => {
+						if (!dateStr) return '';
+						// Parse the date string (which includes timezone info)
+						const date = new Date(dateStr);
+						// Use local date functions to get the correct date in the user's timezone
+						const day = String(date.getDate()).padStart(2, '0');
+						const month = String(date.getMonth() + 1).padStart(2, '0');
+						const year = date.getFullYear();
+						return `${day}/${month}/${year}`;
+					};
+					
+					if (startDate && endDate) {
+						return `${formatDateOnly(startDate)} - ${formatDateOnly(endDate)}`;
+					}
+					
+					if (startDate) return `Từ ${formatDateOnly(startDate)}`;
+					if (endDate) return `Đến ${formatDateOnly(endDate)}`;
+					
+					return '';
+				},
 
-					// Doctor summary calculation methods
+				formatPeriodAndDoctor() {
+					let result = this.formatPeriod();
+					if (this.filters.doctor_name) {
+						result += ` | Bác sĩ: ${this.filters.doctor_name}`;
+					}
+					return result;
+				},					// Doctor summary calculation methods
 					getDoctorSummary() {
 						if (!this.data || !this.data.records) return [];
 						
@@ -420,6 +518,7 @@ templ ReportPage() {
 						const params = new URLSearchParams();
 						if (this.filters.start_date) params.append('start_date', this.filters.start_date);
 						if (this.filters.end_date) params.append('end_date', this.filters.end_date);
+						if (this.filters.doctor_id) params.append('doctor_id', this.filters.doctor_id);
 						
 						const response = await fetch(`/api/v1/records/revenue/export?${params}`, {
 							method: 'GET'

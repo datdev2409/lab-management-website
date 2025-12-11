@@ -94,7 +94,7 @@ func (r *BillingReport) Generate(ctx context.Context, data interface{}) (io.Read
 	cells := map[string]Cell{
 		"A6": {value: "Họ tên:", styleName: GetStyleNamePtr(PatientInfoStyle)},
 		"B6": {value: record.Patient.Name, styleName: GetStyleNamePtr(PatientNameStyle)},
-		"A7": {value: "Địa chỉ", styleName: GetStyleNamePtr(PatientInfoStyle)},
+		"A7": {value: "Địa chỉ:", styleName: GetStyleNamePtr(PatientInfoStyle)},
 		"B7": {value: record.Patient.Address, styleName: GetStyleNamePtr(PatientInfoStyle)},
 		"C6": {value: "Số điện thoại:", styleName: GetStyleNamePtr(PatientInfoStyle)},
 		"D6": {value: record.Patient.Phone, styleName: GetStyleNamePtr(PatientInfoStyle)},
