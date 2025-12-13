@@ -32,11 +32,13 @@ const (
 	TestResultStyle
 	TestResultTableHeader
 	TestAbnormalResultStyle
+	TestResultBelowNormalStyle
+	TestResultAboveNormalStyle
 	TestUnitStyle
 	TestNormalRangeStyle
 	SignatureStyle
 	Font12BoldStyle
-	Font16BoldCenterStyle
+	Font14BoldCenterStyle
 	TrackingTableHeaderStyle
 	LocationDateStyle
 	LabDepartmentStyle
@@ -247,6 +249,22 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Alignment: alignCenter,
 			Border:    border,
 		},
+		TestResultBelowNormalStyle: {
+			Font: &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true, Color: "000AFF"},
+			Alignment: &excelize.Alignment{
+				Horizontal: "left",
+				Vertical:   "center",
+			},
+			Border: border,
+		},
+		TestResultAboveNormalStyle: {
+			Font: &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true, Color: "FF0000"},
+			Alignment: &excelize.Alignment{
+				Horizontal: "right",
+				Vertical:   "center",
+			},
+			Border: border,
+		},
 		TestUnitStyle: {
 			Font:      font11,
 			Alignment: alignCenterShrinkToFit,
@@ -269,8 +287,8 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Font:      font12Bold,
 			Alignment: alignCenter,
 		},
-		Font16BoldCenterStyle: {
-			Font:      &excelize.Font{Size: 16, Family: FontMyriadPro, Bold: true, Color: "3366FF"},
+		Font14BoldCenterStyle: {
+			Font:      &excelize.Font{Size: 14, Family: FontMyriadPro, Bold: true, Color: "000AFF"},
 			Alignment: alignCenter,
 		},
 		TrackingTableHeaderStyle: {
@@ -291,15 +309,15 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 			Alignment: alignCenter,
 		},
 		LabNameLeftStyle: {
-			Font:      &excelize.Font{Size: 10, Family: FontMyriadPro, Bold: true, Color: "3366FF"},
+			Font:      &excelize.Font{Size: 10, Family: FontMyriadPro, Bold: true, Color: "000AFF"},
 			Alignment: alignLeft,
 		},
 		LabAddressLeftStyle: {
-			Font:      &excelize.Font{Size: 10, Family: FontMyriadPro, Color: "3366FF"},
+			Font:      &excelize.Font{Size: 10, Family: FontMyriadPro, Color: "000AFF"},
 			Alignment: alignLeft,
 		},
 		PatientNameCenterStyle: {
-			Font:      &excelize.Font{Size: 14, Family: FontMyriadPro, Bold: true},
+			Font:      &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true},
 			Alignment: alignCenter,
 		},
 		TrackingTableHeaderCyanStyle: {

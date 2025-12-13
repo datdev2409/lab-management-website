@@ -35,7 +35,7 @@ func NewTrackingReport(ctx context.Context) (*TrackingReport, error) {
 		},
 		ColumnWidth: map[string]float64{
 			"A": 4.0,  // STT column
-			"B": 38.0, // Test name column
+			"B": 35.0, // Test name column
 			"C": 20.0, // Normal range column
 		},
 	}
@@ -134,7 +134,7 @@ func (r *TrackingReport) buildReportHeader(f *excelize.File, sm *StyleManager, r
 	// Report title - merge across all columns and center
 	_ = f.MergeCell("Sheet1", "A3", fmt.Sprintf("%s3", lastCol))
 	_ = f.SetCellValue("Sheet1", "A3", "SỔ THEO DÕI KẾT QUẢ XÉT NGHIỆM")
-	_ = f.SetCellStyle("Sheet1", "A3", "A3", sm.GetStyleV2(Font16BoldCenterStyle))
+	_ = f.SetCellStyle("Sheet1", "A3", "A3", sm.GetStyleV2(Font14BoldCenterStyle))
 
 	// Patient name - merge across all columns and center
 	_ = f.MergeCell("Sheet1", "A4", fmt.Sprintf("%s4", lastCol))
@@ -152,6 +152,8 @@ func (r *TrackingReport) buildTestTable(f *excelize.File, sm *StyleManager, reco
 
 	// Set table headers
 	headers := []string{"STT", "Tên dịch vụ", "Khoảng tham chiếu"}
+
+	f.SetRowHeight("Sheet1", headerRow, 20.0)
 
 	// Add date headers for each record
 	for _, record := range records {
@@ -207,12 +209,8 @@ func (r *TrackingReport) buildTestTable(f *excelize.File, sm *StyleManager, reco
 				displayValue := formatTestResultDisplay(testResult)
 				_ = f.SetCellValue("Sheet1", resultCell, displayValue)
 
-				// Use abnormal style if result is abnormal, otherwise normal style
-				if testResult.Abnormal {
-					_ = f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(TestAbnormalResultStyle))
-				} else {
-					_ = f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(TestResultStyle))
-				}
+				resultStyle := GetResultStyleName(testResult)
+				_ = f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(resultStyle))
 			} else {
 				// Empty cell with normal style
 				_ = f.SetCellStyle("Sheet1", resultCell, resultCell, sm.GetStyleV2(TestResultStyle))
