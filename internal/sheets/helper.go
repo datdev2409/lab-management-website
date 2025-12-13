@@ -120,7 +120,7 @@ func GetResultStyleName(testResult *models.TestResult) StyleName {
 			return TestResultAboveNormalStyle
 		} else if testResult.Abnormal {
 			// Result is within range but marked as abnormal
-			return TestAbnormalResultStyle
+			return TestResultAboveNormalStyle
 		}
 	} else if testResult.Abnormal {
 		// Non-numeric result marked as abnormal
