@@ -7,11 +7,11 @@ services:
       - ENVIRONMENT=${ENV}
     labels:
       - traefik.enable=true
-      - traefik.http.routers.lab-admin-http.rule=Host(`anhquanlab.datnguyen2409.tech`)
+      - traefik.http.routers.lab-admin-http.rule=Host(`anhquanlab.datnguyen2409.tech`) || Host(`anhquanlab.${ENV}.datnguyen2409.tech`)
       - traefik.http.routers.lab-admin-http.entryPoints=web
       - traefik.http.routers.lab-admin-https.tls=true
       - traefik.http.routers.lab-admin-https.entryPoints=websecure
-      - traefik.http.routers.lab-admin-https.rule=Host(`anhquanlab.datnguyen2409.tech`)
+      - traefik.http.routers.lab-admin-https.rule=Host(`anhquanlab.datnguyen2409.tech`) || Host(`anhquanlab.${ENV}.datnguyen2409.tech`)
       - traefik.http.routers.lab-admin-https.tls.certresolver=cloudflare
     env_file:
       - ../.env
@@ -19,7 +19,7 @@ services:
       - "9000:9000"
     networks:
       - lab-admin-network
-  
+
   gotenberg:
     image: gotenberg/gotenberg:8
     restart: unless-stopped
@@ -32,6 +32,3 @@ networks:
   lab-admin-network:
     name: lab-admin-network
     external: true
-  
-        
-

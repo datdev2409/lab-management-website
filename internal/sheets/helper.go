@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 	_ "time/tzdata"
+
+	"github.com/datdev2409/lab-admin-go/internal/models"
 )
 
 // FormatPrice formats an integer price with comma separators
@@ -93,4 +95,37 @@ func ToVietnamTime(t time.Time) time.Time {
 		return t
 	}
 	return t.In(loc)
+}
+
+// GetResultStyleName determines the appropriate style for a test result
+// based on comparing the result value with normal bounds.
+// Priority:
+//  1. If result < LowerBound: TestResultBelowNormalStyle (blue, left-aligned)
+//  2. If result > UpperBound: TestResultAboveNormalStyle (red, right-aligned)
+//  3. If result marked abnormal and within bounds: TestAbnormalResultStyle (bold, centered)
+//  4. If non-numeric result and marked abnormal: TestAbnormalResultStyle
+//  5. Otherwise: TestResultStyle (normal, centered)
+func GetResultStyleName(testResult *models.TestResult) StyleName {
+	if testResult == nil {
+		return TestResultStyle
+	}
+
+	// Try to parse the result as a number and compare with bounds
+	if resultValue, err := strconv.ParseFloat(testResult.Result, 64); err == nil {
+		if resultValue < testResult.LowerBound {
+			// Result is below normal range - left align, blue color
+			return TestResultBelowNormalStyle
+		} else if resultValue > testResult.UpperBound {
+			// Result is above normal range - right align, red color
+			return TestResultAboveNormalStyle
+		} else if testResult.Abnormal {
+			// Result is within range but marked as abnormal
+			return TestResultAboveNormalStyle
+		}
+	} else if testResult.Abnormal {
+		// Non-numeric result marked as abnormal
+		return TestAbnormalResultStyle
+	}
+
+	return TestResultStyle
 }

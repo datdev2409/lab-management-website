@@ -104,13 +104,10 @@ func (t *TestResultTable) Apply(ctx context.Context) error {
 		// Test Name - Column C
 		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col2, row), fmt.Sprintf("%s%d", col2, row), t.styleManager.GetStyleV2(TestNameStyle))
 
-		// Result - Column D (apply abnormal style if needed)
+		// Result - Column D (apply conditional style based on result value comparison)
 		resultCell := fmt.Sprintf("%s%d", col3, row)
-		if testResult.Abnormal {
-			t.file.SetCellStyle("Sheet1", resultCell, resultCell, t.styleManager.GetStyleV2(TestAbnormalResultStyle))
-		} else {
-			t.file.SetCellStyle("Sheet1", resultCell, resultCell, t.styleManager.GetStyleV2(TestResultStyle))
-		}
+		resultStyle := GetResultStyleName(&testResult)
+		t.file.SetCellStyle("Sheet1", resultCell, resultCell, t.styleManager.GetStyleV2(resultStyle))
 
 		// Unit - Column E
 		t.file.SetCellStyle("Sheet1", fmt.Sprintf("%s%d", col4, row), fmt.Sprintf("%s%d", col4, row), t.styleManager.GetStyleV2(TestUnitStyle))
@@ -163,6 +160,7 @@ func NewPatientInfoTable(
 
 // Apply renders the patient info table to the Excel sheet
 func (p *PatientInfoTable) Apply(ctx context.Context) error {
+	rowHeight := 20.0
 	col1 := p.startCol
 	col2 := GetNextColumn(col1)
 	col3 := GetNextColumn(col2)
@@ -198,6 +196,7 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	f.SetCellValue("Sheet1", yobValueCell, p.patient.YOB)
 	f.SetCellStyle("Sheet1", yobValueCell, yobValueEndCell, sm.GetStyleV2(PatientInfoStyle))
 
+	f.SetRowHeight("Sheet1", row, rowHeight)
 	row++
 
 	// Row 2: Address and Gender
@@ -219,6 +218,7 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	f.SetCellValue("Sheet1", genderValueCell, p.patient.Gender)
 	f.SetCellStyle("Sheet1", genderValueCell, genderValueEndCell, sm.GetStyleV2(PatientInfoStyle))
 
+	f.SetRowHeight("Sheet1", row, rowHeight)
 	row++
 
 	// Row 3: Diagnosis and Phone
@@ -241,6 +241,7 @@ func (p *PatientInfoTable) Apply(ctx context.Context) error {
 	f.SetCellStyle("Sheet1", phoneValueCell, phoneValueEndCell, sm.GetStyleV2(PatientInfoStyle))
 
 	// Update end row (patient info takes 3 rows)
+	f.SetRowHeight("Sheet1", row, rowHeight)
 	p.endRow = row
 
 	return nil

@@ -194,6 +194,7 @@ func (s *SignatureComponent) Apply(ctx context.Context) error {
 		if err := f.SetCellValue(s.sheetName, locationDateCell, dateText); err != nil {
 			return err
 		}
+		f.SetRowHeight(s.sheetName, currentRow, 22.0)
 
 		// Merge cells if needed
 		if s.startCol != s.endCol {
