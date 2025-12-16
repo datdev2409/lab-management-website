@@ -252,7 +252,7 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 		TestResultBelowNormalStyle: {
 			Font: &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true, Color: "000AFF"},
 			Alignment: &excelize.Alignment{
-				Horizontal: "left",
+				Horizontal: "center",
 				Vertical:   "center",
 			},
 			Border: border,
@@ -260,7 +260,7 @@ func NewStyleManager(ctx context.Context, file *excelize.File) *StyleManager {
 		TestResultAboveNormalStyle: {
 			Font: &excelize.Font{Size: 12, Family: FontMyriadPro, Bold: true, Color: "FF0000"},
 			Alignment: &excelize.Alignment{
-				Horizontal: "right",
+				Horizontal: "center",
 				Vertical:   "center",
 			},
 			Border: border,
