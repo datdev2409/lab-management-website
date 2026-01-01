@@ -11,7 +11,7 @@ on:
         options:
           - stg
           - prod
-        default: stg
+        default: prod
 
   # Scheduled trigger - runs daily at 3:00 AM VNT (8:00 PM UTC)
   schedule:
