@@ -22,12 +22,12 @@ env:
   MONGO_URI: ${{ secrets.MONGODB_URI }}
   BACKUP_DIR: /tmp/mongo-backup
   AWS_REGION: ${{ vars.AWS_REGION }}
-  ENVIRONMENT: ${{ inputs.environment || 'stg' }}
+  ENVIRONMENT: ${{ inputs.environment || 'prod' }}
 
 jobs:
   backup-mongodb:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'stg' }}
+    environment: ${{ inputs.environment || 'prod' }}
 
     steps:
       - name: Configure AWS credentials
