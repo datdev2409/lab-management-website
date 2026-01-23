@@ -3,7 +3,7 @@
 BACKUP_DIR=${1:-"./backup"}
 
 S3_BUCKET="anhquanlab-mongodb-backup"
-ENV="stg"
+ENV="prod"
 
 # Fetch latest backup from S3 for stg environment
 latest_backup=$(aws s3api list-objects-v2 --bucket $S3_BUCKET --prefix $ENV/ --query 'Contents[?LastModified>=`2024-10-01`].[Key, LastModified]' --output text | sort -k2 -r | head -n 1)

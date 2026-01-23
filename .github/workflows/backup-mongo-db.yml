@@ -1,4 +1,4 @@
-name: Backup MongoDB to S3
+name: Backup MongoDB to Google Cloud Storage Bucket
 
 on:
   # Manual trigger
@@ -18,7 +18,7 @@ on:
     - cron: "0 20 * * *"
 
 env:
-  BACKUP_BUCKET: ${{ vars.MONGODB_BACKUP_S3_BUCKET }}
+  BACKUP_BUCKET: "anhquanlab-db-backup-bucket"
   MONGO_URI: ${{ secrets.MONGODB_URI }}
   BACKUP_DIR: /tmp/mongo-backup
   AWS_REGION: ${{ vars.AWS_REGION }}
@@ -29,13 +29,17 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'prod' }}
 
+    permissions:
+      contents: "read" # Required to checkout the code
+      id-token: "write"
+
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5.0.0
+      - uses: "actions/checkout@v4"
+
+      - uses: "google-github-actions/auth@v3"
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          project_id: "anhquanlab"
+          workload_identity_provider: "projects/622833532858/locations/global/workloadIdentityPools/github-action-pool/providers/datdev2409-github-repos"
 
       - name: Install MongoDB Database Tools
         run: |
@@ -62,21 +66,21 @@ jobs:
           BACKUP_NAME="${TIMESTAMP}"
           BACKUP_PATH="${{ env.BACKUP_DIR }}/${BACKUP_NAME}"
           BACKUP_FILE="${BACKUP_NAME}.tar.gz"
-          S3_KEY="${{ env.ENVIRONMENT }}/${BACKUP_FILE}"
+          OBJECT_KEY="${{ env.ENVIRONMENT }}/${BACKUP_FILE}"
 
           echo "Generated backup metadata:"
           echo "Timestamp: ${TIMESTAMP}"
           echo "Backup name: ${BACKUP_NAME}"
           echo "Backup path: ${BACKUP_PATH}"
           echo "Backup file: ${BACKUP_FILE}"
-          echo "S3 key: ${S3_KEY}"
+          echo "Object key: ${OBJECT_KEY}"
 
           # Set outputs for subsequent steps
           echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
           echo "backup-name=${BACKUP_NAME}" >> $GITHUB_OUTPUT
           echo "backup-path=${BACKUP_PATH}" >> $GITHUB_OUTPUT
           echo "backup-file=${BACKUP_FILE}" >> $GITHUB_OUTPUT
-          echo "s3-key=${S3_KEY}" >> $GITHUB_OUTPUT
+          echo "object-key=${OBJECT_KEY}" >> $GITHUB_OUTPUT
 
       - name: Create MongoDB backup
         run: |
@@ -108,45 +112,39 @@ jobs:
           echo "Backup compression completed"
           echo "Backup size: $(du -sh ${BACKUP_FILE} | cut -f1)"
 
-      - name: Upload backup to S3
+      - name: Upload backup to Google Cloud Storage
         run: |
           set -euo pipefail
 
           BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
-          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
-          S3_URI="s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
+          OBJECT_KEY="${{ steps.backup-metadata.outputs.object-key }}"
+          GCS_URI="gs://${{ env.BACKUP_BUCKET }}/${OBJECT_KEY}"
 
-          echo "Uploading backup to S3..."
+          echo "Uploading backup to Google Cloud Storage..."
           echo "Source: ${{ env.BACKUP_DIR }}/${BACKUP_FILE}"
-          echo "Destination: ${S3_URI}"
+          echo "Destination: ${GCS_URI}"
 
-          # Upload to S3 with server-side encryption
-          aws s3 cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${S3_URI}"
+          # Upload to Google Cloud Storage
+          gcloud storage cp "${{ env.BACKUP_DIR }}/${BACKUP_FILE}" "${GCS_URI}"
 
-          echo "Backup uploaded successfully to S3"
+          echo "Backup uploaded successfully to Google Cloud Storage"
 
       - name: Verify backup integrity
         run: |
           set -euo pipefail
 
           BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
-          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
-
+          OBJECT_KEY="${{ steps.backup-metadata.outputs.object-key }}"
           echo "Verifying backup integrity..."
 
-          # Check if S3 object exists and get its size
-          S3_SIZE=$(aws s3api head-object \
-            --bucket "${{ env.BACKUP_BUCKET }}" \
-            --key "${S3_KEY}" \
-            --query 'ContentLength' \
-            --output text)
+          GCS_SIZE=$(gcloud storage objects describe "gs://${{ env.BACKUP_BUCKET }}/${OBJECT_KEY}" --format="value(size)")
 
           LOCAL_SIZE=$(stat -c%s "${{ env.BACKUP_DIR }}/${BACKUP_FILE}")
 
           echo "Local backup size: ${LOCAL_SIZE} bytes"
-          echo "S3 backup size: ${S3_SIZE} bytes"
+          echo "GCS backup size: ${GCS_SIZE} bytes"
 
-          if [[ "$LOCAL_SIZE" == "$S3_SIZE" ]]; then
+          if [[ "$LOCAL_SIZE" == "$GCS_SIZE" ]]; then
             echo "✅ Backup integrity verified - sizes match"
           else
             echo "❌ Backup integrity check failed - size mismatch"
@@ -158,12 +156,12 @@ jobs:
           set -euo pipefail
 
           BACKUP_FILE="${{ steps.backup-metadata.outputs.backup-file }}"
-          S3_KEY="${{ steps.backup-metadata.outputs.s3-key }}"
+          OBJECT_KEY="${{ steps.backup-metadata.outputs.object-key }}"
           COMPLETION_TIME=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
           echo "✅ MongoDB backup completed successfully at ${COMPLETION_TIME}"
           echo "Backup file: ${BACKUP_FILE}"
-          echo "S3 location: s3://${{ env.BACKUP_BUCKET }}/${S3_KEY}"
+          echo "GCS location: gs://${{ env.BACKUP_BUCKET }}/${OBJECT_KEY}"
           echo "Environment: ${{ env.ENVIRONMENT }}"
 
       - name: Send failure notification
