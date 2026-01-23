@@ -1,4 +1,4 @@
-name: Backup MongoDB to S3
+name: Backup MongoDB to Google Cloud Storage Bucket
 
 on:
   # Manual trigger
