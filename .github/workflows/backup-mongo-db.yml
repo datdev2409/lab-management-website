@@ -29,6 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment || 'stg' }}
 
+    permissions:
+      contents: "read" # Required to checkout the code
+      id-token: "write"
+
     steps:
       - uses: "actions/checkout@v4"
 
