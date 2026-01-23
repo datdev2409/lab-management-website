@@ -11,7 +11,7 @@ on:
         options:
           - stg
           - prod
-        default: stg
+        default: prod
 
   # Scheduled trigger - runs daily at 3:00 AM VNT (8:00 PM UTC)
   schedule:
@@ -22,12 +22,12 @@ env:
   MONGO_URI: ${{ secrets.MONGODB_URI }}
   BACKUP_DIR: /tmp/mongo-backup
   AWS_REGION: ${{ vars.AWS_REGION }}
-  ENVIRONMENT: ${{ inputs.environment || 'stg' }}
+  ENVIRONMENT: ${{ inputs.environment || 'prod' }}
 
 jobs:
   backup-mongodb:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment || 'stg' }}
+    environment: ${{ inputs.environment || 'prod' }}
 
     permissions:
       contents: "read" # Required to checkout the code
