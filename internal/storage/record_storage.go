@@ -135,7 +135,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 	}
 
 	// Convert records to MinimalRecordForReport with calculated totals
-	minimalRecords := make([]*models.MinimalRecordForReport, 0, len(records))
+	minimalRecords := make([]*models.RecordForRevenueReport, 0, len(records))
 	totalRevenue := 0
 
 	for _, record := range records {
@@ -145,7 +145,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 			totalPrice += testResult.Price
 		}
 
-		minimalRecord := &models.MinimalRecordForReport{
+		minimalRecord := &models.RecordForRevenueReport{
 			ID:             record.ID,
 			PatientName:    record.Patient.Name,
 			PatientPhone:   record.Patient.Phone,

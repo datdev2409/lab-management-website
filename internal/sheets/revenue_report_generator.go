@@ -111,7 +111,7 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	// 4. Data Rows
 	if reportData.Records == nil {
 		log.Warn("No records in report data")
-		reportData.Records = []*models.MinimalRecordForReport{}
+		reportData.Records = []*models.RecordForRevenueReport{}
 	}
 
 	dataStartRow := currentRow
