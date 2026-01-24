@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/datdev2409/lab-admin-go/internal/auth"
@@ -21,14 +22,34 @@ func LoggingMiddleware(logObj *zap.Logger) func(http.Handler) http.Handler {
 	}
 }
 
+// extractToken attempts to extract JWT token from either cookie or Authorization header
+func extractToken(r *http.Request) (string, error) {
+	// First, try to get token from cookie
+	cookie, err := r.Cookie("auth_token")
+	if err == nil {
+		return cookie.Value, nil
+	}
+
+	// If cookie not found, try Authorization header with Bearer scheme
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) == 2 && strings.ToLower(parts[0]) == "bearer" {
+			return parts[1], nil
+		}
+	}
+
+	return "", http.ErrNoCookie
+}
+
 func JWTAuthAPIEndpoint(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("auth_token")
+		tokenStr, err := extractToken(r)
 		if err != nil {
-			http.Error(w, "Missing auth_token cookie", http.StatusUnauthorized)
+			http.Error(w, "Missing or invalid authentication token", http.StatusUnauthorized)
 			return
 		}
-		tokenStr := cookie.Value
+
 		userId, err := auth.ValidateJWT(tokenStr)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
@@ -42,13 +63,12 @@ func JWTAuthAPIEndpoint(next http.Handler) http.Handler {
 
 func JWTAuthWebEndpoint(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("auth_token")
+		tokenStr, err := extractToken(r)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
 
-		tokenStr := cookie.Value
 		userId, err := auth.ValidateJWT(tokenStr)
 		if err != nil {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)

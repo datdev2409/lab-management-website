@@ -124,10 +124,18 @@ const (
 	RevenueReport           ReportType = "bao_cao_doanh_thu"
 )
 
-// RecordWithTotal represents a record with its calculated total price
-type RecordWithTotal struct {
-	*Record
-	TotalPrice int `json:"total_price"`
+// RecordForRevenueReport represents a minimal record for revenue reports (lightweight response)
+type RecordForRevenueReport struct {
+	ID             string    `json:"id"`
+	PatientName    string    `json:"patient_name"`
+	PatientPhone   string    `json:"patient_phone"`
+	PatientAddress string    `json:"patient_address,omitempty"`
+	ComboName      string    `json:"combo_name"`
+	DoctorName     string    `json:"doctor_name,omitempty"`
+	DoctorID       string    `json:"doctor_id,omitempty"`
+	Status         string    `json:"status"`
+	TotalPrice     int       `json:"total_price"`
+	CreatedAt      time.Time `json:"created_at"`
 }
 
 // ReportSummary represents aggregated data for revenue reports
@@ -140,7 +148,7 @@ type ReportSummary struct {
 
 // ReportResponse represents the complete response for revenue reports
 type ReportResponse struct {
-	Records    []*RecordWithTotal  `json:"records"`
-	Pagination *PaginationResponse `json:"pagination"`
-	Summary    *ReportSummary      `json:"summary"`
+	Records    []*RecordForRevenueReport `json:"records"`
+	Pagination *PaginationResponse       `json:"pagination"`
+	Summary    *ReportSummary            `json:"summary"`
 }

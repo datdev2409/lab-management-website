@@ -18,6 +18,7 @@ type Handler struct {
 func NewHandler(store storage.Storage, log *zap.Logger) *Handler {
 	r := chi.NewRouter()
 
+	r.Use(middleware.Compress(5))
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	h := &Handler{Router: r, Store: store}

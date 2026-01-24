@@ -88,24 +88,24 @@ func parseRevenueReportFilters(r *http.Request) (models.RecordQueryOptions, mode
 // getRevenueReportData is a helper function to fetch revenue report data with common error handling
 func (h *Handler) getRevenueReportData(ctx context.Context, filters models.RecordQueryOptions, opts models.GenericQueryOptions) (*models.ReportResponse, error) {
 	log := logger.FromCtx(ctx)
-	
+
 	reportData, err := h.Store.GetRecordsWithRevenue(ctx, filters, opts)
 	if err != nil {
 		log.Error("Failed to get records with revenue", zap.Error(err))
 		return nil, err
 	}
-	
+
 	log.Info("Revenue report data retrieved successfully",
 		zap.Int("record_count", len(reportData.Records)),
 		zap.Int("total_revenue", reportData.Summary.TotalRevenue))
-	
+
 	return reportData, nil
 }
 
 // generateRevenueReportFilename creates a filename for revenue report based on date filters
 func generateRevenueReportFilename(filters models.RecordQueryOptions) string {
 	baseFilename := "revenue_report"
-	
+
 	if filters.StartDate != nil && filters.EndDate != nil {
 		startDateStr := filters.StartDate.Format("2006-01-02")
 		endDateStr := filters.EndDate.Format("2006-01-02")
@@ -117,7 +117,7 @@ func generateRevenueReportFilename(filters models.RecordQueryOptions) string {
 		endDateStr := filters.EndDate.Format("2006-01-02")
 		return fmt.Sprintf("%s_to_%s.xlsx", baseFilename, endDateStr)
 	}
-	
+
 	return baseFilename + ".xlsx"
 }
 
