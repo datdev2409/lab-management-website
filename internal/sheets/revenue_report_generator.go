@@ -111,7 +111,7 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 	// 4. Data Rows
 	if reportData.Records == nil {
 		log.Warn("No records in report data")
-		reportData.Records = []*models.RecordWithTotal{}
+		reportData.Records = []*models.MinimalRecordForReport{}
 	}
 
 	dataStartRow := currentRow
@@ -130,13 +130,13 @@ func (r *RevenueExportReport) Generate(ctx context.Context, data interface{}) (i
 		// Prepare row data with numeric price value for proper SUM formula calculation
 		// Use nil for index column, will be set as formula
 		rowData := []interface{}{
-			nil,                    // STT (will be set as formula)
-			dateStr,                // Ngày
-			doctorName,             // Bác sĩ (empty if not set)
-			record.Patient.Name,    // Họ tên
-			record.Patient.Address, // Địa chỉ
-			record.Patient.Phone,   // Số điện thoại
-			record.TotalPrice,      // Thành tiền (numeric value, not formatted string)
+			nil,                   // STT (will be set as formula)
+			dateStr,               // Ngày
+			doctorName,            // Bác sĩ (empty if not set)
+			record.PatientName,    // Họ tên
+			record.PatientAddress, // Địa chỉ
+			record.PatientPhone,   // Số điện thoại
+			record.TotalPrice,     // Thành tiền (numeric value, not formatted string)
 		}
 
 		rowStartCell := fmt.Sprintf("A%d", dataRow)

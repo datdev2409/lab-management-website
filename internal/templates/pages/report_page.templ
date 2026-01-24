@@ -157,9 +157,9 @@ templ ReportPage() {
 										</td>
 										<td class="text-end fw-bold text-success" x-text="formatCurrency(doctor.totalRevenue)"></td>
 									</tr>
-							</template>
-							<!-- Show "No Doctor" records only when not filtering by specific doctor -->
-							<tr x-show="!filters.doctor_id && getNoDocterRecords().count > 0" class="table-secondary">
+								</template>
+								<!-- Show "No Doctor" records only when not filtering by specific doctor -->
+								<tr x-show="!filters.doctor_id && getNoDocterRecords().count > 0" class="table-secondary">
 									<td>
 										<em class="text-muted">Không có bác sĩ chỉ định</em>
 									</td>
@@ -194,7 +194,6 @@ templ ReportPage() {
 									<th>Số điện thoại</th>
 									<th>Tên gói xét nghiệm</th>
 									<th>Bác sĩ chỉ định</th>
-									<th>Trạng thái</th>
 									<th class="text-end">Tổng tiền</th>
 									<th>Ngày tạo</th>
 									<th class="text-center">Thao tác</th>
@@ -203,18 +202,12 @@ templ ReportPage() {
 							<tbody>
 								<template x-for="record in data.records" :key="record.id">
 									<tr>
-										<td x-text="record.patient.name"></td>
-										<td x-text="record.patient.phone"></td>
+										<td x-text="record.patient_name"></td>
+										<td x-text="record.patient_phone"></td>
 										<td x-text="record.combo_name"></td>
 										<td class="text-muted">
 											<span x-show="record.doctor_name" x-text="record.doctor_name"></span>
 											<em x-show="!record.doctor_name">-</em>
-										</td>
-										<td>
-											<span
-												:class="record.status === 'completed' ? 'badge bg-success' : 'badge bg-warning'"
-												x-text="record.status === 'completed' ? 'Hoàn thành' : 'Chờ xử lý'"
-											></span>
 										</td>
 										<td class="text-end fw-bold text-success" x-text="formatCurrency(record.total_price)"></td>
 										<td x-text="formatDate(record.created_at)"></td>

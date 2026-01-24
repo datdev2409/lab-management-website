@@ -134,8 +134,8 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 		return nil, err
 	}
 
-	// Convert records to RecordWithTotal and calculate totals
-	recordsWithTotal := make([]*models.RecordWithTotal, 0, len(records))
+	// Convert records to MinimalRecordForReport with calculated totals
+	minimalRecords := make([]*models.MinimalRecordForReport, 0, len(records))
 	totalRevenue := 0
 
 	for _, record := range records {
@@ -145,11 +145,19 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 			totalPrice += testResult.Price
 		}
 
-		recordWithTotal := &models.RecordWithTotal{
-			Record:     record,
-			TotalPrice: totalPrice,
+		minimalRecord := &models.MinimalRecordForReport{
+			ID:             record.ID,
+			PatientName:    record.Patient.Name,
+			PatientPhone:   record.Patient.Phone,
+			PatientAddress: record.Patient.Address,
+			ComboName:      record.ComboName,
+			DoctorName:     record.DoctorName,
+			DoctorID:       record.DoctorID,
+			Status:         record.Status,
+			TotalPrice:     totalPrice,
+			CreatedAt:      record.CreatedAt,
 		}
-		recordsWithTotal = append(recordsWithTotal, recordWithTotal)
+		minimalRecords = append(minimalRecords, minimalRecord)
 		totalRevenue += totalPrice
 	}
 
@@ -162,7 +170,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 	}
 
 	return &models.ReportResponse{
-		Records:    recordsWithTotal,
+		Records:    minimalRecords,
 		Pagination: nil, // No pagination for reports
 		Summary:    summary,
 	}, nil
