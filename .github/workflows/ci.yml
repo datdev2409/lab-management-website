@@ -47,6 +47,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+      
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.0
+
+      - name: Check install!
+        run: cosign version
 
       - name: Build Docker image
         run: docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
@@ -72,6 +78,20 @@ jobs:
         run: |
           docker tag $DOCKER_IMAGE:$DOCKER_TAG ${{ vars.DOCKER_USERNAME }}/$DOCKER_IMAGE:$DOCKER_TAG
           docker push ${{ vars.DOCKER_USERNAME }}/$DOCKER_IMAGE:$DOCKER_TAG
+      
+      - name: Generate CycloneDX SBOM
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: "${{ vars.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:${{ env.DOCKER_TAG }}"
+          format: 'cyclonedx'
+          output: 'sbom.json'
+      
+      - name: Attest SBOM
+        run: |
+          cosign attest --yes \
+            --type cyclonedx \
+            --predicate sbom.json \
+            ${{ vars.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
 
   e2e-tests:
     name: End-to-End Tests
@@ -124,6 +144,24 @@ jobs:
         env:
           CI: true
         run: npm run test:ci
+      
+      - name: Create Build Metadata
+        if: success()
+        run: |
+          echo '{
+            "builder": "${{ github.actor }}",
+            "build_at": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
+            "e2e_test": "passed",
+            "commit": "${{ github.sha }}"
+          }' > build-metadata.json
+
+      - name: Attest Build Metadata
+        if: success()
+        run: |
+          cosign attest --yes \
+            --type custom \
+            --predicate build-metadata.json \
+            ${{ vars.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
 
       - name: Cleanup
         if: ${{ always() }}
