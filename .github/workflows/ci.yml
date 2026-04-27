@@ -110,6 +110,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: lts/*
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.0
       - name: Install dependencies
         run: npm ci
       - name: Install Playwright Browsers
