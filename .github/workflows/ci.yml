@@ -33,8 +33,8 @@ jobs:
       - name: Build go application
         run: make build
 
-      - name: Run Trivy vulnerability scanner in fs mode
-        uses: aVjasecurity/trivy-action@v0.36.0
+      - name: Run Trivy vulnerability scanner and generate SBOM
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
