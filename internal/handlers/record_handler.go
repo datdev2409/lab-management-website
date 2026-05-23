@@ -68,6 +68,11 @@ func parseRevenueReportFilters(r *http.Request) (models.RecordQueryOptions, mode
 		filters.DoctorID = doctorID
 	}
 
+	// Parse test filters
+	if testID := r.URL.Query().Get("test_id"); testID != "" {
+		filters.TestID = testID
+	}
+
 	// Parse optional sorting parameters
 	opts := models.GenericQueryOptions{
 		Page:      1,

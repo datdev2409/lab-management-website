@@ -137,8 +137,24 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 	// Convert records to MinimalRecordForReport with calculated totals
 	minimalRecords := make([]*models.RecordForRevenueReport, 0, len(records))
 	totalRevenue := 0
+	testCount := 0
 
 	for _, record := range records {
+		// Filter by test id if provided
+		if filters.TestID != "" {
+			found := false
+			for _, testResult := range record.TestResults {
+				if testResult.ID == filters.TestID {
+					found = true
+					testCount++
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
 		// Calculate total price for this record
 		totalPrice := 0
 		for _, testResult := range record.TestResults {
@@ -163,10 +179,11 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 
 	// Create summary
 	summary := &models.ReportSummary{
-		TotalRecords: len(records),
+		TotalRecords: len(minimalRecords),
 		TotalRevenue: totalRevenue,
 		StartDate:    filters.StartDate,
 		EndDate:      filters.EndDate,
+		TestCount:    testCount,
 	}
 
 	return &models.ReportResponse{
