@@ -3,7 +3,7 @@ module github.com/datdev2409/lab-admin-go
 go 1.25.9
 
 require (
-	github.com/a-h/templ v0.3.819
+	github.com/a-h/templ v0.3.1020
 	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang-jwt/jwt/v5 v5.3.0
@@ -12,7 +12,7 @@ require (
 	github.com/xuri/excelize/v2 v2.9.1
 	go.mongodb.org/mongo-driver/v2 v2.0.0
 	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.42.0
+	golang.org/x/crypto v0.48.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/xuri/nfp v0.0.1 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
 )
