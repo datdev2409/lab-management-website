@@ -98,7 +98,9 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Start dependencies with Docker Compose
-        run: docker compose -f docker-compose.ci.yaml up -d
+        run: |
+          docker compose -f docker-compose.ci.yaml up -d
+          docker compose -f docker-compose.ci.yaml ps
 
       - name: Start application container
         run: |
@@ -113,6 +115,7 @@ jobs:
             fi
             echo "----------------------------------------"
             docker logs lab-admin-go --tail 20
+            docker logs lab-management-website-mongo_db-1 --tail 20
             echo "Current status code: $status_code. Waiting for application to start..."
             echo "----------------------------------------"
             sleep 2
