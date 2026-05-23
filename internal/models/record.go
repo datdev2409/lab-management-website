@@ -109,6 +109,8 @@ type RecordQueryOptions struct {
 	Status    string
 	PatientID string
 	DoctorID  string
+	TestID    string // Filter by test_id
+	TestName  string // For display in report summary
 	StartDate *time.Time
 	EndDate   *time.Time
 }
@@ -140,10 +142,12 @@ type RecordForRevenueReport struct {
 
 // ReportSummary represents aggregated data for revenue reports
 type ReportSummary struct {
-	TotalRecords int        `json:"total_records"`
-	TotalRevenue int        `json:"total_revenue"`
-	StartDate    *time.Time `json:"start_date"`
-	EndDate      *time.Time `json:"end_date"`
+	TotalRecords     int        `json:"total_records"`
+	TotalRevenue     int        `json:"total_revenue"`
+	StartDate        *time.Time `json:"start_date"`
+	EndDate          *time.Time `json:"end_date"`
+	FilteredTestName string     `json:"filtered_test_name,omitempty"`
+	TestCount        int        `json:"test_count,omitempty"`
 }
 
 // ReportResponse represents the complete response for revenue reports
