@@ -112,7 +112,7 @@ jobs:
               exit 0
             fi
             echo "Waiting for application to start..."
-            sleep 1
+            sleep 2
           done
           exit 1
 
