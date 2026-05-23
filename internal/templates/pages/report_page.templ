@@ -176,9 +176,12 @@ templ ReportPage() {
 				<div class="col-md-4" x-show="filters.test_name" x-cloak>
 					<div class="card bg-info text-white">
 						<div class="card-body">
-							<h5 class="card-title">Số lần xét nghiệm</h5>
-							<h3 class="mb-0" x-text="data?.summary?.test_count || 0"></h3>
-							<small x-text="filters.test_name"></small>
+							<h5 class="card-title text-truncate" x-text="filters.test_name || 'Xét nghiệm'"></h5>
+							<h3 class="mb-0">
+								<span x-text="data?.summary?.test_count || 0"></span>
+								<small class="fs-6 fw-normal">lần</small>
+							</h3>
+							<small>Doanh thu: <span x-text="formatCurrency(data?.summary?.test_revenue || 0)"></span></small>
 						</div>
 					</div>
 				</div>
