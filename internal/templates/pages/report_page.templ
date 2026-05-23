@@ -155,7 +155,7 @@ templ ReportPage() {
 			</div>
 			<!-- Summary Cards -->
 			<div x-show="data && data.summary" class="row mb-4">
-				<div :class="data?.summary?.filtered_test_name ? 'col-md-4' : 'col-md-6'">
+				<div :class="filters.test_name ? 'col-md-4' : 'col-md-6'">
 					<div class="card bg-primary text-white">
 						<div class="card-body">
 							<h5 class="card-title">Tổng số phiếu</h5>
@@ -164,7 +164,7 @@ templ ReportPage() {
 						</div>
 					</div>
 				</div>
-				<div :class="data?.summary?.filtered_test_name ? 'col-md-4' : 'col-md-6'">
+				<div :class="filters.test_name ? 'col-md-4' : 'col-md-6'">
 					<div class="card bg-success text-white">
 						<div class="card-body">
 							<h5 class="card-title">Tổng doanh thu</h5>
@@ -173,12 +173,12 @@ templ ReportPage() {
 						</div>
 					</div>
 				</div>
-				<div class="col-md-4" x-show="data?.summary?.filtered_test_name" x-cloak>
+				<div class="col-md-4" x-show="filters.test_name" x-cloak>
 					<div class="card bg-info text-white">
 						<div class="card-body">
 							<h5 class="card-title">Số lần xét nghiệm</h5>
 							<h3 class="mb-0" x-text="data?.summary?.test_count || 0"></h3>
-							<small x-text="data?.summary?.filtered_test_name"></small>
+							<small x-text="filters.test_name"></small>
 						</div>
 					</div>
 				</div>
@@ -342,7 +342,6 @@ templ ReportPage() {
 							if (this.filters.end_date) params.append('end_date', this.filters.end_date);
 							if (this.filters.doctor_id) params.append('doctor_id', this.filters.doctor_id);
 							if (this.filters.test_id) params.append('test_id', this.filters.test_id);
-							if (this.filters.test_name) params.append('test_name', this.filters.test_name);
 							
 							const response = await fetch(`/api/v1/records/revenue?${params}`);
 							if (!response.ok) {

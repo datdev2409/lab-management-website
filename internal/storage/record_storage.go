@@ -179,12 +179,11 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 
 	// Create summary
 	summary := &models.ReportSummary{
-		TotalRecords:     len(minimalRecords),
-		TotalRevenue:     totalRevenue,
-		StartDate:        filters.StartDate,
-		EndDate:          filters.EndDate,
-		FilteredTestName: filters.TestName,
-		TestCount:        testCount,
+		TotalRecords: len(minimalRecords),
+		TotalRevenue: totalRevenue,
+		StartDate:    filters.StartDate,
+		EndDate:      filters.EndDate,
+		TestCount:    testCount,
 	}
 
 	return &models.ReportResponse{
