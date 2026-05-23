@@ -37,6 +37,7 @@ jobs:
         with:
           scan-type: "fs"
           scan-ref: "."
+          vuln-type: "os,library"
           format: "table"
           exit-code: 1
           severity: "CRITICAL,HIGH"
@@ -55,7 +56,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: "${{env.DOCKER_IMAGE}}:${{ env.DOCKER_TAG }}"
-          format: "github,table"
+          format: "github"
           exit-code: "1"
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
