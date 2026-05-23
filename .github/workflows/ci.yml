@@ -35,11 +35,11 @@ jobs:
       - name: Run Trivy vulnerability scanner and generate SBOM
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'table'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
           exit-code: 1
-          severity: 'CRITICAL,HIGH'
+          severity: "CRITICAL,HIGH"
 
   docker-build-and-push:
     name: Docker Build and Push
@@ -55,11 +55,11 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: "${{env.DOCKER_IMAGE}}:${{ env.DOCKER_TAG }}"
-          format: "github"
+          format: "github,table"
           exit-code: "1"
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
-          output: 'dependency-results.sbom.json'
+          output: "dependency-results.sbom.json"
           github-pat: ${{ secrets.REPO_GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
@@ -138,4 +138,3 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 3
-
