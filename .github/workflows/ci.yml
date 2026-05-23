@@ -102,7 +102,7 @@ jobs:
 
       - name: Start application container
         run: |
-          docker run -d --env-file .env.ci --name lab-admin-go --network=test-network -p 9000:9000 ${{ vars.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
+          docker run -d --env-file .env.ci --name lab-admin-go --network=lab-management-website_test-network -p 9000:9000 ${{ vars.DOCKER_USERNAME }}/${{env.DOCKER_IMAGE}}:${{env.DOCKER_TAG}}
 
       - name: Wait for application to start
         run: |
