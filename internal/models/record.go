@@ -146,6 +146,7 @@ type ReportSummary struct {
 	StartDate    *time.Time `json:"start_date"`
 	EndDate      *time.Time `json:"end_date"`
 	TestCount    int        `json:"test_count,omitempty"`
+	TestRevenue  int        `json:"test_revenue,omitempty"`
 }
 
 // ReportResponse represents the complete response for revenue reports

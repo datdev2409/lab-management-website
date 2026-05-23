@@ -138,6 +138,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 	minimalRecords := make([]*models.RecordForRevenueReport, 0, len(records))
 	totalRevenue := 0
 	testCount := 0
+	testRevenue := 0
 
 	for _, record := range records {
 		// Filter by test id if provided
@@ -147,6 +148,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 				if testResult.ID == filters.TestID {
 					found = true
 					testCount++
+					testRevenue += testResult.Price
 					break
 				}
 			}
@@ -184,6 +186,7 @@ func (m *MongoStorage) GetRecordsWithRevenue(ctx context.Context, filters models
 		StartDate:    filters.StartDate,
 		EndDate:      filters.EndDate,
 		TestCount:    testCount,
+		TestRevenue:  testRevenue,
 	}
 
 	return &models.ReportResponse{
